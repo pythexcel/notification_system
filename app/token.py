@@ -38,3 +38,19 @@ def get_token(jwt, app):
            return None
        return user
 
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request()
+        user = get_current_user()
+
+        if user["role"] == "Admin":
+            return fn(*args, **kwargs)
+
+        if 'role' in user:
+            if user['role'] != 'Admin':
+                return jsonify(msg='Admins only!'), 403
+            else:
+                return fn(*args, **kwargs)
+        return jsonify(msg='Admins only!'), 403
+    return wrapper
