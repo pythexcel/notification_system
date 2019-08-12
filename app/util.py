@@ -4,6 +4,10 @@ from slackclient import SlackClient
 from app.config import default
 
 
+def serialize_doc(doc):
+    doc["_id"] = str(doc["_id"])
+    return doc
+
 def secret_key():
     msg = mongo.db.slack_tokens.find_one({
         "secret_key": {"$exists": True}
