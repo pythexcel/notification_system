@@ -5,8 +5,9 @@ import dateutil.parser
 from bson.objectid import ObjectId
 from slackclient import SlackClient
 import requests
+from cerberus import Validator
 import datetime
-from app.config import default
+from app.config import default,simple_msg_v,Notification_msg_v
 from app.util import slack_msg, slack_message,serialize_doc,slack_attach
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
@@ -21,41 +22,54 @@ def post_report():
         abort(500)
     MSG_TYPE = request.json.get("Message_Type",None)
     print(MSG_TYPE)
-    ret = mongo.db.slack_msg.find_one({"Message_Type": MSG_TYPE})
+    ret = mongo.db.notification_msg.find_one({"Message_Type": MSG_TYPE})
     print(ret)
     if ret is not None:
-        print(ret['Message_Category'])
-        if ret['Message_Category'] == "Simple_Message":
-            slackReport = request.json.get("slackReport", None)
-            highlight = request.json.get("highlight", "")
-            slackChannels = request.json.get("slackChannels", [])
-            slack = request.json.get("slack", None)
-            date_time = datetime.datetime.utcnow()
-            formatted_date = date_time.strftime("%d-%B-%Y")
+       if 'Message' in ret:
             mesg = ret['Message']
-            print(mesg) 
-            if 'Slack_id:' in mesg:
-                print("usme")
-                sl_mesg = mesg.replace("Slack_id:", "<@" + slack + ">!")
-            else:
-                print("isme")
-                sl_mesg = "<@" + slack + ">!" + mesg
-            slack_message(attachments=[{"text": sl_mesg ,"color":ret['Message_Color']}])
-            if len(highlight) > 0:
-                slack_msg(channel=slackChannels,
-                        msg="<@" + slack + ">!",attachments= [{"text": "Report: " + "\n" +
-                        slackReport + "" + "\n" + "Highlight: " + highlight}])
-            else:
-                slack_msg(channel=slackChannels,
-                        msg="<@" + slack + ">!",attachments= [{"text":"Report: " + "\n" +
-                        slackReport,"color":ret['Message_Color']}])
-            return jsonify({"Message":"Sended","Status":True}),200
-        if ret['Category'] == "Button_Message":
-            slack = request.json.get("slack", None) 
-            date_time = datetime.datetime.utcnow()
-            formatted_date = date_time.strftime("%d-%B-%Y")
-            slack_attach(msg="<@" + slack + ">!",attachments=[{"text": ret['Message'] + ' ' +str(formatted_date),"color":ret['Message_Color']}])
-            return jsonify({"Message":"Sended","Status":True}),200
+            if ret['Message_Category'] == "Simple_Message":
+                input = request.json
+                val = simple_msg_v.validate(input)
+                print(val)
+                if val is True:
+                    slack = input['slack']
+                    slackReport = input['slackReport']
+                    slackChannels = input['slackChannels']
+                    highlight = input['highlight']
+                    date_time = datetime.datetime.utcnow()
+                    formatted_date = date_time.strftime("%d-%B-%Y")
+                    print(mesg) 
+                    if 'Slack_id:' in mesg:
+                        print("usme")
+                        sl_mesg = mesg.replace("Slack_id:", "<@" + slack + ">!")
+                    else:
+                        print("isme")
+                        sl_mesg = "<@" + slack + ">!" + mesg
+                    slack_message(attachments=[{"text": sl_mesg ,"color":ret['Message_Color']}])
+                    if len(highlight) > 0:
+                        slack_msg(channel=slackChannels,
+                                msg="<@" + slack + ">!",attachments= [{"text": "Report: " + "\n" +
+                                slackReport + "" + "\n" + "Highlight: " + highlight}])
+                    else:
+                        slack_msg(channel=slackChannels,
+                                msg="<@" + slack + ">!",attachments= [{"text":"Report: " + "\n" +
+                                slackReport,"color":ret['Message_Color']}])
+                    return jsonify({"Message":"Sended","Status":True}),200
+                else:
+                    return jsonify(simple_msg_v.errors)    
+            elif ret['Category'] == "Notification_Message":
+                verify = Notification_msg_v.validate(request.json)
+                if verify is True:
+                    slack = input['slack']
+                    date_time = datetime.datetime.utcnow()
+                    formatted_date = date_time.strftime("%d-%B-%Y")
+                    slack_attach(msg="<@" + slack + ">!",attachments=[{"text": ret['Message'] + ' ' +str(formatted_date),"color":ret['Message_Color']}])
+                    return jsonify({"Message":"Sended","Status":True}),200
+                else:
+                    print(Notification_msg_v.errors)
+                    return jsonify(simple_msg_v.errors),400
+        else:
+            return jsonify("NO MESSAGE AVAILABLE FOR THIS TYPE"),400
     else:
         return jsonify ("No Such Message Type Available"),400
 
@@ -66,7 +80,7 @@ def post_report():
 @token.admin_required
 def slack_schduler():
     if request.method == "GET":
-        ret = mongo.db.slack_msg.find({
+        ret = mongo.db.notification_msg.find({
         })
         ret = [serialize_doc(doc) for doc in ret]
         return jsonify(ret)
@@ -82,7 +96,7 @@ def slack_schduler():
         if not MSG and MSG_TYPE and MSG_ORIGIN:
             return jsonify({"msg": "Invalid Request"}), 400
     
-        ret = mongo.db.slack_msg.update({
+        ret = mongo.db.notification_msg.update({
         }, {
             "$set": {
                 "Message":  MSG,

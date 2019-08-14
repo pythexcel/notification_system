@@ -1,3 +1,19 @@
+from cerberus import Validator
+
+# THis is cerberus a custom request validator library for python
+#assign needs of simple msg type
+simple_message_needs= {"slack":{'required': True},"slackReport":{'required': True},
+"slackChannels":{'required': True},"Message_Type":{"required":True},"highlight":{"required":True}}
+#providing validator functions for that needs
+simple_msg_v = Validator(simple_message_needs)
+
+#assign needs of notification msg type
+Notification_message_needs={"slack":{"required":True}}
+#validator function for that needs
+Notification_msg_v = Validator(Notification_message_needs)
+
+
+
 URL = 'http://176.9.137.77/hr_tms/ReactReduxHR/backend/attendance/API_HR/api.php'
 URL_details = 'http://176.9.137.77/hr_tms/ReactReduxHR/backend/attendance/sal_info/api.php'
 
