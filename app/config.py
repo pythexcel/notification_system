@@ -1,16 +1,6 @@
-from cerberus import Validator
+simple_message_needs= {"slack":True,"slackReport":True,"slackChannels":True,"Message_Type":True,"highlight":True}
+Notification_message_needs={"slack":True}
 
-# THis is cerberus a custom request validator library for python
-#assign needs of simple msg type
-simple_message_needs= {"slack":{'required': True},"slackReport":{'required': True},
-"slackChannels":{'required': True},"Message_Type":{"required":True},"highlight":{"required":True}}
-#providing validator functions for that needs
-simple_msg_v = Validator(simple_message_needs)
-
-#assign needs of notification msg type
-Notification_message_needs={"slack":{"required":True}}
-#validator function for that needs
-Notification_msg_v = Validator(Notification_message_needs)
 
 
 
