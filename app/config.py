@@ -1,8 +1,5 @@
-simple_message_needs= {"message_category":True,"slack":True,"slackReport":True,"slackChannels":True,"message_type":True,"highlight":True}
-Notification_message_needs={"message_category":True,"slack":True,"message_type":True}
-
-
-
+simple_message_needs= {"message_category":True,"slack":True,"slackReport":True,"slackChannels":True,"message_type":True,"highlight":True,"email":True}
+Notification_message_needs={"message_category":True,"slack":True,"message_type":True,"email":True}
 
 URL = 'http://176.9.137.77/hr_tms/ReactReduxHR/backend/attendance/API_HR/api.php'
 URL_details = 'http://176.9.137.77/hr_tms/ReactReduxHR/backend/attendance/sal_info/api.php'
@@ -21,7 +18,14 @@ default={
             "missed_reviewed_mesg":"Slack_id: you have Reports: weekly report's pending to be reviewed before current week."
             }
 
-
+mail_settings = {
+    "MAIL_SERVER": 'smtp.gmail.com',
+    "MAIL_PORT": 465,
+    "MAIL_USE_TLS": False,
+    "MAIL_USE_SSL": True,
+    "MAIL_USERNAME": Mail_user,
+    "MAIL_PASSWORD": Mail_password
+}
 
 
 checkin_score_scheduler_seconds = 90

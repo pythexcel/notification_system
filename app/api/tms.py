@@ -7,7 +7,7 @@ from slackclient import SlackClient
 import requests
 import datetime
 from app.config import default, simple_message_needs, Notification_message_needs
-from app.util import slack_msg, slack_message, serialize_doc, slack_attach
+from app.util import slack_msg, slack_message, serialize_doc, slack_attach,notifie_user
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
@@ -39,6 +39,7 @@ def post_report():
         slack = input['slack']
         slackReport = input['slackReport']
         slackChannels = input['slackChannels']
+        email = input['email']
         highlight = input['highlight']
         date_time = datetime.datetime.utcnow()
         formatted_date = date_time.strftime("%d-%B-%Y")
@@ -46,16 +47,16 @@ def post_report():
         if ret is not None:
             if 'message' in ret:
                 mesg = ret['message']
-                print(mesg)
-                # Here replacing slack id in the message with slack id came from request same pattern is followed in TMS 
-                sl_mesg = mesg.replace("@Slack_id:", "<@" + slack + ">!")
-                # here replacing @date in message with current date and time same pattern is followed in TMS 
-                message = sl_mesg.replace("@Date",formatted_date)
+                 # here replacing slack_id in message with current date and time same pattern is followed in TMS  
+                message = mesg.replace("@Date",formatted_date)
+                # Here replacing slack id in the message with slack id came from request same pattern is followed in TMS
+                sl_mesg = message.replace("@Slack_id:", "<@" + slack + ">!")
                 # field "color" here cannot be put in message string 
-                slack_message(attachments=[{
-                    "text": message,
-                    "color": ret['message_color']
-                }])
+                attachments=[{
+                            "text": sl_mesg,
+                            "color": ret['message_color']
+                        }]
+                notifie_user(attachments=attachments,message=message,email=email) 
                 if len(highlight) > 0:
                     slack_msg(channel=slackChannels,
                                 msg="<@" + slack + ">!",
@@ -76,127 +77,6 @@ def post_report():
                 return jsonify("Invalid Request"), 400
         else:
             return jsonify("No Message Type Available"), 400
-
-
-# SECOND APPROACH
-
-
-# @bp.route('/send_message', methods=["POST"])
-# def post_report():
-#     if not request.json:
-#         abort(500)
-#     sm_found = True
-#     for data in simple_message_needs:
-#         # print(data)
-#         sm_found = False
-#         for elem in request.json:
-#             print(data, elem)
-#             if data == elem:
-#                 sm_found = True
-
-
-          # HERE IF THE FIRST REQUEST IS NOT SATTISFIED IT WILL GO TO SECOND REQUEST
-
-
-#         if sm_found == False:
-#             nt_found = True
-#             for data in  Notification_message_needs:
-#                 nt_found = False
-#                 for elem in request.json:
-#                     print(data, elem)
-#                     if data == elem:
-#                         nt_found = True
-
-
-                # BELOW CURRENTLY HAVE TWO CATEGORY SO WILL LOOP OVER SECOND CONDTION IF NOT SATISFIED THEN GIVE INVALID REQUEST ERROR
-
-
-#                 if nt_found == False:
-#                     return jsonify("Invalid request"),400
-#             if nt_found == True:
-#                 input = request.json
-#                 msg_type = input['message_type']
-#                 slack = input['slack']
-#                 msg_category = input['message_category']
-#                 date_time = datetime.datetime.utcnow()
-#                 formatted_date = date_time.strftime("%d-%B-%Y")
-#                 ret = mongo.db.notification_msg.find_one({"message_type": msg_type})
-#                 if ret is not None:
-#                     if 'message' in ret:
-#                         mesg = ret['message']
-#                         print(mesg)
-#                         # Here replacing slack id in the message with slack id came from request same pattern is followed in TMS 
-#                         sl_mesg = mesg.replace("@Slack_id:", "<@" + slack + ">!")
-#                         # here replacing @date in message with current date and time same pattern is followed in TMS 
-#                         message = sl_mesg.replace("@Date",formatted_date)
-#                         # field "color" here cannot be put in message string 
-#                         slack_message(attachments=[{
-#                             "text": message,
-#                             "color": ret['message_color']
-#                         }])
-#                         return jsonify({"Message": "Sended", "Status": True}), 200
-#                     else:
-#                         return jsonify("Invalid Request"), 400
-#                 else:
-#                     return jsonify("No Message Type Available"), 400
-#     if sm_found == True:
-#         input = request.json
-#         msg_category = input['message_category']
-#         msg_type = input['message_type']
-#         slack = input['slack']
-#         slackReport = input['slackReport']
-#         slackChannels = input['slackChannels']
-#         highlight = input['highlight']
-#         date_time = datetime.datetime.utcnow()
-#         formatted_date = date_time.strftime("%d-%B-%Y")
-#         ret = mongo.db.notification_msg.find_one({"message_type": msg_type})
-#         if ret is not None:
-#             if 'message' in ret:
-#                 mesg = ret['message']
-#                 print(mesg)
-#                 # Here replacing slack id in the message with slack id came from request same pattern is followed in TMS 
-#                 sl_mesg = mesg.replace("@Slack_id:", "<@" + slack + ">!")
-#                 # here replacing @date in message with current date and time same pattern is followed in TMS 
-#                 message = sl_mesg.replace("@Date",formatted_date)
-#                 # field "color" here cannot be put in message string 
-#                 slack_message(attachments=[{
-#                     "text": message,
-#                     "color": ret['message_color']
-#                 }])
-#                 if len(highlight) > 0:
-#                     slack_msg(channel=slackChannels,
-#                                 msg="<@" + slack + ">!",
-#                                 attachments=[{
-#                                     "text":
-#                                     "Report: " + "\n" + slackReport + "" +
-#                                     "\n" + "Highlight: " + highlight
-#                                 }])
-#                 else:
-#                     slack_msg(channel=slackChannels,
-#                                 msg="<@" + slack + ">!",
-#                                 attachments=[{
-#                                     "text": "Report: " + "\n" + slackReport,
-#                                     "color": ret['message_color']
-#                                 }])
-#                 return jsonify({"Message": "Sended", "Status": True}), 200
-#             else:
-#                 return jsonify("Invalid Request"), 400
-#         else:
-#             return jsonify("No Message Type Available"), 400
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #Api for schdulers mesg settings
 @bp.route('/slack_mesg', methods=["GET", "PUT"])

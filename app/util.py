@@ -1,7 +1,10 @@
 from app import mongo
 import requests
 from slackclient import SlackClient
-from app.config import default
+from app.config import default,mail_settings
+from flask_mail import Message,Mail
+from app import mail
+from flask import current_app   
 
 
 def serialize_doc(doc):
@@ -70,6 +73,23 @@ def slack_msg(channel, msg,attachments):
             attachments=attachments,
             username = "TMS"
         )
+def send_email(email,message): 
+   app = current_app._get_current_object()
+   subject = 'Thank you for registering to our site'
+   message = message
+   sendere = app.config['MAIL_USERNAME']
+   recipient = [email,]
+   msg = Message(message,sender=sendere,recipients=recipient)
+   mail.send(msg)
+
+
+def notifie_user(email=None,message=None,attachments=None):
+    slack_message(attachments=attachments)
+    mail_msg = message.replace("@Slack_id:", email)
+    send_email(email=email,message=mail_msg)
+
+
+
 
 def load_monthly_manager_reminder():
     msg = mongo.db.schdulers_msg.find_one({
