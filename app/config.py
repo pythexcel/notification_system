@@ -12,8 +12,8 @@ mail_settings = {
     "MAIL_PORT": 465,
     "MAIL_USE_TLS": False,
     "MAIL_USE_SSL": True,
-    "MAIL_USERNAME": "logicalroot11@gmail.com",
-    "MAIL_PASSWORD": "cyberpunk2077@ak"
+    "MAIL_USERNAME": "mail",
+    "MAIL_PASSWORD": "password"
 }
 
 
