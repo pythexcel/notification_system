@@ -21,6 +21,7 @@ def post_report():
     if not request.json:
         abort(500)
     found = True
+    # LOOP OVER THE NEEDS FOR REQUEST
     for data in simple_message_needs:
         # print(data)
         found = False
@@ -28,8 +29,10 @@ def post_report():
             print(data, elem)
             if data == elem:
                 found = True
+        # REQUIREMNT DOES NOT SATISFIED RETURN INVALID REQUEST        
         if found == False:
             return jsonify(data + " is missing from request"),400
+    # IF FOUND PROCESS THE REQUEST.JSON DATA
     if found == True:
         input = request.json
         msg_type = input['message_category']
@@ -73,6 +76,126 @@ def post_report():
                 return jsonify("Invalid Request"), 400
         else:
             return jsonify("No Message Type Available"), 400
+
+
+# SECOND APPROACH
+
+
+# @bp.route('/send_message', methods=["POST"])
+# def post_report():
+#     if not request.json:
+#         abort(500)
+#     sm_found = True
+#     for data in simple_message_needs:
+#         # print(data)
+#         sm_found = False
+#         for elem in request.json:
+#             print(data, elem)
+#             if data == elem:
+#                 sm_found = True
+
+
+          # HERE IF THE FIRST REQUEST IS NOT SATTISFIED IT WILL GO TO SECOND REQUEST
+
+
+#         if sm_found == False:
+#             nt_found = True
+#             for data in  Notification_message_needs:
+#                 nt_found = False
+#                 for elem in request.json:
+#                     print(data, elem)
+#                     if data == elem:
+#                         nt_found = True
+
+
+                # BELOW CURRENTLY HAVE TWO CATEGORY SO WILL LOOP OVER SECOND CONDTION IF NOT SATISFIED THEN GIVE INVALID REQUEST ERROR
+
+
+#                 if nt_found == False:
+#                     return jsonify("Invalid request"),400
+#             if nt_found == True:
+#                 input = request.json
+#                 msg_type = input['message_type']
+#                 slack = input['slack']
+#                 msg_category = input['message_category']
+#                 date_time = datetime.datetime.utcnow()
+#                 formatted_date = date_time.strftime("%d-%B-%Y")
+#                 ret = mongo.db.notification_msg.find_one({"message_type": msg_type})
+#                 if ret is not None:
+#                     if 'message' in ret:
+#                         mesg = ret['message']
+#                         print(mesg)
+#                         # Here replacing slack id in the message with slack id came from request same pattern is followed in TMS 
+#                         sl_mesg = mesg.replace("@Slack_id:", "<@" + slack + ">!")
+#                         # here replacing @date in message with current date and time same pattern is followed in TMS 
+#                         message = sl_mesg.replace("@Date",formatted_date)
+#                         # field "color" here cannot be put in message string 
+#                         slack_message(attachments=[{
+#                             "text": message,
+#                             "color": ret['message_color']
+#                         }])
+#                         return jsonify({"Message": "Sended", "Status": True}), 200
+#                     else:
+#                         return jsonify("Invalid Request"), 400
+#                 else:
+#                     return jsonify("No Message Type Available"), 400
+#     if sm_found == True:
+#         input = request.json
+#         msg_category = input['message_category']
+#         msg_type = input['message_type']
+#         slack = input['slack']
+#         slackReport = input['slackReport']
+#         slackChannels = input['slackChannels']
+#         highlight = input['highlight']
+#         date_time = datetime.datetime.utcnow()
+#         formatted_date = date_time.strftime("%d-%B-%Y")
+#         ret = mongo.db.notification_msg.find_one({"message_type": msg_type})
+#         if ret is not None:
+#             if 'message' in ret:
+#                 mesg = ret['message']
+#                 print(mesg)
+#                 # Here replacing slack id in the message with slack id came from request same pattern is followed in TMS 
+#                 sl_mesg = mesg.replace("@Slack_id:", "<@" + slack + ">!")
+#                 # here replacing @date in message with current date and time same pattern is followed in TMS 
+#                 message = sl_mesg.replace("@Date",formatted_date)
+#                 # field "color" here cannot be put in message string 
+#                 slack_message(attachments=[{
+#                     "text": message,
+#                     "color": ret['message_color']
+#                 }])
+#                 if len(highlight) > 0:
+#                     slack_msg(channel=slackChannels,
+#                                 msg="<@" + slack + ">!",
+#                                 attachments=[{
+#                                     "text":
+#                                     "Report: " + "\n" + slackReport + "" +
+#                                     "\n" + "Highlight: " + highlight
+#                                 }])
+#                 else:
+#                     slack_msg(channel=slackChannels,
+#                                 msg="<@" + slack + ">!",
+#                                 attachments=[{
+#                                     "text": "Report: " + "\n" + slackReport,
+#                                     "color": ret['message_color']
+#                                 }])
+#                 return jsonify({"Message": "Sended", "Status": True}), 200
+#             else:
+#                 return jsonify("Invalid Request"), 400
+#         else:
+#             return jsonify("No Message Type Available"), 400
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #Api for schdulers mesg settings

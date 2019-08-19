@@ -1,5 +1,5 @@
 simple_message_needs= {"message_category":True,"slack":True,"slackReport":True,"slackChannels":True,"message_type":True,"highlight":True}
-Notification_message_needs={"slack":True}
+Notification_message_needs={"message_category":True,"slack":True,"message_type":True}
 
 
 
