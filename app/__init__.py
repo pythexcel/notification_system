@@ -4,6 +4,8 @@ from flask import Flask, make_response, jsonify
 
 from flask_cors import CORS
 
+from app.config import mail_settings
+
 from flask_mail import Mail
 
 from app import db
@@ -50,13 +52,9 @@ def create_app(test_config=None):
     token.get_token(jwt=jwt, app=app)
 
     from app.api import auth
-    from app.api import hr
-    from app.api import recruit
     from app.api import tms
     
     app.register_blueprint(auth.bp)
-    app.register_blueprint(hr.bp)
-    app.register_blueprint(recruit.bp)
     app.register_blueprint(tms.bp)
     
     print("create app..")

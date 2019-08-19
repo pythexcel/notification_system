@@ -6,8 +6,8 @@ from bson.objectid import ObjectId
 from slackclient import SlackClient
 import requests
 import datetime
-from app.config import default, simple_message_needs, Notification_message_needs
-from app.util import slack_msg, slack_message, serialize_doc, slack_attach,notifie_user
+from app.config import simple_message_needs, Notification_message_needs,Mail_update_needs
+from app.slack_util import slack_msg, slack_message, serialize_doc, slack_attach,notifie_user
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
@@ -133,3 +133,40 @@ def tms_setings():
             }
         },upsert=True)
         return jsonify(str(ret))
+
+
+@bp.route('/mail_settings', methods=["PUT", "GET"])
+def mail_setings():
+    if request.method == "GET":
+        mail = mongo.db.mail_settings.find({})
+        mail = [serialize_doc(doc) for doc in mail]
+        return jsonify(mail)
+    if request.method == "PUT":
+        if not request.json:
+            abort(500)
+        found = True
+        for data in Mail_update_needs:
+            found = False
+            for elem in request.json:
+                print(data, elem)
+                if data == elem:
+                    found = True        
+            if found == False:
+                return jsonify(data + " is missing from request"),400
+        if found == True:
+            input = request.json
+            MAIL_SERVER = input["mail_server"]
+            MAIL_PORT = input["mail_port"]
+            MAIL_USE_TLS = input["mail_use_tls"]
+            MAIL_USERNAME = input["mail_username"]
+            MAIL_PASSWORD = input["mail_password"]
+            ret = mongo.db.mail_settings.update({}, {
+                "$set": {
+                    "mail_server": MAIL_SERVER,
+                    "mail_port": MAIL_PORT,
+                    "mail_use_tls": MAIL_USE_TLS,
+                    "mail_username":MAIL_USERNAME,
+                    "mail_password":MAIL_PASSWORD
+                }
+            },upsert=True)
+            return jsonify(str(ret))
