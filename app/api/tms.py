@@ -20,76 +20,59 @@ bp = Blueprint('tms', __name__, url_prefix='/tms')
 def post_report():
     if not request.json:
         abort(500)
-    MSG_TYPE = request.json.get("Message_Type", None)
-    print(MSG_TYPE)
-    ret = mongo.db.notification_msg.find_one({"Message_Type": MSG_TYPE})
-    print(ret)
-    if ret is not None:
-        if 'Message' in ret:
-            mesg = ret['Message']
-            if ret['Message_Category'] == "Simple_Message":
-                input = request.json
-                # NO 3 party library and not using for loop to make less load just matching if all the keys are present or not tested too!!
-                val = request.json.keys() == simple_message_needs.keys()
-                print(val)
-                if val is True:
-                    slack = input['slack']
-                    slackReport = input['slackReport']
-                    slackChannels = input['slackChannels']
-                    highlight = input['highlight']
-                    date_time = datetime.datetime.utcnow()
-                    formatted_date = date_time.strftime("%d-%B-%Y")
-                    # Here replacing slack id in the message with slack id came from request
-                    sl_mesg = mesg.replace("@Slack_id:", "<@" + slack + ">!")
-                    # here replacing !date in message with current date and time
-                    message = sl_mesg.replace("!Date:", formatted_date)
-                    # field "color" here cannot be put in message string
-                    slack_message(attachments=[{
-                        "text": message,
-                        "color": ret['Message_Color']
-                    }])
-                    if len(highlight) > 0:
-                        slack_msg(channel=slackChannels,
-                                  msg="<@" + slack + ">!",
-                                  attachments=[{
-                                      "text":
-                                      "Report: " + "\n" + slackReport + "" +
-                                      "\n" + "Highlight: " + highlight
-                                  }])
-                    else:
-                        slack_msg(channel=slackChannels,
-                                  msg="<@" + slack + ">!",
-                                  attachments=[{
-                                      "text": "Report: " + "\n" + slackReport,
-                                      "color": ret['Message_Color']
-                                  }])
-                    return jsonify({"Message": "Sended", "Status": True}), 200
+    found = True
+    for data in simple_message_needs:
+        # print(data)
+        found = False
+        for elem in request.json:
+            print(data, elem)
+            if data == elem:
+                found = True
+        if found == False:
+            return jsonify(data + " is missing from request"),400
+    if found == True:
+        input = request.json
+        msg_type = input['message_category']
+        slack = input['slack']
+        slackReport = input['slackReport']
+        slackChannels = input['slackChannels']
+        highlight = input['highlight']
+        date_time = datetime.datetime.utcnow()
+        formatted_date = date_time.strftime("%d-%B-%Y")
+        ret = mongo.db.notification_msg.find_one({"message_type": msg_type})
+        if ret is not None:
+            if 'message' in ret:
+                mesg = ret['message']
+                print(mesg)
+                # Here replacing slack id in the message with slack id came from request same pattern is followed in TMS 
+                sl_mesg = mesg.replace("@Slack_id:", "<@" + slack + ">!")
+                # here replacing @date in message with current date and time same pattern is followed in TMS 
+                message = sl_mesg.replace("@Date",formatted_date)
+                # field "color" here cannot be put in message string 
+                slack_message(attachments=[{
+                    "text": message,
+                    "color": ret['message_color']
+                }])
+                if len(highlight) > 0:
+                    slack_msg(channel=slackChannels,
+                                msg="<@" + slack + ">!",
+                                attachments=[{
+                                    "text":
+                                    "Report: " + "\n" + slackReport + "" +
+                                    "\n" + "Highlight: " + highlight
+                                }])
                 else:
-                    return jsonify("Invalid Request"), 400
-            elif ret['Category'] == "Notification_Message":
-                # NO 3 party library and not using for loop to make less load just matching if all the keys are present or not
-                verify = request.json.keys(
-                ) == Notification_message_needs.keys()
-                if verify is True:
-                    slack = input['slack']
-                    date_time = datetime.datetime.utcnow()
-                    formatted_date = date_time.strftime("%d-%B-%Y")
-                    # Here replacing slack id in the message with slack id came from request
-                    sl_mesg = mesg.replace("@Slack_id:", "<@" + slack + ">!")
-                    # here replacing !date in message with current date and time
-                    message = sl_mesg.replace("!Date:", formatted_date)
-                    # field "color" here cannot be put in message string
-                    slack_message(attachments=[{
-                        "text": message,
-                        "color": ret['Message_Color']
-                    }])
-                    return jsonify({"Message": "Sended", "Status": True}), 200
-                else:
-                    return jsonify("Invalid Request"), 400
+                    slack_msg(channel=slackChannels,
+                                msg="<@" + slack + ">!",
+                                attachments=[{
+                                    "text": "Report: " + "\n" + slackReport,
+                                    "color": ret['message_color']
+                                }])
+                return jsonify({"Message": "Sended", "Status": True}), 200
+            else:
+                return jsonify("Invalid Request"), 400
         else:
-            return jsonify("NO MESSAGE AVAILABLE FOR THIS TYPE"), 400
-    else:
-        return jsonify("No Such Message Type Available"), 400
+            return jsonify("No Message Type Available"), 400
 
 
 #Api for schdulers mesg settings
