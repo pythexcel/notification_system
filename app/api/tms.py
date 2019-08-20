@@ -20,63 +20,98 @@ bp = Blueprint('tms', __name__, url_prefix='/tms')
 def post_report():
     if not request.json:
         abort(500)
-    found = True
-    # LOOP OVER THE NEEDS FOR REQUEST
-    for data in simple_message_needs:
-        # print(data)
-        found = False
-        for elem in request.json:
-            print(data, elem)
-            if data == elem:
-                found = True
-        # REQUIREMNT DOES NOT SATISFIED RETURN INVALID REQUEST        
-        if found == False:
-            return jsonify(data + " is missing from request"),400
-    # IF FOUND PROCESS THE REQUEST.JSON DATA
-    if found == True:
-        input = request.json
-        msg_type = input['message_category']
-        slack = input['slack']
-        slackReport = input['slackReport']
-        slackChannels = input['slackChannels']
-        email = input['email']
-        highlight = input['highlight']
-        date_time = datetime.datetime.utcnow()
-        formatted_date = date_time.strftime("%d-%B-%Y")
-        ret = mongo.db.notification_msg.find_one({"message_type": msg_type})
-        if ret is not None:
-            if 'message' in ret:
-                mesg = ret['message']
-                 # here replacing slack_id in message with current date and time same pattern is followed in TMS  
-                message = mesg.replace("@Date",formatted_date)
-                # Here replacing slack id in the message with slack id came from request same pattern is followed in TMS
-                sl_mesg = message.replace("@Slack_id:", "<@" + slack + ">!")
-                # field "color" here cannot be put in message string 
-                attachments=[{
-                            "text": sl_mesg,
-                            "color": ret['message_color']
-                        }]
-                notifie_user(attachments=attachments,message=message,email=email) 
-                if len(highlight) > 0:
-                    slack_msg(channel=slackChannels,
-                                msg="<@" + slack + ">!",
-                                attachments=[{
-                                    "text":
-                                    "Report: " + "\n" + slackReport + "" +
-                                    "\n" + "Highlight: " + highlight
-                                }])
-                else:
-                    slack_msg(channel=slackChannels,
-                                msg="<@" + slack + ">!",
-                                attachments=[{
-                                    "text": "Report: " + "\n" + slackReport,
-                                    "color": ret['message_color']
-                                }])
-                return jsonify({"Message": "Sended", "Status": True}), 200
-            else:
-                return jsonify("Invalid Request"), 400
+    MSG_TYPE = request.json.get("message_key", None)  #salary slip,xyz
+    print(MSG_TYPE)
+    ret = mongo.db.notification_msg.find_one({"message_key": MSG_TYPE})
+    print(ret)
+    if ret is not None:   
+        if ret['message_type']:
+            message = ret['me']
+            for dab in message_needs:
+                if ret['message_type'] == dab:
+                    print(message_needs[dab])
+                    found = True
+                    # LOOP OVER THE NEEDS FOR REQUEST
+                    for data in message_needs[dab]:
+                        # print(data)
+                        found = False
+                        for elem in request.json:
+                            print(
+                                data, elem)
+                            if data == elem:
+                                found = True
+                        # REQUIREMNT DOES NOT SATISFIED RETURN INVALID REQUEST
+                        if found == False:
+                            return jsonify(data + " is missing from request"), 400
+                    # IF FOUND PROCESS THE REQUEST.JSON DATA
+                    if found == True:
+                        input = request.json
+                        email = input['email'] 
+                        user = input['user']       
+                        notifie_user(message=message, email=email)
+                        return jsonify({"Message": "Sended","Status": True}), 200
         else:
-            return jsonify("No Message Type Available"), 400
+            return jsonify("Invalid Request"), 400
+    else:
+        return jsonify("No Message Type Available"), 400
+
+
+
+@bp.route('/slack', methods=["GET"])
+def slack():
+    token = tms_load_token()
+    print(token)
+    sc = SlackClient(token)
+    
+    data = sc.api_call("conversations.list",
+                       types="private_channel",
+                       exclude_archived=True)
+    data_list = sc.api_call("groups.list", exclude_archived=True)
+    channel = []
+    print(data)
+    detail = data_list['groups']
+
+    for ret in detail:
+        if slack in ret['members']:
+            channel.append({'value': ret['id'], 'text': ret['name']})
+    inner = []
+    element = data['channels']
+    for dab in element:
+        inner.append({'value': dab['id'], 'text': dab['name']})
+    total = inner + channel
+    result = []
+    for elem in total:
+        notSame = True
+        for dec in result:
+            if ((elem["text"] == dec["text"])
+                    and (elem["value"] == dec["value"])):
+                notSame = False
+        if (notSame):
+            result.append(elem)
+    return jsonify(result)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Api for schdulers mesg settings
 @bp.route('/slack_mesg', methods=["GET", "PUT"])
@@ -88,25 +123,25 @@ def slack_schduler():
         ret = [serialize_doc(doc) for doc in ret]
         return jsonify(ret)
     if request.method == "PUT":
-        MSG = request.json.get("Message", None)
-        MSG_TYPE = request.json.get("Message_Type", None)
-        MSG_ORIGIN = request.json.get("Message_Origin", None)
-        Category = request.json.get("Message_Category", None)
-        MSG_Color = request.json.get("Message_Color", None)
-        Working = request.json.get("Working", True)
-        unique_key = request.json.get("Unique_key")
+        MSG = request.json.get("message", None)
+        MSG_TYPE = request.json.get("message_key", None)
+        MSG_ORIGIN = request.json.get("message_origin", None)
+        Category = request.json.get("message_type", None)
+        MSG_Color = request.json.get("message_color", None)
+        Working = request.json.get("working", True)
+        slack_channel = request.json.get("slack_channel",[])
 
         if not MSG and MSG_TYPE and MSG_ORIGIN:
             return jsonify({"msg": "Invalid Request"}), 400
 
         ret = mongo.db.notification_msg.update({}, {
-            "$set": {
-                "Message": MSG,
-                "Message_Type": MSG_TYPE,
-                "Message_Origin": MSG_ORIGIN,
-                "Message_Category": Category,
-                "Unique_key": unique_key,
-                "Message_Color": MSG_Color
+           "$set": {
+                "message": MSG,
+                "message_key": MSG_TYPE,
+                "message_origin": MSG_ORIGIN,
+                "message_type": Category,
+                "message_color": MSG_Color,
+                "slack_channel":slack_channel
             }
         },upsert=True)
         return jsonify(str(ret))
@@ -138,7 +173,7 @@ def tms_setings():
 @bp.route('/mail_settings', methods=["PUT", "GET"])
 def mail_setings():
     if request.method == "GET":
-        mail = mongo.db.mail_settings.find({})
+       mail = mongo.db.mail_settings.find({},{"mail_password":0})
         mail = [serialize_doc(doc) for doc in mail]
         return jsonify(mail)
     if request.method == "PUT":

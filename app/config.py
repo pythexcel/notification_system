@@ -1,5 +1,4 @@
-simple_message_needs= {"message_category":True,"slack":True,"slackReport":True,"slackChannels":True,"message_type":True,"highlight":True,"email":True}
-Notification_message_needs={"message_category":True,"slack":True,"message_type":True,"email":True}
+message_needs={"simple_message":{"message_type":True,"message_key":True,"email":True},"notfication_message":{"message_type":True,"email":True,"message_key":True}}
 Mail_update_needs = {"mail_server":True,"mail_port":True,"mail_use_tls":True,"mail_username":True,"mail_password":True}
 
 

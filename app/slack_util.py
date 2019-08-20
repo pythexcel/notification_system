@@ -60,6 +60,13 @@ def slack_msg(channel, msg,attachments):
         )
 
 def notifie_user(email=None,message=None,attachments=None):
+    res = lines.split()
+    spec = []
+    for data in res:
+        if data[0]=='@':
+            spec.append(a[1:-1])
+
+
     slack_message(attachments=attachments)
     mail_msg = message.replace("@Slack_id:", email)
     send_email(email=email,message=mail_msg)
