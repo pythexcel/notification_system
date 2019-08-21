@@ -16,28 +16,29 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
 bp = Blueprint('tms', __name__, url_prefix='/tms')
 
 
-@bp.route('/send_message', methods=["POST"])
-def post_report():
+@bp.route('/dispatch_notification', methods=["POST"])
+def dispatch():
     if not request.json:
         abort(500)
     MSG_TYPE = request.json.get("message_key", None)  #salary slip,xyz
     print(MSG_TYPE)
-    ret = mongo.db.notification_msg.find_one({"message_key": MSG_TYPE})
-    print(ret)
-    if ret is not None:   
-        if ret['message_type']:
-            message = ret['me']
-            for dab in message_needs:
-                if ret['message_type'] == dab:
-                    print(message_needs[dab])
+    message_detail = mongo.db.notification_msg.find_one({"message_key": MSG_TYPE})
+    print(message_detail)
+    if message_detail is not None:   
+        if message_detail['message_type']:
+            message = message_detail['message']
+            color = message_detail['color']
+            # looping over all the needs check if my message type in that key and if found
+            for key in message_needs:
+                if ret['message_type'] == key:
+                    print(message_needs[key])
                     found = True
-                    # LOOP OVER THE NEEDS FOR REQUEST
-                    for data in message_needs[dab]:
+                    # LOOP OVER THE KEYS inside the need FOR REQUEST
+                    for data in message_needs[key]:
                         # print(data)
                         found = False
                         for elem in request.json:
-                            print(
-                                data, elem)
+                            print(data, elem)
                             if data == elem:
                                 found = True
                         # REQUIREMNT DOES NOT SATISFIED RETURN INVALID REQUEST
@@ -46,9 +47,8 @@ def post_report():
                     # IF FOUND PROCESS THE REQUEST.JSON DATA
                     if found == True:
                         input = request.json
-                        email = input['email'] 
-                        user = input['user']       
-                        notifie_user(message=message, email=email)
+                        email = input['email']       
+                        notifie_user(message=message, email=email,color=color,data=input)
                         return jsonify({"Message": "Sended","Status": True}), 200
         else:
             return jsonify("Invalid Request"), 400
@@ -71,46 +71,24 @@ def slack():
     print(data)
     detail = data_list['groups']
 
-    for ret in detail:
+    for grp in detail:
         if slack in ret['members']:
-            channel.append({'value': ret['id'], 'text': ret['name']})
+            channel.append({'value': grp['id'], 'text': grp['name']})
     inner = []
     element = data['channels']
-    for dab in element:
-        inner.append({'value': dab['id'], 'text': dab['name']})
+    for chnl in element:
+        inner.append({'value': chnl['id'], 'text': chnl['name']})
     total = inner + channel
     result = []
     for elem in total:
         notSame = True
-        for dec in result:
-            if ((elem["text"] == dec["text"])
-                    and (elem["value"] == dec["value"])):
+        for chnel in result:
+            if ((elem["text"] == chnel["text"])
+                    and (elem["value"] == chnel["value"])):
                 notSame = False
         if (notSame):
             result.append(elem)
     return jsonify(result)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #Api for schdulers mesg settings
@@ -129,7 +107,8 @@ def slack_schduler():
         Category = request.json.get("message_type", None)
         MSG_Color = request.json.get("message_color", None)
         Working = request.json.get("working", True)
-        slack_channel = request.json.get("slack_channel",[])
+        slack_channel = request.json.get("slack_channel",[]),
+        email_group = request.json.get("email_group",None)
 
         if not MSG and MSG_TYPE and MSG_ORIGIN:
             return jsonify({"msg": "Invalid Request"}), 400
@@ -141,7 +120,8 @@ def slack_schduler():
                 "message_origin": MSG_ORIGIN,
                 "message_type": Category,
                 "message_color": MSG_Color,
-                "slack_channel":slack_channel
+                "slack_channel":slack_channel,
+                "email_group":email_group
             }
         },upsert=True)
         return jsonify(str(ret))

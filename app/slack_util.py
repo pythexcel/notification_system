@@ -59,14 +59,14 @@ def slack_msg(channel, msg,attachments):
             username = "TMS"
         )
 
-def notifie_user(email=None,message=None,attachments=None):
-    res = lines.split()
-    spec = []
-    for data in res:
+def notifie_user(email=None,message=None,color=None,data=None):
+    message_special = message.split()
+    special = []
+    for data in message_special:
         if data[0]=='@':
-            spec.append(a[1:-1])
+            special.append(a[1:-1])
 
-
+    # logic needs to be right here for replacing the special characters with request value or static values
     slack_message(attachments=attachments)
     mail_msg = message.replace("@Slack_id:", email)
     send_email(email=email,message=mail_msg)

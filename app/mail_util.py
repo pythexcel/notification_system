@@ -9,7 +9,6 @@ from flask import current_app
 
 def send_email(email,message,sender): 
     app = current_app._get_current_object()
-    subject = 'Thank you for registering to our site'
     message = message
     sender = sender
     recipient = [email,]
