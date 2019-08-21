@@ -64,7 +64,7 @@ def notifie_user(email=None,message=None,color=None,data=None):
     special = []
     for data in message_special:
         if data[0]=='@':
-            special.append(a[1:-1])
+            special.append(data[1:-1])
 
     # logic needs to be right here for replacing the special characters with request value or static values
     slack_message(attachments=attachments)
