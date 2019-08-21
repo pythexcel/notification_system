@@ -30,7 +30,7 @@ def dispatch():
             color = message_detail['color']
             # looping over all the needs check if my message type in that key and if found
             for key in message_needs:
-                if ret['message_type'] == key:
+                if message_detail['message_type'] == key:
                     print(message_needs[key])
                     found = True
                     # LOOP OVER THE KEYS inside the need FOR REQUEST
