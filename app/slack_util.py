@@ -2,71 +2,46 @@ from app import mongo
 import requests
 from slackclient import SlackClient
 from app.mail_util import send_email
-
-def serialize_doc(doc):
-    doc["_id"] = str(doc["_id"])
-    return doc
-
-def secret_key():
-    msg = mongo.db.slack_tokens.find_one({
-        "secret_key": {"$exists": True}
-    }, {"secret_key": 1, '_id': 0})
-    secret_key = msg['secret_key']
-    return secret_key
+from app.config import system_variable
 
 
-#Function for find webhook_url
-def tms_load_hook():
-    url = mongo.db.tms_settings.find_one({
-        "webhook_url": {"$exists": True}
-    }, {"webhook_url": 1, '_id': 0})
-    web_url = url['webhook_url']
-    return web_url
-#function for send mesg 
-def slack_message(msg=None,attachments=None):
-    slackmsg = {"text": msg,"attachments":attachments}
-    webhook_url = tms_load_hook()
-    response = requests.post(
-        webhook_url, json=slackmsg,
-        headers={'Content-Type': 'application/json'})
-
-def slack_attach(msg,attachments):
-    slackmsg = {"text": msg,
-                "attachments": attachments
-    }
-    webhook_url = tms_load_hook()
-    response = requests.post(
-        webhook_url, json=slackmsg,
-        headers={'Content-Type': 'application/json'})
-
-#function for find slack_token
-def tms_load_token():
-    token = mongo.db.tms_settings.find_one({
+def slack_load_token():
+    token = mongo.db.slack_settings.find_one({
         "slack_token": {"$exists": True}
     }, {"slack_token": 1, '_id': 0})
     sl_token = token['slack_token']
     return sl_token
 
-def slack_msg(channel, msg,attachments):
-    slack_token = tms_load_token()
+def slack_message(channel, msg,attachments):
+    slack_token = slack_load_token()
     sc = SlackClient(slack_token)
     for data in channel:
         sc.api_call(
             "chat.postMessage",
             channel=data,
             text=msg,
-            attachments=attachments,
-            username = "TMS"
+            attachments=attachments
         )
 
-def notifie_user(email=None,message=None,color=None,data=None):
+def Notify_user(user=None,message=None,req_json=None):
     message_special = message.split()
     special = []
     for data in message_special:
         if data[0]=='@':
             special.append(data[1:-1])
-
-    # logic needs to be right here for replacing the special characters with request value or static values
+    message_str = message
+    for data in special:
+        system_var = False
+        for elem in system_variable:
+            if data == elem:
+                print(elem + "-----" +data)
+                system_var =True
+                message_str = message_str.replace("@"+data+":", system_variable[data])
+        if not system_var:
+            for detail in req_json:
+                if data == detail:
+                    message_str = message_str.replace("@"+data+":", req_json[data])        
+    print(message_str)
+    
     slack_message(attachments=attachments)
-    mail_msg = message.replace("@Slack_id:", email)
-    send_email(email=email,message=mail_msg)
+    

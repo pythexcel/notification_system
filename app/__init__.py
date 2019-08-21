@@ -4,7 +4,7 @@ from flask import Flask, make_response, jsonify
 
 from flask_cors import CORS
 
-from app.config import mail_settings
+# from app.config import mail_settings
 
 from flask_mail import Mail
 
@@ -24,8 +24,8 @@ def create_app(test_config=None):
     app.config.from_mapping()
 
     CORS(app)
-    app.config.update(mail_settings)
-    mail.init_app(app)
+    # app.config.update(mail_settings)
+    # mail.init_app(app)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -51,11 +51,17 @@ def create_app(test_config=None):
     db.get_db(mongo=mongo, app=app)
     token.get_token(jwt=jwt, app=app)
 
-    from app.api import auth
-    from app.api import tms
+    from app.api import notify
+    from app.api import slack_channel
+    from app.api import slack_settings
+    from app.api import mail_settings
+    from app.api import message_create
     
-    app.register_blueprint(auth.bp)
-    app.register_blueprint(tms.bp)
+    app.register_blueprint(notify.bp)
+    app.register_blueprint(slack_channel.bp)
+    app.register_blueprint(slack_settings.bp)
+    app.register_blueprint(mail_settings.bp)
+    app.register_blueprint(message_create.bp)
     
     print("create app..")
     return app
