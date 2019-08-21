@@ -3,7 +3,7 @@ from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util import serialize_doc
 
 
-bp = Blueprint('notification_message', __name__, url_prefix='/notification_message')
+bp = Blueprint('notification_message', __name__, url_prefix='/')
 
 @bp.route('/notification_msg', methods=["GET", "PUT"])
 def notification_message():

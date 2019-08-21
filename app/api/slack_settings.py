@@ -4,9 +4,9 @@ from app.util import serialize_doc
 
 
 
-bp = Blueprint('slack_settings', __name__, url_prefix='/slack_settings')
+bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
 
-@bp.route('/slack_settings', methods=["PUT", "GET"])
+@bp.route('/settings', methods=["PUT", "GET"])
 def tms_setings():
     if request.method == "GET":
         slack = mongo.db.slack_settings.find({})

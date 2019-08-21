@@ -1,10 +1,10 @@
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util import serialize_doc
-from app.config import Mail_update_needs
 
 
-bp = Blueprint('mail_settings', __name__, url_prefix='/mail_settings')
+
+bp = Blueprint('mail_settings', __name__, url_prefix='/')
 
 @bp.route('/mail_settings', methods=["PUT", "GET"])
 def mail_setings():
@@ -15,29 +15,22 @@ def mail_setings():
     if request.method == "PUT":
         if not request.json:
             abort(500)
-        found = True
-        for data in Mail_update_needs:
-            found = False
-            for elem in request.json:
-                print(data, elem)
-                if data == elem:
-                    found = True        
-            if found == False:
-                return jsonify(data + " is missing from request"),400
-        if found == True:
-            input = request.json
-            MAIL_SERVER = input["mail_server"]
-            MAIL_PORT = input["mail_port"]
-            MAIL_USE_TLS = input["mail_use_tls"]
-            MAIL_USERNAME = input["mail_username"]
-            MAIL_PASSWORD = input["mail_password"]
-            ret = mongo.db.mail_settings.update({}, {
-                "$set": {
-                    "mail_server": MAIL_SERVER,
-                    "mail_port": MAIL_PORT,
-                    "mail_use_tls": MAIL_USE_TLS,
-                    "mail_username":MAIL_USERNAME,
-                    "mail_password":MAIL_PASSWORD
-                }
-            },upsert=True)
-            return jsonify(str(ret))
+        mail_server = request.json.get("mail_server", None)
+        mail_port = request.json.get("mail_port", 0)
+        mail_use_tls = request.json.get("mail_use_tls", True)
+        mail_username = request.json.get("mail_username", None)
+        mail_password = request.json.get("mail_password", None)
+        
+        if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
+            return jsonify({"msg": "Invalid Request"}), 400    
+        
+        ret = mongo.db.mail_settings.update({}, {
+            "$set": {
+                "mail_server": mail_server,
+                "mail_port": mail_port,
+                "mail_use_tls": mail_use_tls,
+                "mail_username":mail_username,
+                "mail_password":mail_password
+            }
+        },upsert=True)
+        return jsonify(str(ret))

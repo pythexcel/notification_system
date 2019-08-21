@@ -3,10 +3,10 @@ from flask import (Blueprint, flash, jsonify, abort, request)
 from app.slack_util import slack_message,slack_load_token
 from slackclient import SlackClient
 
-bp = Blueprint('slack_channels', __name__, url_prefix='/slack_channels')
+bp = Blueprint('slack_channels', __name__, url_prefix='/')
 
 
-@bp.route('/slack', methods=["GET"])
+@bp.route('/slackchannels', methods=["GET"])
 def slack():
     token = slack_load_token()
     print(token)
