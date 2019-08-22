@@ -19,9 +19,10 @@ def construct_message(user=None,message=None,req_json=None):
         if data[0]=='@':
             message_variables.append(data[1:-1])
     for data in system_variable:
-        for elem in message_variables:
-            if data == elem:
-                message_variables.remove(elem)       
+        if data in message_variables:
+            message_variables.remove(data)
+        else:
+            pass           
     need_found_in_payload = True
     for data in message_variables:
         need_found_in_payload = False
