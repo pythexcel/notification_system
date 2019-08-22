@@ -8,7 +8,8 @@ bp = Blueprint('notification_message', __name__, url_prefix='/message')
 @bp.route('/configuration', methods=["GET", "PUT"])
 def notification_message():
     if request.method == "GET":
-        ret = mongo.db.notification_msg.find({})
+        MSG_ORIGIN = request.json.get("message_origin")
+        ret = mongo.db.notification_msg.find({"message_origin":MSG_ORIGIN})
         ret = [serialize_doc(doc) for doc in ret]
         return jsonify(ret)
     if request.method == "PUT":

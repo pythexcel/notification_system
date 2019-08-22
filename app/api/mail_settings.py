@@ -1,7 +1,7 @@
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util import serialize_doc
-
+import json
 
 
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
@@ -9,9 +9,8 @@ bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 @bp.route('/settings', methods=["PUT", "GET"])
 def mail_setings():
     if request.method == "GET":
-       mail = mongo.db.mail_settings.find({},{"mail_password":0})
-       mail = mail[0]
-       return jsonify(mail)
+       mail = mongo.db.mail_settings.find_one({},{"_id":0,"MAIL_PASSWORD":0})
+       return jsonify (mail)
     if request.method == "PUT":
         if not request.json:
             abort(500)

@@ -9,8 +9,7 @@ bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
 @bp.route('/settings', methods=["PUT", "GET"])
 def tms_setings():
     if request.method == "GET":
-        slack = mongo.db.slack_settings.find({})
-        slack = slack[0]
+        slack = mongo.db.slack_settings.find_one({},{"_id":0})
         return jsonify(slack)
 
     if request.method == "PUT":

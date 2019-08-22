@@ -22,7 +22,9 @@ def construct_message(user=None,message=None,req_json=None):
         if data in message_variables:
             message_variables.remove(data)
         else:
-            pass           
+            pass 
+    print(message_variables)  
+    print(system_variable)                
     need_found_in_payload = True
     for data in message_variables:
         need_found_in_payload = False
@@ -35,17 +37,18 @@ def construct_message(user=None,message=None,req_json=None):
         for data in message_variables:
             system_var = False
             for elem in system_variable:
+                print(data,elem)
                 if data == elem:
+                    print("final")
+                    print(data,elem)
                     system_var =True    
                     message_str = message_str.replace("@"+data+":", system_variable[data])  
             if not system_var:
                 for detail in req_json:
-                    print(detail + "-----" +data)
                     if data == detail:
-                        message_str = message_str.replace("@"+data+":", req_json[data])
-        print(message_str)
-        return jsonify("message created"),200                        
+                        message_str = message_str.replace("@"+data+":", req_json[data]) 
+        print(message_str)                                
     else:
         ret = ",".join(missing_payload)
-        return jsonify(ret + " is missing from request"), 400        
-                    
+        raise ValueError       
+                        

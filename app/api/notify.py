@@ -39,8 +39,12 @@ def dispatch():
                     # IF FOUND PROCESS THE REQUEST.JSON DATA
                     if not missing_payload:
                         input = request.json
-                        user = input['user']  
-                        return (construct_message(message=message, user=user,req_json=input))
+                        user = input['user']
+                        try:
+                            construct_message(message=message, user=user,req_json=input) 
+                            return jsonify({"Message":True}),200 
+                        except ValueError:
+                            return("Invalid request"),400
                     else:
                         ret = ",".join(missing_payload)
                         return jsonify(ret + " is missing from request"), 400
