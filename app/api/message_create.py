@@ -3,9 +3,9 @@ from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util import serialize_doc
 
 
-bp = Blueprint('notification_message', __name__, url_prefix='/')
+bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
-@bp.route('/notification_msg', methods=["GET", "PUT"])
+@bp.route('/configuration', methods=["GET", "PUT"])
 def notification_message():
     if request.method == "GET":
         ret = mongo.db.notification_msg.find({})

@@ -12,6 +12,17 @@ def slack_load_token():
     sl_token = token['slack_token']
     return sl_token
 
+def slack_id(email):
+    slack_token = slack_load_token()
+    sc = SlackClient(slack_token)
+    sl_user_id = sc.api_call("users.lookupByEmail",
+                       email=email)
+
+    return (sl_conv_list['user']['id'])
+
+
+
+
 def slack_message(channel, msg,attachments):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)

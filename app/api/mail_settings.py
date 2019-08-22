@@ -4,13 +4,13 @@ from app.util import serialize_doc
 
 
 
-bp = Blueprint('mail_settings', __name__, url_prefix='/')
+bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 
-@bp.route('/mail_settings', methods=["PUT", "GET"])
+@bp.route('/settings', methods=["PUT", "GET"])
 def mail_setings():
     if request.method == "GET":
        mail = mongo.db.mail_settings.find({},{"mail_password":0})
-       mail = [serialize_doc(doc) for doc in mail]
+       mail = mail[0]
        return jsonify(mail)
     if request.method == "PUT":
         if not request.json:
