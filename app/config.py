@@ -1,2 +1,20 @@
-URL = 'http://176.9.137.77/hr_tms/ReactReduxHR/backend/attendance/API_HR/api.php'
-URL_details = 'http://176.9.137.77/hr_tms/ReactReduxHR/backend/attendance/sal_info/api.php'
+message_needs={
+    "simple_message":[
+            "message_type",
+
+            "message_key",
+
+            "user"],
+
+    "notfication_message":[
+
+            "message_type",
+            
+            "email",
+            
+            "message_key"]
+            }
+
+
+
+
