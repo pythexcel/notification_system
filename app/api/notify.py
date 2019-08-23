@@ -1,7 +1,7 @@
 from app import token
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.util import serialize_doc,construct_message
+from app.util import serialize_doc,construct_message,validate_message
 from app.config import message_needs
 from app.slack_util import slack_message 
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
@@ -41,10 +41,10 @@ def dispatch():
                         input = request.json
                         user = input['user']
                         try:
-                            construct_message(message=message, user=user,req_json=input) 
-                            return jsonify({"Message":True}),200 
-                        except ValueError:
-                            return("Invalid request"),400
+                            validate_message(message=message, user=user,req_json=input) 
+                            return jsonify({"status":True,"Message":"Sended"}),200 
+                        except Exception as error:
+                            return(repr(error)),400
                     else:
                         ret = ",".join(missing_payload)
                         return jsonify(ret + " is missing from request"), 400

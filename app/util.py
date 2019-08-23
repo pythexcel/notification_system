@@ -10,45 +10,47 @@ def serialize_doc(doc):
     return doc
 
 
-def construct_message(user=None,message=None,req_json=None):
+def validate_message(user=None,message=None,req_json=None):
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     message_special = message.split()
     message_variables = []
+    system_require = []
     missing_payload = []
     for data in message_special:
         if data[0]=='@':
             message_variables.append(data[1:-1])
     for data in system_variable:
         if data in message_variables:
+            system_require.append(data)
             message_variables.remove(data)
         else:
-            pass 
-    print(message_variables)  
-    print(system_variable)                
+            pass        
     need_found_in_payload = True
     for data in message_variables:
         need_found_in_payload = False
         if data in req_json:
             need_found_in_payload = True
         else:
-            missing_payload.append(data)     
+            missing_payload.append(data)
     if not missing_payload:
-        message_str = message
-        for data in message_variables:
-            system_var = False
-            for elem in system_variable:
-                print(data,elem)
-                if data == elem:
-                    print("final")
-                    print(data,elem)
-                    system_var =True    
-                    message_str = message_str.replace("@"+data+":", system_variable[data])  
-            if not system_var:
-                for detail in req_json:
-                    if data == detail:
-                        message_str = message_str.replace("@"+data+":", req_json[data]) 
-        print(message_str)                                
+        construct_message(user=user,message=message,message_variables=message_variables,
+                        req_json=req_json,system_require=system_require)             
     else:
         ret = ",".join(missing_payload)
-        raise ValueError       
+        raise Exception("These data are missing from payload: " + ret)      
+
+
+
+def construct_message(user=None,message=None,req_json=None,message_variables=None,system_require=None):
+    system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
+    print(message_variables)  
+    print(system_variable)                
+    message_str = message
+    for data in message_variables:
+        if data in req_json:
+            message_str = message_str.replace("@"+data+":", req_json[data])
+    for elem in system_require:
+        if elem in system_variable:  
+            message_str = message_str.replace("@"+elem+":", system_variable[elem])            
+    print(message_str)                                
                         

@@ -1,20 +1,19 @@
 message_needs={
-"simple_message":{
-            "message_type":True,
+    "simple_message":[
+            "message_type",
 
-            "message_key":True,
+            "message_key",
 
-            "user":True},
+            "user"],
 
-"notfication_message":{
+    "notfication_message":[
 
-            "message_type":True,
+            "message_type",
             
-            "email":True,
+            "email",
             
-            "message_key":True}
+            "message_key"]
             }
-
 
 
 
