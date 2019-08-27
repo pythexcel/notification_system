@@ -32,7 +32,6 @@ def dispatch():
         message_detail = missed_req
     if message_detail and message_detail['message_type'] is not None:   
             message = message_detail['message']
-            slack_channels = message_detail['slack_channel']
             missing_payload = []
             # looping over all the needs check if my message type in that key and if found
             for key in message_needs:
@@ -51,7 +50,7 @@ def dispatch():
                     if not missing_payload:
                         input = request.json
                         try:
-                            validate_message(message=message,slack_channel=slack_channels,req_json=input) 
+                            validate_message(message=message,message_detail=message_detail,req_json=input) 
                             return jsonify({"status":True,"Message":"Sended"}),200 
                         except Exception as error:
                             return(repr(error)),400

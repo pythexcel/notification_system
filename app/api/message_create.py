@@ -34,7 +34,7 @@ def notification_message(message_origin):
                 "message_color": MSG_Color,
                 "slack_channel":slack_channel,
                 "email_group":email_group,
-                "channel":channel
+                "channels":channel
             }
         },upsert=True)
         return jsonify(str(ret))
