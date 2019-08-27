@@ -4,13 +4,14 @@ from slackclient import SlackClient
 from app.mail_util import send_email
 from flask import jsonify
 import datetime
+from app.slack_util import slack_id,slack_message
 
 def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
 
-def validate_message(user=None,message=None,req_json=None):
+def validate_message(user=None,message=None,req_json=None,slack_channel=None):
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     message_special = message.split()
     message_variables = []
@@ -33,18 +34,23 @@ def validate_message(user=None,message=None,req_json=None):
         else:
             missing_payload.append(data)
     if not missing_payload:
-        construct_message(user=user,message=message,message_variables=message_variables,
-                        req_json=req_json,system_require=system_require)             
+        construct_message(message=message,message_variables=message_variables,
+                        req_json=req_json,system_require=system_require,slack_channel=slack_channel)             
     else:
         ret = ",".join(missing_payload)
         raise Exception("These data are missing from payload: " + ret)      
 
 
 
-def construct_message(user=None,message=None,req_json=None,message_variables=None,system_require=None):
+def construct_message(message=None,req_json=None,message_variables=None,system_require=None,slack_channel=None):
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     print(message_variables)  
-    print(system_variable)                
+    print(system_variable)
+    if slack_channel is not None:
+        slack = slack_id(req_json['user']['email'])
+        req_json['user'] = "<@" + slack + ">!"
+    else:
+        pass                         
     message_str = message
     for data in message_variables:
         if data in req_json:
@@ -52,5 +58,5 @@ def construct_message(user=None,message=None,req_json=None,message_variables=Non
     for elem in system_require:
         if elem in system_variable:  
             message_str = message_str.replace("@"+elem+":", system_variable[elem])            
-    print(message_str)                                
+    slack_message(message=message_str,channel=slack_channel)                               
                         
