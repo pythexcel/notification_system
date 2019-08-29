@@ -4,10 +4,6 @@ from flask import Flask, make_response, jsonify
 
 from flask_cors import CORS
 
-# from app.config import mail_settings
-
-from flask_mail import Mail
-
 from app import db
 
 mongo = db.init_db()
@@ -24,8 +20,6 @@ def create_app(test_config=None):
     app.config.from_mapping()
 
     CORS(app)
-    # app.config.update(mail_settings)
-    # mail.init_app(app)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
