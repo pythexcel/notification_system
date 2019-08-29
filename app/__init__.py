@@ -12,7 +12,6 @@ from app import token
 
 jwt = token.init_token()
 
-mail = Mail()
 
 def create_app(test_config=None):
     # create and configure the app
