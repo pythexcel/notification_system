@@ -6,6 +6,11 @@ from slackclient import SlackClient
 bp = Blueprint('slack_channels', __name__, url_prefix='/')
 
 
+@bp.route('/ping', methods=["GET"])
+def ping():
+    return jsonify ("PONG and working too :)")
+
+
 @bp.route('/slackchannels', methods=["GET"])
 def slack():
     # Getting slack token from function
