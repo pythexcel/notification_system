@@ -80,8 +80,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                     message_str = message_str.replace("@"+data+":", email_user_detail[data])
             for elem in system_require:
                 if elem in system_variable:  
-                    message_str = message_str.replace("@"+elem+":", system_variable[elem]) 
-            print("pha hadsa")                   
+                    message_str = message_str.replace("@"+elem+":", system_variable[elem])                    
             send_email(message=message_str,recipients=message_detail['email_group'],subject=message_detail['message_key'])
         else:
             pass

@@ -21,11 +21,11 @@ def slack_id(email):
     return (sl_user_id['user']['id'])
 
 
-def slack_message(channel, message,attachments=None):
+def slack_message(channel, message,req_json=None):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
     if 'button_text' and 'url_link' in req_json:
-        attachmentse = [
+        attachments = [
                 {"fallback": "Please add report manually",  
                 "actions": [
                         {

@@ -17,9 +17,9 @@ def notification_message(message_origin):
         MSG_TYPE = request.json.get("message_type", None)
         MSG_Color = request.json.get("message_color", None)
         Working = request.json.get("working", True)
-        slack_channel = request.json.get("slack_channel",[]),
+        slack_channel = request.json.get("slack_channel",None),
         email_group = request.json.get("email_group",None)
-        channel = request.json.get("channel",None)
+        channel = request.json.get("channels",None)
 
         if not MSG and MSG_TYPE and MSG_KEY:
             return jsonify({"msg": "Invalid Request"}), 400
