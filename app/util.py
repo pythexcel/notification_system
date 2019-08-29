@@ -65,7 +65,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             for elem in system_require:
                 if elem in system_variable:  
                     message_str = message_str.replace("@"+elem+":", system_variable[elem])                   
-            slack_message(message=message_str,channel=message_detail['slack_channel'])
+            slack_message(message=message_str,channel=message_detail['slack_channel'],req_json=slack_user_detail)
         else:
             pass    
     else:
