@@ -23,8 +23,6 @@ def dispatch():
     for data in messages:
         if data['message_key'] == MSG_KEY:
             missed_req = data
-    print(missed_req.items())
-    print(message_detail)      
     # below will checki if message detail is completely empty return data from json or else if its any value is none replace it from json data
     if message_detail is not None:
         update = message_detail.update((k,v) for k,v in missed_req.items() if v is not None)
