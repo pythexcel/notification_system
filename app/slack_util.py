@@ -18,17 +18,29 @@ def slack_id(email):
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
 
-    return (sl_conv_list['user']['id'])
+    return (sl_user_id['user']['id'])
 
 
-def slack_message(channel, msg,attachments):
+def slack_message(channel, message,attachments=None):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
+    if 'button_text' and 'url_link' in req_json:
+        attachmentse = [
+                {"fallback": "Please add report manually",  
+                "actions": [
+                        {
+                        "type": "button",
+                        "text": req_json['button_text'],
+                        "url": req_json['url_link']
+                        }
+                ]}]
+    else:
+        attachments = None            
     for data in channel:
         sc.api_call(
             "chat.postMessage",
             channel=data,
-            text=msg,
+            text=message,
             attachments=attachments
         )
 

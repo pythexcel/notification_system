@@ -1,25 +1,29 @@
 import requests
 from app import mongo
-from flask_mail import Message,Mail
-from app import mail
-from flask import current_app   
+import smtplib    
 
 
-
-def send_email(email,message,sender,subject,bcc,cc):
-    # this is loading the flask in build config file to get smtp details 
-    app = current_app._get_current_object()
-    cc = [cc,]
-    bcc = [bcc,]
-    # here getting message which is constructed
-    message = message
-    # here subject of that message
-    subject = subject
-    # here getting sender mail which is sending the mail or from smtp details user
-    sender = sender
-    # here email which will recieve mail can be send to multipl
-    recipient = [email,] + cc + bcc
-    # here message  is constructed for mail with required parameters
-    msg = Message(message,subject=subject,sender=sender,recipients=recipient)
-    # Here mail in sended 
-    mail.send(msg)
+def send_email(message,recipients,subject,bcc=None,cc=None):
+    # fetching mail details
+    mail_details = mongo.db.mail_settings.find_one({},{"_id":0})
+    username = mail_details["MAIL_USERNAME"]
+    password = mail_details["MAIL_PASSWORD"]
+    port = mail_details['MAIL_PORT']
+    mail_server = mail_details['MAIL_SERVER']
+    # sending mail from smtp
+    mail = smtplib.SMTP_SSL(str(mail_server), port)
+    mail.login(username,password)
+    message = 'Subject: {}\n\n{}'.format(subject, message)
+    mail.sendmail(username,recipients, message) 
+    mail.quit()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
