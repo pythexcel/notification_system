@@ -64,8 +64,12 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                     message_str = message_str.replace("@"+data+":", slack_user_detail[data])
             for elem in system_require:
                 if elem in system_variable:  
-                    message_str = message_str.replace("@"+elem+":", system_variable[elem])                   
-            slack_message(message=message_str,channel=message_detail['slack_channel'],req_json=slack_user_detail)
+                    message_str = message_str.replace("@"+elem+":", system_variable[elem])  
+            if 'slack_channel' in slack_user_detail:
+                channel = slack_user_detail['slack_channel']
+            else:
+                channel = message_detail['slack_channel']                                              
+            slack_message(message=message_str,channel=channel,req_json=slack_user_detail)
         else:
             pass    
     else:
@@ -80,8 +84,12 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                     message_str = message_str.replace("@"+data+":", email_user_detail[data])
             for elem in system_require:
                 if elem in system_variable:  
-                    message_str = message_str.replace("@"+elem+":", system_variable[elem])                    
-            send_email(message=message_str,recipients=message_detail['email_group'],subject=message_detail['message_key'])
+                    message_str = message_str.replace("@"+elem+":", system_variable[elem])
+            if 'email_group' in slack_user_detail:
+                recipients = email_user_detail['email_group']
+            else:
+                recipients = message_detail['email_group']                                 
+            send_email(message=message_str,recipients=recipients,subject=message_detail['message_key'])
         else:
             pass
     else:
