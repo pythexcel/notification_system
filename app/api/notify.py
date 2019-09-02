@@ -25,7 +25,7 @@ def dispatch():
             missed_req = data
     # below will checki if message detail is completely empty return data from json or else if its any value is none replace it from json data
     if message_detail is not None:
-        update = message_detail.update((k,v) for k,v in missed_req.items() if v is not None)
+        update = message_detail.update((k,v) for k,v in missed_req.items() if v is None)
     else:
         message_detail = missed_req
     if message_detail and message_detail['message_type'] is not None:   
@@ -43,7 +43,7 @@ def dispatch():
                         # REQUIREMNT DOES NOT SATISFIED RETURN INVALID REQUEST
                         else:
                             missing_payload.append(data)
-                            # return jsonify(data + " is missing from request"), 400
+                            return jsonify(data + " is missing from request"), 400
                     # IF FOUND PROCESS THE REQUEST.JSON DATA
                     if not missing_payload:
                         input = request.json
