@@ -46,7 +46,6 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
 
 
 def construct_message(message=None,req_json=None,message_variables=None,system_require=None,message_detail=None):
-    print("isme aa gya")
     print(req_json)
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     status = mongo.db.slack_settings.find_one({},{"_id":0})
