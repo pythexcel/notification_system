@@ -1,6 +1,6 @@
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.slack_util import slack_message,slack_load_token,slack_id
+from app.slack_util import slack_message,slack_load_token,slack_id,slack_profile
 from slackclient import SlackClient
 
 bp = Blueprint('slack_channels', __name__, url_prefix='/')
@@ -86,3 +86,14 @@ def slack():
             if (notSame):
                 result.append(elem)
         return jsonify(result)
+
+
+
+@bp.route('/slack_profile', methods=["POST"])
+def sl_profile():
+    if not request.json:
+            abort(500)
+    email = request.json.get("email", None)
+    print(email)
+    slack = slack_profile(email)
+    return jsonify(slack),200
