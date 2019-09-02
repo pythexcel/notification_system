@@ -43,7 +43,7 @@ def dispatch():
                         # REQUIREMNT DOES NOT SATISFIED RETURN INVALID REQUEST
                         else:
                             missing_payload.append(data)
-                            return jsonify(data + " is missing from request"), 400
+                            # return jsonify(data + " is missing from request"), 400
                     # IF FOUND PROCESS THE REQUEST.JSON DATA
                     if not missing_payload:
                         input = request.json
