@@ -3,8 +3,7 @@ message_needs={
             "message_type",
 
             "message_key",
-
-            "user"],
+            ],
 
     "notfication_message":[
 
