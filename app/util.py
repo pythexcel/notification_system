@@ -50,7 +50,6 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
 
 
 def construct_message(message=None,req_json=None,message_variables=None,system_require=None,message_detail=None):
-    print(req_json)
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     status = mongo.db.slack_settings.find_one({},{"_id":0})
     req_json = json.loads(json.dumps(req_json))
@@ -58,49 +57,62 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     req_json = json.loads(json.dumps(req_json))
     email_user_detail = req_json
     if status['slack_notfication'] is True:
-        if message_detail['slack_channel'] is not None:
+        if 'user' in slack_user_detail:
             slack = slack_id(slack_user_detail['user']['email'])
-            slack_user_detail['user'] = "<@" + slack + ">!"        
-            message_str = message
-            for data in message_variables:
-                if data in slack_user_detail:
-                    message_str = message_str.replace("@"+data+":", slack_user_detail[data])
-                else:
-                    # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
-                    if data in slack_user_detail['data']:
-                        message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
-            for elem in system_require:
-                if elem in system_variable:  
-                    message_str = message_str.replace("@"+elem+":", system_variable[elem])  
-            if 'slack_channel' in slack_user_detail:
-                channel = slack_user_detail['slack_channel']
-            else:
-                channel = message_detail['slack_channel']                                              
-            slack_message(message=message_str,channel=channel,req_json=slack_user_detail)
+            slack_user_detail['user'] = "<@" + slack + ">!"
         else:
-            pass    
+            pass            
+        message_str = message
+        for data in message_variables:
+            if data in slack_user_detail:
+                message_str = message_str.replace("@"+data+":", slack_user_detail[data])
+            else:
+                # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
+                if data in slack_user_detail['data']:
+                    message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
+        for elem in system_require:
+            if elem in system_variable:  
+                message_str = message_str.replace("@"+elem+":", system_variable[elem])
+        channels = []          
+        if 'slack_channel' in slack_user_detail:
+            channels.append(slack_user_detail['slack_channel'])
+        else:
+            pass  
+        if message_detail['slack_channel'] is not None:
+            channels.append(message_detail['slack_channel'])       
+        if message_detail['sended_to'] == "private":
+            channels.append(slack)
+        else:
+            pass  
+        if channels:                                                        
+            slack_message(message=message_str,channel=channels,req_json=slack_user_detail)   
+        else:
+            pass
     else:
         pass
-    if status['send_email'] is True:
-        if message_detail['email_group'] is not None:
-            print(email_user_detail['user']['email'])
-            email_user_detail['user'] = email_user_detail['user']['email']
-            message_str = message
-            for data in message_variables:
-                if data in email_user_detail:
-                    message_str = message_str.replace("@"+data+":", email_user_detail[data])
-                else:
-                    # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
-                    if data in email_user_detail['data']:
-                        message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
-            for elem in system_require:
-                if elem in system_variable:  
-                    message_str = message_str.replace("@"+elem+":", system_variable[elem])
-            if 'email_group' in slack_user_detail:
-                recipients = email_user_detail['email_group']
+    if status['send_email'] is True:    
+        print(email_user_detail['user']['email'])
+        email_user_detail['user'] = email_user_detail['user']['email']
+        message_str = message
+        for data in message_variables:
+            if data in email_user_detail:
+                message_str = message_str.replace("@"+data+":", email_user_detail[data])
             else:
-                recipients = message_detail['email_group']                                 
-            send_email(message=message_str,recipients=recipients,subject=message_detail['message_key'])
+                # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
+                if data in email_user_detail['data']:
+                    message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
+        for elem in system_require:
+            if elem in system_variable:  
+                message_str = message_str.replace("@"+elem+":", system_variable[elem])
+        recipient = []
+        if 'email_group' in email_user_detail:
+            recipient.append(email_user_detail['email_group'])
+        else:
+            pass
+        if message_detail['email_group'] is not None:
+            recipient.append(message_detail['email_group']) 
+        if recipient:
+            send_email(message=message_str,recipients=recipient,subject=message_detail['message_key'])
         else:
             pass
     else:
