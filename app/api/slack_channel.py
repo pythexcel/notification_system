@@ -97,3 +97,24 @@ def sl_profile():
     print(email)
     slack = slack_profile(email)
     return jsonify(slack),200
+
+
+
+@bp.route('/slack_channel_ids', methods=["GET"])
+def getslackid():
+    token = slack_load_token()
+    sc = SlackClient(token)
+    sl_channel = sc.api_call(
+            "im.list"
+        )
+    return jsonify (sl_channel)    
+
+@bp.route('/slack_users_list', methods=["GET"])
+def getslackusers():
+    token = slack_load_token()
+    sc = SlackClient(token)
+    sl_list = sc.api_call(
+            "users.list"
+        )
+    return jsonify (sl_list)    
+
