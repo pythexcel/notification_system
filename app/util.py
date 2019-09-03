@@ -35,7 +35,10 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
         if data in req_json:
             need_found_in_payload = True
         else:
-            missing_payload.append(data)
+            if data in req_json['data']:
+                need_found_in_payload = True
+            else:
+                missing_payload.append(data)
     if not missing_payload:
         construct_message(message=message,message_variables=message_variables,
                         req_json=req_json,system_require=system_require,message_detail=message_detail)             
@@ -61,6 +64,9 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             for data in message_variables:
                 if data in slack_user_detail:
                     message_str = message_str.replace("@"+data+":", slack_user_detail[data])
+                else:
+                    if data in slack_user_detail['data']:
+                        message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
             for elem in system_require:
                 if elem in system_variable:  
                     message_str = message_str.replace("@"+elem+":", system_variable[elem])  
@@ -81,6 +87,9 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             for data in message_variables:
                 if data in email_user_detail:
                     message_str = message_str.replace("@"+data+":", email_user_detail[data])
+                else:
+                    if data in email_user_detail['data']:
+                        message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
             for elem in system_require:
                 if elem in system_variable:  
                     message_str = message_str.replace("@"+elem+":", system_variable[elem])
