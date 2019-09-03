@@ -75,15 +75,18 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                 message_str = message_str.replace("@"+elem+":", system_variable[elem])
         channels = []          
         if 'slack_channel' in slack_user_detail:
-            channels.append(slack_user_detail['slack_channel'])
+            for data in slack_user_detail['slack_channel']:
+                channels.append(data)
         else:
             pass  
         if message_detail['slack_channel'] is not None:
-            channels.append(message_detail['slack_channel'])       
+            for elem in message_detail['slack_channel']:
+                channels.append(elem)       
         if message_detail['sended_to'] == "private":
             channels.append(slack)
         else:
             pass  
+        print(channels)    
         if channels:                                                        
             slack_message(message=message_str,channel=channels,req_json=slack_user_detail)   
         else:
@@ -106,17 +109,18 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                 message_str = message_str.replace("@"+elem+":", system_variable[elem])
         recipient = []
         if 'email_group' in email_user_detail:
-            recipient.append(email_user_detail['email_group'])
+            for data in email_user_detail['email_group']:
+                recipient.append(data)
         else:
             pass
         if message_detail['email_group'] is not None:
-            recipient.append(message_detail['email_group']) 
+            for elem in message_detail['email_group']:
+                recipient.append(elem) 
         if recipient:
             send_email(message=message_str,recipients=recipient,subject=message_detail['message_key'])
         else:
             pass
     else:
         pass
-
 
       
