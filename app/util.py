@@ -35,6 +35,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
         if data in req_json:
             need_found_in_payload = True
         else:
+            # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
             if data in req_json['data']:
                 need_found_in_payload = True
             else:
@@ -65,6 +66,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                 if data in slack_user_detail:
                     message_str = message_str.replace("@"+data+":", slack_user_detail[data])
                 else:
+                    # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
                     if data in slack_user_detail['data']:
                         message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
             for elem in system_require:
@@ -88,6 +90,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                 if data in email_user_detail:
                     message_str = message_str.replace("@"+data+":", email_user_detail[data])
                 else:
+                    # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
                     if data in email_user_detail['data']:
                         message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
             for elem in system_require:
