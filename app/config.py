@@ -16,14 +16,9 @@ message_needs={
     "button_message":[
 
             "message_type",
-            
-            "user",
-            
-            "message_key",
-
-            "url_link",
-                    
-            "button_text"]        
+              
+            "message_key"
+            ]        
             }
 
 messages = [

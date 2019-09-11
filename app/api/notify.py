@@ -1,6 +1,7 @@
 from app import token
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
+from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message
 from app.config import message_needs,messages
 from app.slack_util import slack_message 
@@ -8,6 +9,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
+import json
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
@@ -58,3 +60,37 @@ def dispatch():
     else:
         return jsonify("No Message Type Available"), 400
 
+#api for sending mail of Hr templates
+@bp.route('/send_mail', methods=["POST"])
+def send_mails():
+    if not request.json:
+        abort(500)
+    MSG_KEY = request.json.get("message_key", None)  
+    MAIL_SEND_TO = request.json.get("to",None)
+    Data = request.json.get("data",None)
+    message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+    if message_detail is not None: 
+        ret = mongo.db.mail_variables.find({})
+        ret = [serialize_doc(doc) for doc in ret] 
+        message_variables = []
+        message = message_detail['message'].split()
+        for elem in message:
+            if elem[0]=='#':
+                message_variables.append(elem[1:])        
+        message_str = message_detail['message']
+        print(message_variables)
+        for detail in message_variables:
+            if detail in request.json:    
+                message_str = message_str.replace("#"+detail, request.json[detail])
+            else:
+                if detail in request.json['data']:
+                    message_str = message_str.replace("#"+detail, request.json['data'][detail])
+                else:
+                    for element in ret:
+                        if "#" + detail == element['name'] and element['value'] is not None:
+                            message_str = message_str.replace("#"+detail, element['value'])                      
+        if 'to' in request.json:
+            send_email(message=message_str,recipients=request.json['to'],subject=message_detail['message_subject'])
+            return jsonify({"message":"Mail_sended"}),200
+        else:
+            return jsonify({"message":"please select some mails to send message"}),400

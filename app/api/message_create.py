@@ -22,7 +22,6 @@ def notification_message(message_origin):
         channel = request.json.get("channels",None)
         sended_to = request.json.get("sended_to",None)
 
-
         if not MSG and MSG_TYPE and MSG_KEY:
             return jsonify({"msg": "Invalid Request"}), 400
 
@@ -41,3 +40,47 @@ def notification_message(message_origin):
             }
         },upsert=True)
         return jsonify(str(ret))
+
+@bp.route('/special_variable', methods=["GET","PUT"])
+def special_var():
+    if request.method == "GET":
+        ret = mongo.db.mail_variables.find({})
+        ret = [serialize_doc(doc) for doc in ret]
+        return jsonify(ret)
+    if request.method == "PUT":
+        name = request.json.get("name", None)
+        value = request.json.get("value", None)
+        variable_type = request.json.get("variable_type", None)
+        ret = mongo.db.mail_variables.update({"name":name},{
+           "$set": {
+                "name": name,
+                "value": value,
+                "variable_type":variable_type
+            }
+        },upsert=True)
+        return jsonify(str(ret))        
+
+
+
+@bp.route('/configuration_mail', methods=["GET", "PUT"])
+def mail_message():
+    if request.method == "GET":
+        ret = mongo.db.mail_template.find({})
+        ret = [serialize_doc(doc) for doc in ret]
+        return jsonify(ret)
+    if request.method == "PUT":
+        MSG = request.json.get("message", None)
+        MSG_KEY = request.json.get("message_key", None)
+        Working = request.json.get("working", True)
+        MSG_SUBJECT = request.json.get("message_subject",None)
+        if not MSG and MSG_KEY:
+            return jsonify({"msg": "Invalid Request"}), 400
+        ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
+           "$set": {
+                "message": MSG,
+                "message_key": MSG_KEY,
+                "working":Working,
+                "message_subject":MSG_SUBJECT
+            }
+        },upsert=True)
+        return jsonify(str(ret))   

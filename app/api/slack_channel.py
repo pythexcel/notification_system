@@ -117,4 +117,3 @@ def getslackusers():
             "users.list"
         )
     return jsonify (sl_list)    
-

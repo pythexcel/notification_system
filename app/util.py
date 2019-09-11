@@ -57,9 +57,9 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     req_json = json.loads(json.dumps(req_json))
     email_user_detail = req_json
     if status['slack_notfication'] is True:
-        if 'user' in slack_user_detail:
+        if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
             slack = slack_id(slack_user_detail['user']['email'])
-            slack_user_detail['user'] = "<@" + slack + ">!"
+            slack_user_detail['user'] = "<@" + slack + ">"
         else:
             pass            
         message_str = message
@@ -67,7 +67,6 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             if data in slack_user_detail:
                 message_str = message_str.replace("@"+data+":", slack_user_detail[data])
             else:
-                # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
                 if data in slack_user_detail['data']:
                     message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
         for elem in system_require:
@@ -88,20 +87,21 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             pass  
         print(channels)    
         if channels:                                                        
-            slack_message(message=message_str,channel=channels,req_json=slack_user_detail)   
+            slack_message(message=message_str,channel=channels,req_json=slack_user_detail,message_detail=message_detail)   
         else:
             pass
     else:
         pass
     if status['send_email'] is True:    
-        print(email_user_detail['user']['email'])
-        email_user_detail['user'] = email_user_detail['user']['email']
+        if 'user' in email_user_detail and email_user_detail['user'] is not None:
+            email_user_detail['user'] = email_user_detail['user']['email']
+        else:
+            pass    
         message_str = message
         for data in message_variables:
             if data in email_user_detail:
                 message_str = message_str.replace("@"+data+":", email_user_detail[data])
             else:
-                # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
                 if data in email_user_detail['data']:
                     message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
         for elem in system_require:
