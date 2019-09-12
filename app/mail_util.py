@@ -6,10 +6,10 @@ import smtplib
 def send_email(message,recipients,subject,bcc=None,cc=None):
     # fetching mail details
     mail_details = mongo.db.mail_settings.find_one({},{"_id":0})
-    username = mail_details["MAIL_USERNAME"]
-    password = mail_details["MAIL_PASSWORD"]
-    port = mail_details['MAIL_PORT']
-    mail_server = mail_details['MAIL_SERVER']
+    username = mail_details["mail_username"]
+    password = mail_details["mail_password"]
+    port = mail_details['mail_port']
+    mail_server = mail_details['mail_server']
     # sending mail from smtp
     mail = smtplib.SMTP_SSL(str(mail_server), port)
     mail.login(username,password)
