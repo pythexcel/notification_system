@@ -1,7 +1,7 @@
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.util import serialize_doc
-
+from app.util import serialize_doc,special
+import datetime
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
@@ -21,6 +21,9 @@ def notification_message(message_origin):
         email_group = request.json.get("email_group",None)
         channel = request.json.get("channels",None)
         sended_to = request.json.get("sended_to",None)
+        for_email = request.json.get("for_email",False)
+        for_slack = request.json.get("for_slack",False)
+        for_phone = request.json.get("for_phone",False)
 
         if not MSG and MSG_TYPE and MSG_KEY:
             return jsonify({"msg": "Invalid Request"}), 400
@@ -36,7 +39,10 @@ def notification_message(message_origin):
                 "message_color": MSG_Color,
                 "slack_channel":slack_channel,
                 "email_group":email_group,
-                "channels":channel
+                "channels":channel,
+                "for_email": for_email,
+                "for_slack": for_slack,
+                "for_phone": for_phone
             }
         },upsert=True)
         return jsonify(str(ret))
@@ -61,15 +67,15 @@ def special_var():
         return jsonify(str(ret))        
 
 
-
-@bp.route('/configuration_mail', methods=["GET", "PUT"])
+@bp.route('/get_email_template', methods=["GET", "PUT"])
 def mail_message():
     if request.method == "GET":
         ret = mongo.db.mail_template.find({})
-        ret = [serialize_doc(doc) for doc in ret]
+        ret = [special(serialize_doc(doc)) for doc in ret]
         return jsonify(ret)
     if request.method == "PUT":
         MSG = request.json.get("message", None)
+        
         MSG_KEY = request.json.get("message_key", None)
         Working = request.json.get("working", True)
         MSG_SUBJECT = request.json.get("message_subject",None)
@@ -83,4 +89,4 @@ def mail_message():
                 "message_subject":MSG_SUBJECT
             }
         },upsert=True)
-        return jsonify(str(ret))   
+        return jsonify(str(ret))        

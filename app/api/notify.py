@@ -3,13 +3,19 @@ from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message
-from app.config import message_needs,messages
+from app.config import message_needs,messages,config_info
 from app.slack_util import slack_message 
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
 import json
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+from weasyprint import HTML, CSS
+import uuid
+import os 
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
@@ -60,13 +66,13 @@ def dispatch():
     else:
         return jsonify("No Message Type Available"), 400
 
-#api for sending mail of Hr templates
-@bp.route('/send_mail', methods=["POST"])
+
+@bp.route('/preview', methods=["POST"])
 def send_mails():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  
-    MAIL_SEND_TO = request.json.get("to",None)
+    # MAIL_SEND_TO = request.json.get("to",None)
     Data = request.json.get("data",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     if message_detail is not None: 
@@ -78,7 +84,6 @@ def send_mails():
             if elem[0]=='#':
                 message_variables.append(elem[1:])        
         message_str = message_detail['message']
-        print(message_variables)
         for detail in message_variables:
             if detail in request.json:    
                 message_str = message_str.replace("#"+detail, request.json[detail])
@@ -88,9 +93,29 @@ def send_mails():
                 else:
                     for element in ret:
                         if "#" + detail == element['name'] and element['value'] is not None:
-                            message_str = message_str.replace("#"+detail, element['value'])                      
+                            message_str = message_str.replace("#"+detail, element['value'])  
+
+        filename = str(uuid.uuid4())+'.pdf'
+        pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+        file = cloudinary.uploader.upload(filename)
+        os.remove(filename)
         if 'to' in request.json:
-            send_email(message=message_str,recipients=request.json['to'],subject=message_detail['message_subject'])
-            return jsonify({"message":"Mail_sended"}),200
-        else:
-            return jsonify({"message":"please select some mails to send message"}),400
+            for elem in ret:
+                if elem['name'] == "#page_header":
+                    head = elem['value']
+                if elem['name'] == "#page_footer":
+                    foo = elem['value']
+                if elem['name'] == "#page_break":
+                    br = elem['value']                    
+                    message_str = message_str.replace(head,'')
+                    message_str = message_str.replace(foo,'')
+                    message_str = message_str.replace(br,'')
+            bcc = None
+            if 'bcc' in request.json:
+                bcc = request.json['bcc']
+            cc = None
+            if 'cc' in request.json:
+                cc = request.json['cc']
+            send_email(message=message_str,recipients=request.json['to'],subject=message_detail['message_subject'],bcc=bcc,cc=cc)
+        return jsonify({"status":True,"Message":message_str,"pdf": file['url']}),200
+        

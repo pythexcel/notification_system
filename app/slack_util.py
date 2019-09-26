@@ -17,6 +17,7 @@ def slack_id(email):
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
+    print(sl_user_id['user']['id'])                   
 
     return (sl_user_id['user']['id'])
 
@@ -37,7 +38,6 @@ def slack_message(channel, message,req_json=None,message_detail=None):
         ]
     else:
         attachments = None                 
-
     if message_detail['message_color'] is not None:
         color = message_detail['message_color']
         attachments = [
@@ -49,9 +49,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
         ]
         message = None    
     else:
-        attachments = None      
-
-
+        pass
     for data in channel:
         print(data)
         sc.api_call(
@@ -62,7 +60,6 @@ def slack_message(channel, message,req_json=None,message_detail=None):
         )
 
 
-
 def slack_profile(email=None):
     print(email)
     slack_token = slack_load_token()
@@ -71,6 +68,4 @@ def slack_profile(email=None):
                        email=email)
 
     return (sl_user_id['user'])
-                            
-   
-   
+                              

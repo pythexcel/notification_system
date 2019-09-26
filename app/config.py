@@ -1,8 +1,10 @@
+import cloudinary
 message_needs={
     "simple_message":[
             "message_type",
 
             "message_key",
+
             ],
 
     "notfication_message":[
@@ -16,10 +18,16 @@ message_needs={
     "button_message":[
 
             "message_type",
-              
+            
             "message_key"
-            ]        
+                ]        
             }
+
+config_info = cloudinary.config( 
+    cloud_name='dp0y84e66',
+    api_key= '166465296448686',
+    api_secret= '0ks_nfDa39dimm7joD8gKSEdz6g'
+)
 
 messages = [
     {
