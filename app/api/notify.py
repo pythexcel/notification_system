@@ -66,15 +66,17 @@ def dispatch():
     else:
         return jsonify("No Message Type Available"), 400
 
+# Below the Api is for generating the pdf from mail template and also currently the same api will send the mail of that pdf content if sending credintials are avialable
 
+# REASON FOR CURRENTLY ONE API FOR BOTH IS ARUN SIR ASKED THAT FOR CURRENT SCENARIO LET IT BE ONE API
 @bp.route('/preview', methods=["POST"])
 def send_mails():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  
-    # MAIL_SEND_TO = request.json.get("to",None)
     Data = request.json.get("data",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+    # Below the same functionality is followed of replacing the variables with the data sended and in request also it will replace the value if it is not send in request but it is in special variable collection 
     if message_detail is not None: 
         ret = mongo.db.mail_variables.find({})
         ret = [serialize_doc(doc) for doc in ret] 
@@ -94,12 +96,16 @@ def send_mails():
                     for element in ret:
                         if "#" + detail == element['name'] and element['value'] is not None:
                             message_str = message_str.replace("#"+detail, element['value'])  
-
+        # Here below i am generating a pdf from the above string for pdf generation and storing in cloudnary
         filename = str(uuid.uuid4())+'.pdf'
+        # Here below the reason for writing css here for this library is else the pdf is not getting formated properly
         pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
         file = cloudinary.uploader.upload(filename)
+        # here after generating of cloudnary link of pdf removing it from local storage
         os.remove(filename)
         if 'to' in request.json:
+            # here if mail credintials are provdied below will work
+            # as usual replacing the header , footer and page break value so they will not be sended in mail
             for elem in ret:
                 if elem['name'] == "#page_header":
                     head = elem['value']
@@ -110,6 +116,7 @@ def send_mails():
                     message_str = message_str.replace(head,'')
                     message_str = message_str.replace(foo,'')
                     message_str = message_str.replace(br,'')
+            # condition for bcc and cc if present in request.json
             bcc = None
             if 'bcc' in request.json:
                 bcc = request.json['bcc']

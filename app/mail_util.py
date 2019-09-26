@@ -2,6 +2,7 @@ import requests
 from app import mongo
 import smtplib    
 
+# Library below is for rendering HTML cause using the core smtp does not render html on own
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -13,6 +14,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None):
     mail_server = mail_details['mail_server']
     mail = smtplib.SMTP_SSL(str(mail_server), port)
     mail.login(username,password)
+    # so below logic is bcc and cc condtions as cc needs to be mention and bcc needs to be invisible or no mention in sended mail
+    # making a array which will consist of all the mails from bcc ,cc and normal
     delivered = []
     for element in recipients:
         delivered.append(element)
@@ -28,13 +31,16 @@ def send_email(message,recipients,subject,bcc=None,cc=None):
         cc =  ','.join(cc)
     else:
         cc = None
+    # below used mime to acknowledge recipents and cc user with the sender and subject    
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = username
     msg['To'] = ','.join(recipients) 
     msg['Cc'] = cc
     main = MIMEText(message,'html')
+    # attached the render html message 
     msg.attach(main)
+    # sended the msg
     mail.sendmail(username,delivered, msg.as_string()) 
     mail.quit()
     

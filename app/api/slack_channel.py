@@ -97,7 +97,7 @@ def sl_profile():
     slack = slack_profile(email)
     return jsonify(slack),200
 
-
+# will return slack channel or user list required by HR
 @bp.route('/slack_channel_ids', methods=["GET"])
 def getslackid():
     token = slack_load_token()
@@ -107,7 +107,7 @@ def getslackid():
         )
     return jsonify (sl_channel)    
 
-
+# will return slack channel or user list required by HR
 @bp.route('/slack_users_list', methods=["GET"])
 def getslackusers():
     token = slack_load_token()

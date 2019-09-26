@@ -25,6 +25,7 @@ def slack_id(email):
 def slack_message(channel, message,req_json=None,message_detail=None):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
+    # below button condition were made bcoz HR wants to send the complete message so maded changes so that they can send the whole button 
     if 'button' in req_json:
         color = None
         if 'color' in  req_json['button']:
@@ -37,7 +38,8 @@ def slack_message(channel, message,req_json=None,message_detail=None):
             }
         ]
     else:
-        attachments = None                 
+        attachments = None
+    # below condition is for if message is with a base color and not button                      
     if message_detail['message_color'] is not None:
         color = message_detail['message_color']
         attachments = [

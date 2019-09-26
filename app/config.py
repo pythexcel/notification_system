@@ -1,4 +1,5 @@
 import cloudinary
+# message needs are altered cause HR if conditions so arun sir asked to make changes
 message_needs={
     "simple_message":[
             "message_type",
@@ -22,7 +23,6 @@ message_needs={
             "message_key"
                 ]        
             }
-
 config_info = cloudinary.config( 
     cloud_name='dp0y84e66',
     api_key= '166465296448686',

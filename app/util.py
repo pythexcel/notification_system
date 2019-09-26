@@ -59,6 +59,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     email_user_detail = req_json
     if status['slack_notfication'] is True:
         print("sdasd")
+        # this condition if written if message is just for mail but will remove this if not required
         if message_detail['for_email'] is False:
             print('hai isme')
             if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
@@ -85,7 +86,8 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                 pass  
             if message_detail['slack_channel'] is not None:
                 for elem in message_detail['slack_channel']:
-                    channels.append(elem)       
+                    channels.append(elem)
+            # here is the conditon for sending message to just the user himself as we discussed there will be 2 condtion for public/private               
             if message_detail['sended_to'] == "private":
                 channels.append(slack)
             else:
@@ -100,6 +102,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     else:
         pass
     if status['send_email'] is True:
+        # same condition for if just send to mail will remove if not required
         if message_detail['for_email'] is True:
             if 'user' in email_user_detail and email_user_detail['user'] is not None:
                 username = json.loads(json.dumps(email_user_detail['user']['email']))
@@ -147,7 +150,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
         pass
 
 
-
+# this function will send back variables of html templates with variable from templates if there are None in special variables collection
 def special(user):
     special_val = []
     unrequired = []
