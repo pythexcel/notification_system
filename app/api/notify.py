@@ -15,7 +15,8 @@ import cloudinary.uploader
 import cloudinary.api
 from weasyprint import HTML, CSS
 import uuid
-import os 
+import os
+from bson.objectid import ObjectId 
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
@@ -78,6 +79,9 @@ def send_mails():
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     # Below the same functionality is followed of replacing the variables with the data sended and in request also it will replace the value if it is not send in request but it is in special variable collection 
     if message_detail is not None: 
+        var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
+        head = var['header_value']
+        foot = var['footer_value']
         ret = mongo.db.mail_variables.find({})
         ret = [serialize_doc(doc) for doc in ret] 
         message_variables = []
@@ -87,16 +91,15 @@ def send_mails():
                 message_variables.append(elem[1:])        
         message_str = message_detail['message']
         for detail in message_variables:
-            if detail in request.json:    
-                message_str = message_str.replace("#"+detail, request.json[detail])
+            if detail in request.json['data']:
+                message_str = message_str.replace("#"+detail, request.json['data'][detail])
             else:
-                if detail in request.json['data']:
-                    message_str = message_str.replace("#"+detail, request.json['data'][detail])
-                else:
-                    for element in ret:
-                        if "#" + detail == element['name'] and element['value'] is not None:
-                            message_str = message_str.replace("#"+detail, element['value'])  
-        # Here below i am generating a pdf from the above string for pdf generation and storing in cloudnary
+                #Here replacing the header and footer value i get from letter head collection
+                message_str = message_str.replace("#page_header",head)
+                message_str = message_str.replace("#page_footer",foot)
+                for element in ret:
+                    if "#" + detail == element['name'] and element['value'] is not None:
+                        message_str = message_str.replace("#"+detail, element['value'])    
         filename = str(uuid.uuid4())+'.pdf'
         # Here below the reason for writing css here for this library is else the pdf is not getting formated properly
         pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
