@@ -100,13 +100,12 @@ def send_mails():
                             
         filename = str(uuid.uuid4())+'.pdf'
         pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/pdf/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+        # below try except condition is for seeing if cloudnary credentials availabe or not save in file system
         try:
             file = cloudinary.uploader.upload(os.getcwd() + '/pdf/' + filename)
             link = file['url']        
         except ValueError:
             link = Base_url + "/pdf/" + filename
-
-        # to = ["testhr69@gmail.com"]
         if 'to' in request.json:
             filelink = None
             if 'pdf' in request.json and request.json['pdf'] is True:

@@ -48,6 +48,7 @@ def notification_message(message_origin):
         },upsert=True)
         return jsonify(str(ret))
 
+# special variables are logo ,ceo signature predefined header footer value page break value 
 @bp.route('/special_variable', methods=["GET","PUT"])
 def special_var():
     if request.method == "GET":
@@ -116,6 +117,7 @@ def mail_message(message_origin):
             })
             return jsonify({"MSG":"Template Added"}), 200
 
+# api for creating and getting letter heads
 @bp.route('/letter_heads', methods=["GET","PUT"])
 def letter_heads():
     if request.method == "GET":
@@ -137,6 +139,7 @@ def letter_heads():
         },upsert=True)
         return jsonify({"MSG":"Letter Head Created"}), 200  
 
+# api for assigning letter heads to particular template
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>', methods=["PUT"])
 def assign_letter_heads(template_id,letter_head_id):    
     ret = mongo.db.mail_template.update({"_id":ObjectId(template_id)},{
