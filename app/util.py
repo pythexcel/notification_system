@@ -174,3 +174,11 @@ def template_requirement(user):
     return user              
 
       
+def Template_details(details):
+    Template_data = []
+    for elem in details['Template']:
+        ret = mongo.db.mail_template.find_one({"_id":ObjectId(elem)})
+        ret = serialize_doc(ret)
+        Template_data.append(ret)
+    details['Template'] = Template_data
+    return details

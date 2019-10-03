@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, make_response, jsonify
+from flask import Flask, make_response, jsonify, send_from_directory
 
 from flask_cors import CORS
 
@@ -15,11 +15,9 @@ jwt = token.init_token()
 
 def create_app(test_config=None):
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, instance_relative_config=True,static_url_path='')
     app.config.from_mapping()
-
     CORS(app)
-
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
@@ -36,6 +34,10 @@ def create_app(test_config=None):
     @app.errorhandler(400)
     def not_found(error):
         return make_response(jsonify(error='Not found'), 400)
+    
+    @app.route('/pdf/<path:path>')
+    def send_js(path):
+        return send_from_directory('pdf', path)
 
     @app.errorhandler(500)
     def error_500(error):
@@ -49,12 +51,14 @@ def create_app(test_config=None):
     from app.api import slack_settings
     from app.api import mail_settings
     from app.api import message_create
+    from app.api import campaign
     
     app.register_blueprint(notify.bp)
     app.register_blueprint(slack_channel.bp)
     app.register_blueprint(slack_settings.bp)
     app.register_blueprint(mail_settings.bp)
     app.register_blueprint(message_create.bp)
+    app.register_blueprint(campaign.bp)
     
     print("create app..")
     return app

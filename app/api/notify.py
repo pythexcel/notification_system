@@ -1,9 +1,9 @@
 from app import token
 from app import mongo
-from flask import (Blueprint, flash, jsonify, abort, request)
+from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message
-from app.config import message_needs,messages,config_info
+from app.config import message_needs,messages,config_info,Base_url
 from app.slack_util import slack_message 
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
@@ -15,8 +15,8 @@ import cloudinary.uploader
 import cloudinary.api
 from weasyprint import HTML, CSS
 import uuid
-import os
-from bson.objectid import ObjectId 
+import os 
+from bson.objectid import ObjectId
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
@@ -67,17 +67,15 @@ def dispatch():
     else:
         return jsonify("No Message Type Available"), 400
 
-# Below the Api is for generating the pdf from mail template and also currently the same api will send the mail of that pdf content if sending credintials are avialable
 
-# REASON FOR CURRENTLY ONE API FOR BOTH IS ARUN SIR ASKED THAT FOR CURRENT SCENARIO LET IT BE ONE API
 @bp.route('/preview', methods=["POST"])
 def send_mails():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  
+    # MAIL_SEND_TO = request.json.get("to",None)
     Data = request.json.get("data",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
-    # Below the same functionality is followed of replacing the variables with the data sended and in request also it will replace the value if it is not send in request but it is in special variable collection 
     if message_detail is not None: 
         var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
         head = var['header_value']
@@ -94,21 +92,26 @@ def send_mails():
             if detail in request.json['data']:
                 message_str = message_str.replace("#"+detail, request.json['data'][detail])
             else:
-                #Here replacing the header and footer value i get from letter head collection
                 message_str = message_str.replace("#page_header",head)
                 message_str = message_str.replace("#page_footer",foot)
                 for element in ret:
                     if "#" + detail == element['name'] and element['value'] is not None:
-                        message_str = message_str.replace("#"+detail, element['value'])    
+                        message_str = message_str.replace("#"+detail, element['value'])  
+                            
         filename = str(uuid.uuid4())+'.pdf'
-        # Here below the reason for writing css here for this library is else the pdf is not getting formated properly
-        pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-        file = cloudinary.uploader.upload(filename)
-        # here after generating of cloudnary link of pdf removing it from local storage
-        os.remove(filename)
+        pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/pdf/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+        try:
+            file = cloudinary.uploader.upload(os.getcwd() + '/pdf/' + filename)
+            link = file['url']        
+        except ValueError:
+            link = Base_url + "/pdf/" + filename
+
+        # to = ["testhr69@gmail.com"]
         if 'to' in request.json:
-            # here if mail credintials are provdied below will work
-            # as usual replacing the header , footer and page break value so they will not be sended in mail
+            filelink = None
+            if 'pdf' in request.json and request.json['pdf'] is True:
+                filelink = os.getcwd() + '/pdf/' + filename
+            to = request.json['to']
             for elem in ret:
                 if elem['name'] == "#page_header":
                     head = elem['value']
@@ -119,13 +122,12 @@ def send_mails():
                     message_str = message_str.replace(head,'')
                     message_str = message_str.replace(foo,'')
                     message_str = message_str.replace(br,'')
-            # condition for bcc and cc if present in request.json
             bcc = None
             if 'bcc' in request.json:
                 bcc = request.json['bcc']
             cc = None
             if 'cc' in request.json:
                 cc = request.json['cc']
-            send_email(message=message_str,recipients=request.json['to'],subject=message_detail['message_subject'],bcc=bcc,cc=cc)
-        return jsonify({"status":True,"Message":message_str,"pdf": file['url']}),200
-        
+            send_email(message=message_str,recipients=to,subject=message_detail['message_subject'],bcc=bcc,cc=cc,filelink=filelink,filename=filename,link=link)
+        return jsonify({"status":True,"Message":message_str,"pdf": link}),200
+            

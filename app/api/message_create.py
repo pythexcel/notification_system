@@ -22,7 +22,6 @@ def notification_message(message_origin):
         email_group = request.json.get("email_group",None)
         channel = request.json.get("channels",None)
         sended_to = request.json.get("sended_to",None)
-        # Have added this for_email etc so have better control over single messages that if want to send on particular platform or not 
         for_email = request.json.get("for_email",False)
         for_slack = request.json.get("for_slack",False)
         for_phone = request.json.get("for_phone",False)
@@ -49,7 +48,6 @@ def notification_message(message_origin):
         },upsert=True)
         return jsonify(str(ret))
 
-# This api was maded bcoz HR have some predefined variables which now i am storing in this system with their value and name
 @bp.route('/special_variable', methods=["GET","PUT"])
 def special_var():
     if request.method == "GET":
@@ -69,12 +67,12 @@ def special_var():
         },upsert=True)
         return jsonify(str(ret))        
 
-# This will return  and add all the mail templates and which are required from HR 
+
 @bp.route('/get_email_template/<string:message_origin>', methods=["GET", "PUT"])
 def mail_message(message_origin):
     if request.method == "GET":
         ret = mongo.db.mail_template.find({"message_origin":message_origin})
-        ret = [special(serialize_doc(doc)) for doc in ret]
+        ret = [template_requirement(serialize_doc(doc)) for doc in ret]
         return jsonify(ret)
     if request.method == "PUT":
         MSG = request.json.get("message", None)
