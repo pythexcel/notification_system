@@ -1,8 +1,11 @@
+import cloudinary
+Base_url = '5.9.144.226:8005'
 message_needs={
     "simple_message":[
             "message_type",
 
             "message_key",
+
             ],
 
     "notfication_message":[
@@ -17,14 +20,15 @@ message_needs={
 
             "message_type",
             
-            "user",
-            
-            "message_key",
-
-            "url_link",
-                    
-            "button_text"]        
+            "message_key"
+                ]        
             }
+
+config_info = cloudinary.config( 
+    cloud_name='dp0y84e66',
+    api_key= '166465296448686',
+    api_secret= '0ks_nfDa39dimm7joD8gKSEdz6g'
+)
 
 messages = [
     {

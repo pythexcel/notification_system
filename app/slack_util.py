@@ -16,26 +16,38 @@ def slack_id(email):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
-                       email=email)
-
+                       email=email)                  
     return (sl_user_id['user']['id'])
 
 
-def slack_message(channel, message,req_json=None):
+def slack_message(channel, message,req_json=None,message_detail=None):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
-    if 'button_text' and 'url_link' in req_json:
+    if 'button' in req_json:
+        color = None
+        if 'color' in  req_json['button']:
+            color = req_json['button']['color']        
         attachments = [
-                {"fallback": "Please add report manually",  
-                "actions": [
-                        {
-                        "type": "button",
-                        "text": req_json['button_text'],
-                        "url": req_json['url_link']
-                        }
-                ]}]
+            {
+            "fallback": "fallback",
+            "color" : color, 
+            "actions" : req_json['button']['actions']
+            }
+        ]
     else:
-        attachments = None            
+        attachments = None                 
+    if message_detail['message_color'] is not None:
+        color = message_detail['message_color']
+        attachments = [
+            {
+            "fallback": "fallback",
+            "color" : color,
+            "text": message 
+            }
+        ]
+        message = None    
+    else:
+        pass
     for data in channel:
         sc.api_call(
             "chat.postMessage",
@@ -46,13 +58,10 @@ def slack_message(channel, message,req_json=None):
 
 
 def slack_profile(email=None):
-    print(email)
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
 
     return (sl_user_id['user'])
-                            
-   
-   
+                              

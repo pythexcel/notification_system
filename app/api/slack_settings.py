@@ -14,13 +14,13 @@ def tms_setings():
 
     if request.method == "PUT":
         slack_token = request.json.get("slack_token")
-        slack_notifcation = request.json.get("slack_notification")
+        slack_notification = request.json.get("slack_notification")
         send_email = request.json.get("send_email")
         mobile_message = request.json.get("mobile_message")
         ret = mongo.db.slack_settings.update({}, {
             "$set": {
                 "slack_token": slack_token,
-                "slack_notfication":slack_notifcation,
+                "slack_notification":slack_notification,
                 "send_email":send_email,
                 "mobile_message":mobile_message
             }

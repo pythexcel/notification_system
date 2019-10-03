@@ -22,7 +22,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
     missing_payload = []
     for data in message_special:
         if data[0]=='@':
-            message_variables.append(data[1:-1])
+            message_variables.append(data[1:-1])       
     for data in system_variable:
         if data in message_variables:
             system_require.append(data)
@@ -48,7 +48,6 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
         raise Exception("These data are missing from payload: " + ret)      
 
 
-
 def construct_message(message=None,req_json=None,message_variables=None,system_require=None,message_detail=None):
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     status = mongo.db.slack_settings.find_one({},{"_id":0})
@@ -57,70 +56,129 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     req_json = json.loads(json.dumps(req_json))
     email_user_detail = req_json
     if status['slack_notfication'] is True:
-        if 'user' in slack_user_detail:
-            slack = slack_id(slack_user_detail['user']['email'])
-            slack_user_detail['user'] = "<@" + slack + ">!"
-        else:
-            pass            
-        message_str = message
-        for data in message_variables:
-            if data in slack_user_detail:
-                message_str = message_str.replace("@"+data+":", slack_user_detail[data])
+        # this condition if written if message is just for mail but will remove this if not required
+        if message_detail['for_email'] is False:
+            if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
+                slack = slack_id(slack_user_detail['user']['email'])
+                slack_user_detail['user'] = "<@" + slack + ">"
             else:
-                # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
-                if data in slack_user_detail['data']:
-                    message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
-        for elem in system_require:
-            if elem in system_variable:  
-                message_str = message_str.replace("@"+elem+":", system_variable[elem])
-        channels = []          
-        if 'slack_channel' in slack_user_detail:
-            for data in slack_user_detail['slack_channel']:
-                channels.append(data)
-        else:
-            pass  
-        if message_detail['slack_channel'] is not None:
-            for elem in message_detail['slack_channel']:
-                channels.append(elem)       
-        if message_detail['sended_to'] == "private":
-            channels.append(slack)
-        else:
-            pass  
-        print(channels)    
-        if channels:                                                        
-            slack_message(message=message_str,channel=channels,req_json=slack_user_detail)   
+                pass            
+            message_str = message
+            for data in message_variables:
+                if data in slack_user_detail:
+                    message_str = message_str.replace("@"+data+":", slack_user_detail[data])
+                else:
+                    if data in slack_user_detail['data']:
+                        message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
+            for elem in system_require:
+                if elem in system_variable:  
+                    message_str = message_str.replace("@"+elem+":", system_variable[elem])
+            channels = []          
+            if 'slack_channel' in slack_user_detail:
+                for data in slack_user_detail['slack_channel']:
+                    channels.append(data)
+            else:
+                pass  
+            if message_detail['slack_channel'] is not None:
+                for elem in message_detail['slack_channel']:
+                    channels.append(elem)
+            # here is the conditon for sending message to just the user himself as we discussed there will be 2 condtion               
+            if message_detail['sended_to'] == "private":
+                channels.append(slack)
+            else:
+                pass     
+            if channels:                                                        
+                slack_message(message=message_str,channel=channels,req_json=slack_user_detail,message_detail=message_detail)   
+            else:
+                pass
         else:
             pass
     else:
         pass
-    if status['send_email'] is True:    
-        print(email_user_detail['user']['email'])
-        email_user_detail['user'] = email_user_detail['user']['email']
-        message_str = message
-        for data in message_variables:
-            if data in email_user_detail:
-                message_str = message_str.replace("@"+data+":", email_user_detail[data])
+    if status['send_email'] is True:
+        # same condition for if just send to mail will remove if not required
+        if message_detail['for_email'] is True:
+            if 'user' in email_user_detail and email_user_detail['user'] is not None:
+                username = json.loads(json.dumps(email_user_detail['user']['email']))
+                name = username.split('@')[0]
+                email_user_detail['user'] = name
             else:
-                # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
-                if data in email_user_detail['data']:
-                    message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
-        for elem in system_require:
-            if elem in system_variable:  
-                message_str = message_str.replace("@"+elem+":", system_variable[elem])
-        recipient = []
-        if 'email_group' in email_user_detail:
-            for data in email_user_detail['email_group']:
-                recipient.append(data)
-        else:
-            pass
-        if message_detail['email_group'] is not None:
-            for elem in message_detail['email_group']:
-                recipient.append(elem) 
-        if recipient:
-            send_email(message=message_str,recipients=recipient,subject=message_detail['message_key'])
+                pass    
+            message_str = message
+            for data in message_variables:
+                if data in email_user_detail:
+                    message_str = message_str.replace("@"+data+":", email_user_detail[data])
+                else:
+                    if data in email_user_detail['data']:
+                        message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
+            for elem in system_require:
+                if elem in system_variable:  
+                    message_str = message_str.replace("@"+elem+":", system_variable[elem])
+
+            recipient = []
+            if 'email_group' in email_user_detail:
+                for data in email_user_detail['email_group']:
+                    recipient.append(data)
+            else:
+                pass
+            if message_detail['sended_to'] == "private":
+                recipient.append(username)
+            else:
+                pass  
+
+            if message_detail['email_group'] is not None:
+                for elem in message_detail['email_group']:
+                    recipient.append(elem)
+
+            if 'subject' in email_user_detail['emailData']:
+                subject = email_user_detail['emailData']['subject']
+            else:
+                subject = message_detail['message_key']             
+            if recipient:
+                send_email(message=message_str,recipients=recipient,subject=subject)
+            else:
+                pass
         else:
             pass
     else:
         pass
 
+
+# this function will send back variables of html templates with variable from templates if there are None in special variables collection
+def template_requirement(user):
+    special_val = []
+    unrequired = []
+    unique_variables = []
+    ret = mongo.db.mail_variables.find({})
+    ret = [serialize_doc(doc) for doc in ret]
+    for data in ret:
+        if data['value'] is None:
+            special_val.append(data['name'])
+        if data['value'] is not None:
+            unrequired.append(data['name'])
+    message = user['message']
+    message_variables = []
+    message = message.split()
+    for elem in message:
+        if "#" + elem[1:] in special_val:
+            message_variables.append(elem[1:])    
+        if elem[0] == "#":
+            if elem[1:] not in message_variables :
+                if "#" + elem[1:] not in unrequired:
+                    message_variables.append(elem[1:])
+
+    for data in message_variables:
+        if data not in unique_variables:
+            unique_variables.append(data)                    
+    user['template_variables'] = unique_variables 
+    return user              
+
       
+def Template_details(details):
+    Template_data = []
+    for elem in details['Template']:
+        ret = mongo.db.mail_template.find_one({"_id":ObjectId(elem)})
+        ret = serialize_doc(ret)
+        Template_data.append(ret)
+    details['Template'] = Template_data
+    return details

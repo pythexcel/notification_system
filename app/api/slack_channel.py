@@ -88,16 +88,13 @@ def slack():
         return jsonify(result)
 
 
-
 @bp.route('/slack_profile', methods=["POST"])
 def sl_profile():
     if not request.json:
             abort(500)
     email = request.json.get("email", None)
-    print(email)
     slack = slack_profile(email)
     return jsonify(slack),200
-
 
 
 @bp.route('/slack_channel_ids', methods=["GET"])
@@ -109,6 +106,7 @@ def getslackid():
         )
     return jsonify (sl_channel)    
 
+
 @bp.route('/slack_users_list', methods=["GET"])
 def getslackusers():
     token = slack_load_token()
@@ -117,4 +115,3 @@ def getslackusers():
             "users.list"
         )
     return jsonify (sl_list)    
-

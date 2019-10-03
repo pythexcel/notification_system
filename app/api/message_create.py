@@ -1,7 +1,8 @@
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.util import serialize_doc
-
+from app.util import serialize_doc,template_requirement
+import datetime
+from bson.objectid import ObjectId
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
@@ -21,7 +22,9 @@ def notification_message(message_origin):
         email_group = request.json.get("email_group",None)
         channel = request.json.get("channels",None)
         sended_to = request.json.get("sended_to",None)
-
+        for_email = request.json.get("for_email",False)
+        for_slack = request.json.get("for_slack",False)
+        for_phone = request.json.get("for_phone",False)
 
         if not MSG and MSG_TYPE and MSG_KEY:
             return jsonify({"msg": "Invalid Request"}), 400
@@ -37,7 +40,111 @@ def notification_message(message_origin):
                 "message_color": MSG_Color,
                 "slack_channel":slack_channel,
                 "email_group":email_group,
-                "channels":channel
+                "channels":channel,
+                "for_email": for_email,
+                "for_slack": for_slack,
+                "for_phone": for_phone
             }
         },upsert=True)
         return jsonify(str(ret))
+
+# special variables are logo ,ceo signature predefined header footer value page break value 
+@bp.route('/special_variable', methods=["GET","PUT"])
+def special_var():
+    if request.method == "GET":
+        ret = mongo.db.mail_variables.find({})
+        ret = [serialize_doc(doc) for doc in ret]
+        return jsonify(ret)
+    if request.method == "PUT":
+        name = request.json.get("name", None)
+        value = request.json.get("value", None)
+        variable_type = request.json.get("variable_type", None)
+        ret = mongo.db.mail_variables.update({"name":name},{
+           "$set": {
+                "name": name,
+                "value": value,
+                "variable_type":variable_type
+            }
+        },upsert=True)
+        return jsonify(str(ret))        
+
+
+@bp.route('/get_email_template/<string:message_origin>', methods=["GET", "PUT"])
+def mail_message(message_origin):
+    if request.method == "GET":
+        ret = mongo.db.mail_template.find({"message_origin":message_origin})
+        ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+        return jsonify(ret)
+    if request.method == "PUT":
+        MSG = request.json.get("message", None)
+        MSG_KEY = request.json.get("message_key", None)
+        Working = request.json.get("working", True)
+        MSG_SUBJECT = request.json.get("message_subject",None)
+        if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
+            return jsonify({"MSG": "Invalid Request"}), 400
+        ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+        if ver is not None:
+            version =  ver['version'] + 1
+            ver_message = ver['message']
+            ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, 
+                {
+                "$push": {
+                    "version_details": {
+                        "message":ver_message,
+                        "version": ver['version']
+                        }
+                },
+                "$set": {
+                    "message": MSG,
+                    "message_key": MSG_KEY,
+                    "working":Working,
+                    "message_origin":message_origin,
+                    "message_subject":MSG_SUBJECT,
+                    "version": version
+                }
+                })
+            return jsonify({"MSG":"Template Updated"}), 200        
+        else:
+            ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
+                "$set": {
+                    "message": MSG,
+                    "message_key": MSG_KEY,
+                    "working":Working,
+                    "message_origin":message_origin,
+                    "message_subject":MSG_SUBJECT,
+                    "version": 1
+                }
+            })
+            return jsonify({"MSG":"Template Added"}), 200
+
+# api for creating and getting letter heads
+@bp.route('/letter_heads', methods=["GET","PUT"])
+def letter_heads():
+    if request.method == "GET":
+        ret = mongo.db.letter_heads.find({})
+        ret = [serialize_doc(doc) for doc in ret]
+        return jsonify(ret)
+    if request.method == "PUT":
+        name = request.json.get("name", None)
+        header_value = request.json.get("header_value", None)
+        footer_value = request.json.get("footer_value", None)
+        Working = request.json.get("working", True)
+        ret = mongo.db.letter_heads.update({"name":name},{
+           "$set": {
+                "name": name,
+                "header_value": header_value,
+                "footer_value": footer_value,
+                "working": Working 
+            }
+        },upsert=True)
+        return jsonify({"MSG":"Letter Head Created"}), 200  
+
+# api for assigning letter heads to particular template
+@bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>', methods=["PUT"])
+def assign_letter_heads(template_id,letter_head_id):    
+    ret = mongo.db.mail_template.update({"_id":ObjectId(template_id)},{
+        "$set": {
+            "template_head": letter_head_id  
+        }
+    })
+    return jsonify({"MSG":"Letter Head Added To Template"}), 200  
