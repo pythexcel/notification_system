@@ -129,4 +129,21 @@ def send_mails():
                 cc = request.json['cc']
             send_email(message=message_str,recipients=to,subject=message_detail['message_subject'],bcc=bcc,cc=cc,filelink=filelink,filename=filename,link=link)
         return jsonify({"status":True,"Message":message_str,"pdf": link}),200
-            
+
+@bp.route('/send_mail', methods=["POST"])
+def mails():
+    if not request.json:
+        abort(500)  
+    MAIL_SEND_TO = request.json.get("to",None)
+    message = request.json.get("message",None)
+    subject = request.json.get("subject",None)
+    if not MAIL_SEND_TO and message:
+        return jsonify({"MSG": "Invalid Request"}), 400
+    bcc = None
+    if 'bcc' in request.json:
+        bcc = request.json['bcc']
+    cc = None
+    if 'cc' in request.json:
+        cc = request.json['cc']
+    send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc)    
+    return jsonify({"status":True,"Message":"Sended"}),200           

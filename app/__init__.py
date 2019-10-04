@@ -4,6 +4,8 @@ from flask import Flask, make_response, jsonify, send_from_directory
 
 from flask_cors import CORS
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from app import db
 
 mongo = db.init_db()
@@ -12,6 +14,7 @@ from app import token
 
 jwt = token.init_token()
 
+from app.scheduler import campaign_mail
 
 def create_app(test_config=None):
     # create and configure the app
@@ -60,5 +63,13 @@ def create_app(test_config=None):
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)
     
-    print("create app..")
-    return app
+    campaign_mail_scheduler = BackgroundScheduler()
+    campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
+    campaign_mail_scheduler.start()
+
+
+    try:
+        print("create app..")
+        return app
+    except:
+        campaign_mail_scheduler.shutdown()

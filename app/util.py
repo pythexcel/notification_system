@@ -176,9 +176,18 @@ def template_requirement(user):
       
 def Template_details(details):
     Template_data = []
-    for elem in details['Template']:
-        ret = mongo.db.mail_template.find_one({"_id":ObjectId(elem)})
-        ret = serialize_doc(ret)
-        Template_data.append(ret)
-    details['Template'] = Template_data
+    if 'Template' in details:
+        for elem in details['Template']:
+            ret = mongo.db.mail_template.find_one({"_id":ObjectId(elem)})
+            ret = serialize_doc(ret)
+            Template_data.append(ret)
+        details['Template'] = Template_data
+    else:
+        pass
     return details
+
+def campaign_details(user):
+    name = user['campaign']
+    ret = mongo.db.campaigns.find_one({"_id": ObjectId(name)})
+    user['campaign'] = serialize_doc(ret)
+    return user   
