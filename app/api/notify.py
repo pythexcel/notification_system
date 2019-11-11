@@ -113,11 +113,11 @@ def send_mails():
                         message_str = message_str.replace("#"+detail, element['value'])                      
         filename = str(uuid.uuid4())+'.pdf'
         if 'pdf' in request.json and request.json['pdf'] is True:
-            # pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/pdf/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-            pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/pdf/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            #pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
             try:
-                # file = cloudinary.uploader.upload(os.getcwd() + '/pdf/' + filename)
-                file = cloudinary.uploader.upload(filename)
+                file = cloudinary.uploader.upload(os.getcwd() + '/pdf/' + filename)
+                #file = cloudinary.uploader.upload(filename)
                 link = file['url']
             except ValueError:
                 link = Base_url + "/pdf/" + filename
@@ -126,8 +126,8 @@ def send_mails():
             if 'pdf' in request.json and request.json['pdf'] is True:
                 if 'attachment' in request.json and request.json['attachment'] is True:
                     # for local attachment cloudnary link won't work
-                    # filelink = os.getcwd() + '/pdf/' + filename
-                    filelink = filename
+                    filelink = os.getcwd() + '/pdf/' + filename
+                    #filelink = filename
             to = request.json['to']
             for elem in system_variable:
                 if elem['name'] == "#page_header":
