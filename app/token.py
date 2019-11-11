@@ -4,6 +4,7 @@ from flask_jwt_extended import (
     verify_jwt_in_request
 )
 from functools import wraps
+from flask import (Blueprint, flash, jsonify, abort, request)
 import re
 from flask import g, current_app, jsonify
 
@@ -11,46 +12,24 @@ from bson.objectid import ObjectId
 
 from app import mongo
 
-
-def init_token():
-   jwt = JWTManager()
-   return jwt
-
-
-def get_token(jwt, app):
-   app.config['JWT_SECRET_KEY'] = 'qwerty'  # Change this!
-   jwt.init_app(app)
-
-   @jwt.user_identity_loader
-   def user_identity_lookup(user):
-       print("user_identity_lookup")
-       print(user)
-       return str(user)
-
-   @jwt.user_loader_callback_loader
-   def user_loader_callback(identity):
-       print("user_loader_callback")
-       user = mongo.db.users.find_one({
-           "username": identity})
-       print('load the user by its identity')
-       print('load identity by user')
-       if user is None or "username" not in user:
-           return None
-       return user
-
 def admin_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        verify_jwt_in_request()
-        user = get_current_user()
-
-        if user["role"] == "Admin":
-            return fn(*args, **kwargs)
-
+        if 'Authorization' in request.headers:
+            project_secret_key = request.headers.get('Authorization')
+        token = project_secret_key.split()
+        token = token[-1]
+        user = jwt.decode(token,None,False)    
         if 'role' in user:
-            if user['role'] != 'Admin':
-                return jsonify(msg='Admins only!'), 403
-            else:
+            if user["role"] == "Admin" or user['role'] == "HR":
                 return fn(*args, **kwargs)
-        return jsonify(msg='Admins only!'), 403
+            else:
+                return jsonify(msg='Unauthorized!'), 403
+        else:
+            if 'user_claims' in user:
+                if user["user_claims"]['role'] == "Admin" or user["user_claims"]['role'] == "HR":
+                    return fn(*args, **kwargs)
+                else:
+                    return jsonify(msg='Unauthorized!'), 403
     return wrapper
+    

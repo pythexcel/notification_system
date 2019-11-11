@@ -4,9 +4,8 @@ import datetime
 from bson.objectid import ObjectId
 from app.mail_util import send_email
 
-
 def campaign_mail():
-    print("RUNNING...............")
+    print("CAMPAIGN MAIL>>>RUNNING...............")
     ret = mongo.db.campaign_users.find_one({"send_status":False})
     if ret is not None:
         mail = ret['email']
@@ -45,3 +44,26 @@ def campaign_mail():
     else:
         pass    
 
+
+def reject_mail():
+    print("REJECT MAIL>>>>RUNNING ..................")  
+    ret = mongo.db.rejection_handling.find_one({"send_status":False})
+    if ret is not None:
+        mail = ret['email']
+        print(mail)
+        message = ret['message']
+        rejected_time = ret['rejection_time']  
+        diffrence = datetime.datetime.utcnow() - rejected_time
+        if diffrence.days == 1:
+            print(diffrence.days)
+            print('CONDITION MATCHED')
+            to = []
+            to.append(mail)
+            send_email(message=message,recipients=to,subject='REJECTED')
+            user_status = mongo.db.rejection_handling.remove({"_id":ObjectId(ret['_id'])})
+            print("EMAIL_SENDED...............")
+        else:
+            print('SKIPPED')
+            pass
+    else:
+        print("HERE")    

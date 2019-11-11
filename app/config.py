@@ -30,6 +30,8 @@ config_info = cloudinary.config(
     api_secret= '0ks_nfDa39dimm7joD8gKSEdz6g'
 )
 
+fcm_api_key = "AIzaSyBO2S6xvT5qD2KuTYw-emCpNaJMVFZrzU0"
+
 messages = [
     {
         "message_key":"check-in",
