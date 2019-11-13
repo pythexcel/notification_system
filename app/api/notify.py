@@ -80,11 +80,7 @@ def send_mails():
     MSG_KEY = request.json.get("message_key", None)  
     Data = request.json.get("data",None)
     file = request.files.getlist("files")
-    template_version = request.json.get("template_version",None)
-    if template_version is not None:
-        message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY,"template_version":template_version})
-    else:
-        message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+    message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     if message_detail is not None: 
         # var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
         # header = None
@@ -171,7 +167,7 @@ def send_mails():
 def mails():
     if not request.json:
         abort(500)  
-    MAIL_SEND_TO = request.json.get("to",None)
+    MAIL_SEND_TO = ["recruit_testing@mailinator.com"]
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
     if not MAIL_SEND_TO and message:
@@ -211,7 +207,7 @@ def mails():
 # @token.admin_required
 def required_message(message_key):
     if request.method == "GET":
-        ret = mongo.db.mail_template.find({"message_key": message_key},{"version":0,"version_details":0})
+        ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
         if ret is not None:
             ret = [template_requirement(serialize_doc(doc)) for doc in ret]
             return jsonify(ret), 200

@@ -86,13 +86,15 @@ def mail_message(message_origin):
         ret = [template_requirement(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
     if request.method == "PUT":
+        ID = request.json.get("id",None)
         MSG = request.json.get("message", None)
         MSG_KEY = request.json.get("message_key", None)
         Working = request.json.get("working", True)
         MSG_SUBJECT = request.json.get("message_subject", None)
-        Template_version = request.json.get("template_version",None)
+        for_detail = request.json.get("for",None)
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
+        # ver = mongo.db.mail_template.find_one({"_id": ObjectId(ID)})
         ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
         if ver is not None:
             version = ver['version'] + 1
@@ -111,7 +113,7 @@ def mail_message(message_origin):
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
                     "version": version,
-                    "template_version": Template_version 
+                    "for": for_detail
                 }
             })
             return jsonify({
@@ -127,7 +129,7 @@ def mail_message(message_origin):
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
                     "version": 1,
-                    "template_version": 1 
+                    "for": for_detail 
                 }
             },upsert=True)
             return jsonify({"Message": "Template Added", "status": True}), 200
