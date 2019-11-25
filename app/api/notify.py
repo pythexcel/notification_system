@@ -26,16 +26,21 @@ def dispatch():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  #salary slip,xyz
+    print("MSG_KEY=====>",MSG_KEY)
     missed_req = {}
     message_detail = mongo.db.notification_msg.find_one({"message_key": MSG_KEY})
+    print("message_detail==>",message_detail)
     # finding data of payload from request key via json
     for data in messages:
         if data['message_key'] == MSG_KEY:
+            print("line number 36")
             missed_req = data
     # below will checki if message detail is completely empty return data from json or else if its any value is none replace it from json data
     if message_detail is not None:
+        print("line number 40 if condition")
         update = message_detail.update((k,v) for k,v in missed_req.items() if v is None)
     else:
+        print("line number 43 else condition")
         message_detail = missed_req
     if message_detail and message_detail['message_type'] is not None:   
             message = message_detail['message']
@@ -43,6 +48,7 @@ def dispatch():
             # looping over all the needs check if my message type in that key and if found
             for key in message_needs:
                 if message_detail['message_type'] == key:
+                    print("line number 51 if condition")
                     need_found_in_payload = False
                     # LOOP OVER THE KEYS inside the need FOR REQUEST
                     for data in message_needs[key]:
@@ -57,16 +63,18 @@ def dispatch():
                     if not missing_payload:
                         input = request.json
                         try:
+                            print("message==>",message,"message_details==>",message_detail,"req_json",input)
                             validate_message(message=message,message_detail=message_detail,req_json=input) 
+                            print("validate_message")
                             return jsonify({"status":True,"Message":"Sended"}),200 
                         except Exception as error:
+                            print("Exception line number 70 notify")
                             return(repr(error)),400
                     else:
                         ret = ",".join(missing_payload)
                         return jsonify(ret + " is missing from request"), 400
     else:
         return jsonify("No Message Type Available"), 400
-
 
 @bp.route('/preview', methods=["POST"])
 def send_mails():

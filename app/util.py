@@ -22,6 +22,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
     missing_payload = []
     for data in message_special:
         if data[0]=='@':
+            print("line number 25 util.py")
             message_variables.append(data[1:-1])       
     for data in system_variable:
         if data in message_variables:
@@ -33,6 +34,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
     for data in message_variables:
         need_found_in_payload = False
         if data in req_json:
+            print("line number 37 util")
             need_found_in_payload = True
         else:
             # HERE the logic behind this is if someone wants to send multiple things in req then variable data will be a dictionary
@@ -41,9 +43,13 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
             else:
                 missing_payload.append(data)
     if not missing_payload:
+        print("missing_payloadmissing_payloadmissing_payloadmissing_payloadmissing_payloadmissing_payload")
+        print("message==>",message,"message_variables==>",message_variables,"req_json==>",req_json,"system_require==>",system_require,"message_detail==>",message_detail)
         construct_message(message=message,message_variables=message_variables,
                         req_json=req_json,system_require=system_require,message_detail=message_detail)             
     else:
+        print("Exception--------------------------------------------Exception")
+        print(missing_payload)
         ret = ",".join(missing_payload)
         raise Exception("These data are missing from payload: " + ret)      
 
@@ -55,10 +61,12 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     slack_user_detail = req_json
     req_json = json.loads(json.dumps(req_json))
     email_user_detail = req_json
+    print("req_json==>",req_json)
     if status['slack_notfication'] is True:
         # this condition if written if message is just for mail but will remove this if not required
         if message_detail['for_email'] is False:
             if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
+                print("line number 67 util")
                 slack = slack_id(slack_user_detail['user']['email'])
                 slack_user_detail['user'] = "<@" + slack + ">"
             else:
@@ -73,8 +81,10 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             for elem in system_require:
                 if elem in system_variable:  
                     message_str = message_str.replace("@"+elem+":", system_variable[elem])
+            print("message_string====>",message_str)
             channels = []          
             if 'slack_channel' in slack_user_detail:
+                print("line number 85 in util file")
                 for data in slack_user_detail['slack_channel']:
                     channels.append(data)
             else:
@@ -87,8 +97,10 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                 channels.append(slack)
             else:
                 pass     
-            if channels:                                                        
-                slack_message(message=message_str,channel=channels,req_json=slack_user_detail,message_detail=message_detail)   
+            if channels:   
+                print("message===>",message_str,"channels====>",channels,"req_json===>",slack_user_detail,"message_detail",message_detail)                                                     
+                slack_message(message=message_str,channel=channels,req_json=slack_user_detail,message_detail=message_detail)  
+                print("msg sended--101") 
             else:
                 pass
         else:
@@ -142,6 +154,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             pass
     else:
         pass
+
 
 
 # this function will send back variables of html templates with variable from templates if there are None in special variables collection
