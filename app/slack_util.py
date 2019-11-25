@@ -16,7 +16,9 @@ def slack_id(email):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
-                       email=email)                  
+                       email=email)
+    print(sl_user_id['user']['id'])                   
+
     return (sl_user_id['user']['id'])
 
 
@@ -49,6 +51,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
     else:
         pass
     for data in channel:
+        print(data)
         sc.api_call(
             "chat.postMessage",
             channel=data,
@@ -58,6 +61,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
 
 
 def slack_profile(email=None):
+    print(email)
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",

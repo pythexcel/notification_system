@@ -7,7 +7,8 @@ import datetime
 from app.slack_util import slack_id,slack_message
 from app.mail_util import send_email
 import json
-
+from bson.objectid import ObjectId
+import re
 
 def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
@@ -22,7 +23,8 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
     missing_payload = []
     for data in message_special:
         if data[0]=='@':
-            message_variables.append(data[1:-1])       
+            message_variables.append(data[1:-1])
+           
     for data in system_variable:
         if data in message_variables:
             system_require.append(data)
@@ -56,7 +58,6 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     req_json = json.loads(json.dumps(req_json))
     email_user_detail = req_json
     if status['slack_notfication'] is True:
-        # this condition if written if message is just for mail but will remove this if not required
         if message_detail['for_email'] is False:
             if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
                 slack = slack_id(slack_user_detail['user']['email'])
@@ -81,12 +82,11 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
                 pass  
             if message_detail['slack_channel'] is not None:
                 for elem in message_detail['slack_channel']:
-                    channels.append(elem)
-            # here is the conditon for sending message to just the user himself as we discussed there will be 2 condtion               
+                    channels.append(elem)       
             if message_detail['sended_to'] == "private":
                 channels.append(slack)
             else:
-                pass     
+                pass      
             if channels:                                                        
                 slack_message(message=message_str,channel=channels,req_json=slack_user_detail,message_detail=message_detail)   
             else:
@@ -96,7 +96,6 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     else:
         pass
     if status['send_email'] is True:
-        # same condition for if just send to mail will remove if not required
         if message_detail['for_email'] is True:
             if 'user' in email_user_detail and email_user_detail['user'] is not None:
                 username = json.loads(json.dumps(email_user_detail['user']['email']))
@@ -143,8 +142,6 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     else:
         pass
 
-
-# this function will send back variables of html templates with variable from templates if there are None in special variables collection
 def template_requirement(user):
     special_val = []
     unrequired = []
@@ -156,24 +153,30 @@ def template_requirement(user):
             special_val.append(data['name'])
         if data['value'] is not None:
             unrequired.append(data['name'])
-    message = user['message']
+    message = user['message'].split("#")
+    del message[0]
     message_variables = []
-    message = message.split()
+    rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
     for elem in message:
-        if "#" + elem[1:] in special_val:
-            message_variables.append(elem[1:])    
-        if elem[0] == "#":
-            if elem[1:] not in message_variables :
-                if "#" + elem[1:] not in unrequired:
-                    message_variables.append(elem[1:])
-
+        varb = re.split(rex, elem)
+        if "#" + varb[0] in special_val:
+            message_variables.append(varb[0])    
+        if varb[0] not in message_variables :
+            if "#" + varb[0] not in unrequired:
+                message_variables.append(varb[0])
     for data in message_variables:
         if data not in unique_variables:
-            unique_variables.append(data)                    
+            unique_variables.append(data) 
+    message_str = user['message']
+    for detail in unrequired:
+        for element in ret:
+            if detail == element['name'] and element['value'] is not None:
+                rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                message_str = re.sub(rexWithSystem, element['value'], message_str)                     
+    user['message'] = message_str
     user['template_variables'] = unique_variables 
     return user              
 
-      
 def Template_details(details):
     Template_data = []
     if 'Template' in details:
@@ -191,3 +194,8 @@ def campaign_details(user):
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(name)})
     user['campaign'] = serialize_doc(ret)
     return user   
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','docx','doc'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

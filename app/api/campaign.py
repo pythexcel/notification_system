@@ -1,12 +1,19 @@
 from app import mongo
+from app import token
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util import serialize_doc,Template_details,campaign_details
 import datetime
 from bson.objectid import ObjectId
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity, get_current_user, jwt_refresh_token_required,
+    verify_jwt_in_request
+)
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
 
 @bp.route('/create_campaign', methods=["GET", "POST"])
+# @token.admin_required
 def create_campaign():
     if request.method == "GET":
         ret = mongo.db.campaigns.aggregate([])
@@ -27,15 +34,17 @@ def create_campaign():
         return jsonify({"MSG":"Campaign Inserted"}),200
 
 @bp.route('/list_campaign', methods=["GET"])
+# @token.admin_required
 def list_campaign():
         ret = mongo.db.campaigns.aggregate([
             {"$match": {"active":True}}
         ])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
-        return jsonify(ret)
+        return jsonify(ret), 200
 
 
 @bp.route('/update_campaign/<string:Id>', methods=["PUT"])
+# @token.admin_required
 def update_campaign(Id):
     name = request.json.get("campaign_name")
     description = request.json.get("campaign_description")
@@ -93,12 +102,14 @@ def add_user_campaign():
     if request.method == "GET":
         ret = mongo.db.campaign_users.aggregate([])
         ret = [campaign_details(serialize_doc(doc)) for doc in ret]
-        return jsonify(ret),200
+        return jsonify(ret), 200
     if request.method == "POST":
         users = request.json.get("users")
         campaign = request.json.get("campaign")
+        
         for data in users:
             data['send_status'] = False
             data['campaign'] = campaign
+
         ret = mongo.db.campaign_users.insert_many(users)
-        return jsonify({"MSG":"Users added to campaign"}),200
+        return jsonify({"MSG":"Users added to campaign"}), 200  

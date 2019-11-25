@@ -2,7 +2,7 @@ from app import token
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.mail_util import send_email
-from app.util import serialize_doc,construct_message,validate_message
+from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
 from app.config import message_needs,messages,config_info,Base_url
 from app.slack_util import slack_message 
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
@@ -16,7 +16,14 @@ import cloudinary.api
 from weasyprint import HTML, CSS
 import uuid
 import os 
+from app.phone_util import Push_notification
 from bson.objectid import ObjectId
+from werkzeug import secure_filename
+from flask import current_app as app
+import re
+import base64
+import bson
+
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
@@ -69,74 +76,130 @@ def dispatch():
 
 
 @bp.route('/preview', methods=["POST"])
+# @token.admin_required
 def send_mails():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  
-    # MAIL_SEND_TO = request.json.get("to",None)
     Data = request.json.get("data",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     if message_detail is not None: 
-        var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
-        head = var['header_value']
-        foot = var['footer_value']
-        ret = mongo.db.mail_variables.find({})
-        ret = [serialize_doc(doc) for doc in ret] 
+        filelink = None
+        if 'filelink' in message_detail:
+            filelink = message_detail['filelink']
+        filename = None
+        if 'filename' in message_detail:
+            filename = message_detail['filename']    
+        # var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
+        # header = None
+        # footer = None
+        # if var is not None:
+            # header = var['header_value']
+            # footer = var['footer_value']
+        system_variable = mongo.db.mail_variables.find({})
+        system_variable = [serialize_doc(doc) for doc in system_variable]
         message_variables = []
-        message = message_detail['message'].split()
+        message = message_detail['message'].split('#')
+        del message[0]
+        rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
         for elem in message:
-            if elem[0]=='#':
-                message_variables.append(elem[1:])        
+            varb = re.split(rex, elem)
+            message_variables.append(varb[0])
         message_str = message_detail['message']
         for detail in message_variables:
             if detail in request.json['data']:
-                message_str = message_str.replace("#"+detail, request.json['data'][detail])
+                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                message_str = re.sub(rexWithString, request.json['data'][detail], message_str)
             else:
-                message_str = message_str.replace("#page_header",head)
-                message_str = message_str.replace("#page_footer",foot)
-                for element in ret:
+                # HERE! NEED TO WRITE CONDITION FOR HEADER/FOOTER REPLACE WITH RE WHEN LETTER HEADS ARE ASSIGNED
+                # if header is not None:
+                    # message_str = message_str.replace("#page_header",header)
+                # if footer is not None:
+                    # message_str = message_str.replace("#page_footer",footer)
+                for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
-                        message_str = message_str.replace("#"+detail, element['value'])  
-                            
-        filename = str(uuid.uuid4())+'.pdf'
-        pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/pdf/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-        # below try except condition is for seeing if cloudnary credentials availabe or not save in file system
-        try:
-            file = cloudinary.uploader.upload(os.getcwd() + '/pdf/' + filename)
-            link = file['url']        
-        except ValueError:
-            link = Base_url + "/pdf/" + filename
-        if 'to' in request.json:
-            filelink = None
-            if 'pdf' in request.json and request.json['pdf'] is True:
-                filelink = os.getcwd() + '/pdf/' + filename
-            to = request.json['to']
-            for elem in ret:
-                if elem['name'] == "#page_header":
-                    head = elem['value']
-                if elem['name'] == "#page_footer":
-                    foo = elem['value']
-                if elem['name'] == "#page_break":
-                    br = elem['value']                    
-                    message_str = message_str.replace(head,'')
-                    message_str = message_str.replace(foo,'')
-                    message_str = message_str.replace(br,'')
-            bcc = None
-            if 'bcc' in request.json:
-                bcc = request.json['bcc']
-            cc = None
-            if 'cc' in request.json:
-                cc = request.json['cc']
-            send_email(message=message_str,recipients=to,subject=message_detail['message_subject'],bcc=bcc,cc=cc,filelink=filelink,filename=filename,link=link)
-        return jsonify({"status":True,"Message":message_str,"pdf": link}),200
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                        message_str = re.sub(rexWithSystem, element['value'], message_str)                     
 
+
+        subject_variables = []
+        message_sub = message_detail['message_subject'].split('#')
+        del message[0]
+        regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        for elem in message_sub:
+            sub_varb = re.split(regex, elem)
+            subject_variables.append(sub_varb[0])
+        message_subject = message_detail['message_subject']
+        for detail in subject_variables:
+            if detail in request.json['data']:
+                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                message_subject = re.sub(rexWithString, request.json['data'][detail], message_subject)
+            else:
+                for element in system_variable:
+                    if "#" + detail == element['name'] and element['value'] is not None:
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                        message_subject = re.sub(rexWithSystem, element['value'], message_subject)                     
+        filename = str(uuid.uuid4())+'.pdf'
+        link = None
+        if 'pdf' in request.json and request.json['pdf'] is True:
+            pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            # pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            try:
+                file = cloudinary.uploader.upload(os.getcwd() + '/attached_documents/' + filename)
+                # file = cloudinary.uploader.upload(filename)
+                link = file['url']
+            except ValueError:
+                link = Base_url + "/attached_documents/" + filename
+        
+        # USE NAHI YAAD H NEECHE CODE KA        
+        # filelink = None
+        # if 'pdf' in request.json and request.json['pdf'] is True:
+        #     # for local attachment cloudnary link won't work
+        #     # filelink = os.getcwd() + '/pdf/' + filename
+        #     filelink = filename
+        
+        for elem in system_variable:
+            if elem['name'] == "#page_header":
+                head = elem['value']
+            if elem['name'] == "#page_footer":
+                foo = elem['value']
+            if elem['name'] == "#page_break":
+                br = elem['value']                    
+                message_str = message_str.replace(head,'')
+                message_str = message_str.replace(foo,'')
+                message_str = message_str.replace(br,'') 
+        # if header is not None:
+        #     message_str = message_str.replace(header,'')
+        # if footer is not None:
+        #     message_str = message_str.replace(footer,'')
+        if message_detail['message_key'] == "interviewee_reject":
+            reject_handling = mongo.db.rejection_handling.insert_one({
+            "email": request.json['data']['email'],
+            'rejection_time': request.json['data']['rejection_time'],
+            'send_status': False,
+            'message': message_str,
+            'subject': message_subject
+            }).inserted_id    
+        else:
+            pass
+        if 'pdf' in request.json and request.json['pdf'] is True:
+            return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"pdf": link,"filename":filename,"filelink":filelink}),200
+        else:
+            return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"filename":filename,"filelink":filelink}),200
+
+            
 @bp.route('/send_mail', methods=["POST"])
+# @token.admin_required
 def mails():
     if not request.json:
         abort(500)  
-    MAIL_SEND_TO = request.json.get("to",None)
+    MAIL_SEND_TO = ["recruit_testing@mailinator.com"]
+    # MAIL_SEND_TO = request.json.get("to",None)
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
+    filename = request.json.get("filename",None)
+    filelink = request.json.get("filelink",None)
+    print(filename,filelink)
     if not MAIL_SEND_TO and message:
         return jsonify({"MSG": "Invalid Request"}), 400
     bcc = None
@@ -144,6 +207,20 @@ def mails():
         bcc = request.json['bcc']
     cc = None
     if 'cc' in request.json:
-        cc = request.json['cc']
-    send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc)    
-    return jsonify({"status":True,"Message":"Sended"}),200           
+        cc = request.json['cc']   
+    send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
+    if 'fcm_registration_id' in request.json:
+        Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
+    return jsonify({"status":True,"Message":"Sended"}),200 
+
+
+@bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
+@token.admin_required
+def required_message(message_key):
+    if request.method == "GET":
+        ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
+        if ret is not None:
+            ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+            return jsonify(ret), 200
+        else:
+            return jsonify ({"Message": "no template exist"}), 200    

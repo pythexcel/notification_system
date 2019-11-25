@@ -36,31 +36,19 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     msg['From'] = username
     msg['To'] = ','.join(recipients) 
     msg['Cc'] = cc
-    #added a filelink here and below logic is for attachment to read and send pdf file 
     if filelink is not None:
         fo=open(filelink,'rb')
-        file = email.mime.application.MIMEApplication(fo.read(),_subtype="pdf")
+        file = email.mime.application.MIMEApplication(fo.read())
         fo.close()
         file.add_header('Content-Disposition','attachment',filename=filename)
         msg.attach(file)
     else:
         pass
-    # this below is for campaign when we will be sending links in mails
     if link is not None:
-        url = ' <a href='+ link + '>Click</a>'
+        url = ' <a href='+ link + '>Click Here!</a>'
         message = message + url
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 
     mail.quit()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     

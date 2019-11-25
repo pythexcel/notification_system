@@ -1,5 +1,6 @@
 import cloudinary
-Base_url = '5.9.144.226:8005'
+Base_url = '176.9.137.77:8007'
+
 message_needs={
     "simple_message":[
             "message_type",
@@ -29,6 +30,8 @@ config_info = cloudinary.config(
     api_key= '166465296448686',
     api_secret= '0ks_nfDa39dimm7joD8gKSEdz6g'
 )
+
+fcm_api_key = "AIzaSyBO2S6xvT5qD2KuTYw-emCpNaJMVFZrzU0"
 
 messages = [
     {

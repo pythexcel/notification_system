@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, make_response, jsonify, send_from_directory
+from flask import Flask, make_response, jsonify, send_from_directory, Response
 
 from flask_cors import CORS
 
@@ -12,15 +12,17 @@ mongo = db.init_db()
 
 from app import token
 
-jwt = token.init_token()
-
-from app.scheduler import campaign_mail
+from app.scheduler import campaign_mail,reject_mail
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True,static_url_path='')
     app.config.from_mapping()
+
     CORS(app)
+    UPLOAD_FOLDER = os.getcwd() + '/attached_documents/'
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
@@ -39,7 +41,7 @@ def create_app(test_config=None):
         return make_response(jsonify(error='Not found'), 400)
     
     @app.route('/pdf/<path:path>')
-    def send_js(path):
+    def send_file(path):
         return send_from_directory('pdf', path)
 
     @app.errorhandler(500)
@@ -47,8 +49,7 @@ def create_app(test_config=None):
         return make_response({}, 500)
 
     db.get_db(mongo=mongo, app=app)
-    token.get_token(jwt=jwt, app=app)
-
+    
     from app.api import notify
     from app.api import slack_channel
     from app.api import slack_settings
@@ -63,13 +64,24 @@ def create_app(test_config=None):
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)
     
-    campaign_mail_scheduler = BackgroundScheduler()
-    campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
-    campaign_mail_scheduler.start()
+
+    # campaign_mail_scheduler = BackgroundScheduler()
+    # campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=660)
+    # campaign_mail_scheduler.start()
+
+    # reject_mail_scheduler = BackgroundScheduler()
+    # reject_mail_scheduler.add_job(reject_mail, trigger='interval', seconds=5)
+    # reject_mail_scheduler.start()
 
 
-    try:
-        print("create app..")
-        return app
-    except:
-        campaign_mail_scheduler.shutdown()
+    # try:
+    #     print("create app..")
+    #     return app
+    # except:
+    #     campaign_mail_scheduler.shutdown()
+    #     reject_mail_scheduler.shutdown()
+
+
+
+    print("create app..")
+    return app
