@@ -82,6 +82,7 @@ def send_mails():
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  
     Data = request.json.get("data",None)
+    file = request.files.getlist("files")
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     if message_detail is not None: 
         filelink = None

@@ -51,6 +51,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
 
 
 def construct_message(message=None,req_json=None,message_variables=None,system_require=None,message_detail=None):
+    print("conc message")
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     status = mongo.db.slack_settings.find_one({},{"_id":0})
     req_json = json.loads(json.dumps(req_json))
@@ -59,12 +60,14 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     email_user_detail = req_json
     if status['slack_notfication'] is True:
         if message_detail['for_email'] is False:
+            print('hai isme')
             if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
                 slack = slack_id(slack_user_detail['user']['email'])
                 slack_user_detail['user'] = "<@" + slack + ">"
             else:
                 pass            
             message_str = message
+            print(message_str)
             for data in message_variables:
                 if data in slack_user_detail:
                     message_str = message_str.replace("@"+data+":", slack_user_detail[data])
