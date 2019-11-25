@@ -1,23 +1,16 @@
 from app import mongo
 from app import token
 from flask import (Blueprint, flash, jsonify, abort, request)
-<<<<<<< HEAD
 from app.util import serialize_doc, template_requirement,allowed_file
-=======
-from app.util import serialize_doc, template_requirement
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
 import datetime
 from bson.objectid import ObjectId
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
-<<<<<<< HEAD
 from werkzeug.utils import secure_filename
 import os
 from flask import current_app as app
-=======
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
@@ -63,20 +56,12 @@ def notification_message(message_origin):
                 "for_slack": for_slack,
                 "for_phone": for_phone
             }
-<<<<<<< HEAD
         },upsert=True)
-=======
-        },
-                                               upsert=True)
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
         return jsonify({"MSG": "upsert"}), 200
 
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
-<<<<<<< HEAD
 @token.admin_required
-=======
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
 def special_var():
     if request.method == "GET":
         ret = mongo.db.mail_variables.find({})
@@ -92,27 +77,17 @@ def special_var():
                 "value": value,
                 "variable_type": variable_type
             }
-<<<<<<< HEAD
         },upsert=True)
         return jsonify({"MSG": "upsert"}), 200
 
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT","DELETE"])
-=======
-        },
-                                             upsert=True)
-        return jsonify({"MSG": "upsert"}), 200
-
-
-@bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT"])
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
 # @token.admin_required
 def mail_message(message_origin):
     if request.method == "GET":
         ret = mongo.db.mail_template.find({"message_origin": message_origin})
         ret = [template_requirement(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
-<<<<<<< HEAD
     if request.method == "DELETE":
         MSG_KEY = request.json.get("message_key", None)
         ret = mongo.db.mail_template.remove({"message_key": MSG_KEY})
@@ -132,21 +107,11 @@ def mail_message(message_origin):
         for_detail = request.form["for"]
         subject = request.form["subject"]
         Doc_type = request.form["doc_type"]
-=======
-    if request.method == "PUT":
-        ID = request.json.get("id",None)
-        MSG = request.json.get("message", None)
-        MSG_KEY = request.json.get("message_key", None)
-        Working = request.json.get("working", True)
-        MSG_SUBJECT = request.json.get("message_subject", None)
-        for_detail = request.json.get("for",None)
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
         # ver = mongo.db.mail_template.find_one({"_id": ObjectId(ID)})
         ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
         if ver is not None:
-<<<<<<< HEAD
             attachment_file = None
             attachment_file_name = None
             if 'attachment_file' not in request.files:
@@ -162,8 +127,6 @@ def mail_message(message_origin):
                     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
                     attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                     attachment_file_name = filename     
-=======
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
             version = ver['version'] + 1
             ver_message = ver['message']
             ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
@@ -176,7 +139,6 @@ def mail_message(message_origin):
                 "$set": {
                     "message": MSG,
                     "message_key": MSG_KEY,
-<<<<<<< HEAD
                     "working": working,
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
@@ -186,13 +148,6 @@ def mail_message(message_origin):
                     "Doc_type": Doc_type,
                     "attachment_file": attachment_file,
                     "attachment_file_name":attachment_file_name
-=======
-                    "working": Working,
-                    "message_origin": message_origin,
-                    "message_subject": MSG_SUBJECT,
-                    "version": version,
-                    "for": for_detail
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
                 }
             })
             return jsonify({
@@ -212,7 +167,6 @@ def mail_message(message_origin):
                 "$set": {
                     "message": MSG,
                     "message_key": MSG_KEY,
-<<<<<<< HEAD
                     "working": working,
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
@@ -228,29 +182,6 @@ def mail_message(message_origin):
 
 @bp.route('/letter_heads', methods=["GET", "PUT"])
 @token.admin_required
-=======
-                    "working": Working,
-                    "message_origin": message_origin,
-                    "message_subject": MSG_SUBJECT,
-                    "version": 1,
-                    "for": for_detail 
-                }
-            },upsert=True)
-            return jsonify({"Message": "Template Added", "status": True}), 200
-
-
-# @bp.route('/version', methods=["PUT"])
-# def version():
-#     ret = mongo.db.mail_template.update({}, {
-#                 "$set": {
-#                     "version": 1,
-#                 }
-#     },multi=True)
-#     return jsonify({"MSG":"done"}), 200
-
-
-@bp.route('/letter_heads', methods=["GET", "PUT"])
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
 def letter_heads():
     if request.method == "GET":
         ret = mongo.db.letter_heads.find({})
@@ -273,12 +204,7 @@ def letter_heads():
         return jsonify({"MSG": "Letter Head Created"}), 200
 
 
-<<<<<<< HEAD
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',methods=["PUT"])
-=======
-@bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',
-          methods=["PUT"])
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
 # @token.admin_required
 def assign_letter_heads(template_id, letter_head_id):
     ret = mongo.db.mail_template.update(
@@ -288,7 +214,6 @@ def assign_letter_heads(template_id, letter_head_id):
         }})
     return jsonify({"MSG": "Letter Head Added To Template"}), 200
 
-<<<<<<< HEAD
 # @bp.route('/sub',methods=["GET"])
 # def sub():
 #     ret = mongo.db.mail_template.update({},{
@@ -297,6 +222,3 @@ def assign_letter_heads(template_id, letter_head_id):
 #         }
 #     },multi=True,upsert=False)
 #     return 'Done'
-=======
-
->>>>>>> 866622e538ab9129a0c85d878c5098aeac1e828f
