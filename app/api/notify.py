@@ -82,15 +82,14 @@ def send_mails():
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  
     Data = request.json.get("data",None)
-    file = request.files.getlist("files")
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     if message_detail is not None: 
-        filelink = None
-        if 'filelink' in message_detail:
-            filelink = message_detail['filelink']
-        filename = None
-        if 'filename' in message_detail:
-            filename = message_detail['filename']    
+        attachment_file = None
+        if 'attachment_file' in message_detail:
+            attachment_file = message_detail['attachment_file']
+        attachment_file_name = None
+        if 'attachment_file_name' in message_detail:
+            attachment_file_name = message_detail['attachment_file_name']    
         # var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
         # header = None
         # footer = None
@@ -143,11 +142,11 @@ def send_mails():
         filename = str(uuid.uuid4())+'.pdf'
         link = None
         if 'pdf' in request.json and request.json['pdf'] is True:
-            pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-            # pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            # pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
             try:
-                file = cloudinary.uploader.upload(os.getcwd() + '/attached_documents/' + filename)
-                # file = cloudinary.uploader.upload(filename)
+                # file = cloudinary.uploader.upload(os.getcwd() + '/attached_documents/' + filename)
+                file = cloudinary.uploader.upload(filename)
                 link = file['url']
             except ValueError:
                 link = Base_url + "/attached_documents/" + filename
@@ -184,10 +183,9 @@ def send_mails():
         else:
             pass
         if 'pdf' in request.json and request.json['pdf'] is True:
-            return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"pdf": link,"filename":filename,"filelink":filelink}),200
+            return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"pdf": link,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
         else:
-            return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"filename":filename,"filelink":filelink}),200
-
+            return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
             
 @bp.route('/send_mail', methods=["POST"])
 # @token.admin_required
