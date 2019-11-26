@@ -195,7 +195,7 @@ def send_mails():
 def mails():
     if not request.json:
         abort(500)  
-    MAIL_SEND_TO = ["recruit_testing@mailinator.com","personal_recruit_testing@mailinator.com"]
+    MAIL_SEND_TO = ["recruit_testing@mailinator.com","kaulaishwary11@gmail.com"]
     # MAIL_SEND_TO = request.json.get("to",None)
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
