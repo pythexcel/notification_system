@@ -204,7 +204,7 @@ def mails():
     bcc = ["bcc_testing_recruit@mailinator.com"]
     # if 'bcc' in request.json:
     #     bcc = request.json['bcc']
-    cc = ["bcc_testing_recruit@mailinator.com"]
+    cc = ["cc_testing_recruit@mailinator.com"]
     # if 'cc' in request.json:
     #     cc = request.json['cc']   
     send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
