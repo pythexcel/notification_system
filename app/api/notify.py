@@ -192,7 +192,7 @@ def send_mails():
 def mails():
     if not request.json:
         abort(500)  
-    MAIL_SEND_TO = ["recruit_testing@mailinator.com"]
+    MAIL_SEND_TO = ["recruit_testing@mailinator.com","personal_recruit_testing@mailinator.com"]
     # MAIL_SEND_TO = request.json.get("to",None)
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
@@ -201,12 +201,12 @@ def mails():
     print(filename,filelink)
     if not MAIL_SEND_TO and message:
         return jsonify({"MSG": "Invalid Request"}), 400
-    bcc = None
-    if 'bcc' in request.json:
-        bcc = request.json['bcc']
-    cc = None
-    if 'cc' in request.json:
-        cc = request.json['cc']   
+    bcc = ["bcc_testing_recruit@mailinator.com"]
+    # if 'bcc' in request.json:
+    #     bcc = request.json['bcc']
+    cc = ["bcc_testing_recruit@mailinator.com"]
+    # if 'cc' in request.json:
+    #     cc = request.json['cc']   
     send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])

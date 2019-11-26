@@ -199,8 +199,7 @@ def letter_heads():
                 "footer_value": footer_value,
                 "working": Working
             }
-        },
-                                           upsert=True)
+        },upsert=True)
         return jsonify({"MSG": "Letter Head Created"}), 200
 
 
@@ -214,11 +213,4 @@ def assign_letter_heads(template_id, letter_head_id):
         }})
     return jsonify({"MSG": "Letter Head Added To Template"}), 200
 
-# @bp.route('/sub',methods=["GET"])
-# def sub():
-#     ret = mongo.db.mail_template.update({},{
-#         "$set": {
-#             "Doc_type": None
-#         }
-#     },multi=True,upsert=False)
-#     return 'Done'
+
