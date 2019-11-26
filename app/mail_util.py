@@ -16,6 +16,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     port = mail_details['mail_port']
     mail_server = mail_details['mail_server']
     mail = smtplib.SMTP_SSL(str(mail_server), port)
+    mail.ehlo()
+    mail.starttls()
     mail.login(username,password)
     delivered = []
     for element in recipients:
