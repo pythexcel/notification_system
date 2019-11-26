@@ -74,7 +74,6 @@ def dispatch():
     else:
         return jsonify("No Message Type Available"), 400
 
-
 @bp.route('/preview', methods=["POST"])
 # @token.admin_required
 def send_mails():
@@ -89,13 +88,14 @@ def send_mails():
             attachment_file = message_detail['attachment_file']
         attachment_file_name = None
         if 'attachment_file_name' in message_detail:
-            attachment_file_name = message_detail['attachment_file_name']    
-        # var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
-        # header = None
-        # footer = None
-        # if var is not None:
-            # header = var['header_value']
-            # footer = var['footer_value']
+            attachment_file_name = message_detail['attachment_file_name']
+        header = None
+        footer = None
+        if 'template_head' in message_detail:        
+            var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
+            if var is not None:
+                header = var['header_value']
+                footer = var['footer_value']
         system_variable = mongo.db.mail_variables.find({})
         system_variable = [serialize_doc(doc) for doc in system_variable]
         message_variables = []
@@ -112,16 +112,18 @@ def send_mails():
                 message_str = re.sub(rexWithString, request.json['data'][detail], message_str)
             else:
                 # HERE! NEED TO WRITE CONDITION FOR HEADER/FOOTER REPLACE WITH RE WHEN LETTER HEADS ARE ASSIGNED
-                # if header is not None:
-                    # message_str = message_str.replace("#page_header",header)
-                # if footer is not None:
-                    # message_str = message_str.replace("#page_footer",footer)
+                if header is not None:
+                    header_rex = re.escape("#page_header") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                    message_str = re.sub(header_rex, header, message_str)
+                if footer is not None:
+                    footer_rex = re.escape("#page_footer") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                    message_str = re.sub(footer_rex, footer, message_str)
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
                         message_str = re.sub(rexWithSystem, element['value'], message_str)                     
 
-
+        print(message_str)
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
         del message[0]
@@ -168,10 +170,10 @@ def send_mails():
                 message_str = message_str.replace(head,'')
                 message_str = message_str.replace(foo,'')
                 message_str = message_str.replace(br,'') 
-        # if header is not None:
-        #     message_str = message_str.replace(header,'')
-        # if footer is not None:
-        #     message_str = message_str.replace(footer,'')
+        if header is not None:
+            message_str = message_str.replace(header,'')
+        if footer is not None:
+            message_str = message_str.replace(footer,'')
         if message_detail['message_key'] == "interviewee_reject":
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": request.json['data']['email'],
@@ -186,6 +188,7 @@ def send_mails():
             return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"pdf": link,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
         else:
             return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
+
             
 @bp.route('/send_mail', methods=["POST"])
 # @token.admin_required

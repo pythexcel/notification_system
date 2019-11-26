@@ -51,7 +51,6 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
 
 
 def construct_message(message=None,req_json=None,message_variables=None,system_require=None,message_detail=None):
-    print("conc message")
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     status = mongo.db.slack_settings.find_one({},{"_id":0})
     req_json = json.loads(json.dumps(req_json))
@@ -60,14 +59,12 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     email_user_detail = req_json
     if status['slack_notfication'] is True:
         if message_detail['for_email'] is False:
-            print('hai isme')
             if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
                 slack = slack_id(slack_user_detail['user']['email'])
                 slack_user_detail['user'] = "<@" + slack + ">"
             else:
                 pass            
             message_str = message
-            print(message_str)
             for data in message_variables:
                 if data in slack_user_detail:
                     message_str = message_str.replace("@"+data+":", slack_user_detail[data])
@@ -164,18 +161,39 @@ def template_requirement(user):
         varb = re.split(rex, elem)
         if "#" + varb[0] in special_val:
             message_variables.append(varb[0])    
-        if varb[0] not in message_variables :
+        if varb[0] not in message_variables:
             if "#" + varb[0] not in unrequired:
                 message_variables.append(varb[0])
     for data in message_variables:
         if data not in unique_variables:
             unique_variables.append(data) 
     message_str = user['message']
+    header = None
+    footer = None
+    if 'template_head' in user:
+        var = mongo.db.letter_heads.find_one({"_id":ObjectId(user['template_head'])})
+        if var is not None:
+            header = var['header_value']
+            footer = var['footer_value']
+        if header is not None:
+            header_rex = re.escape("#page_header") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+            message_str = re.sub(header_rex, header, message_str)
+        if footer is not None:
+            footer_rex = re.escape("#page_footer") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+            message_str = re.sub(footer_rex, footer, message_str)
+
     for detail in unrequired:
         for element in ret:
             if detail == element['name'] and element['value'] is not None:
                 rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                message_str = re.sub(rexWithSystem, element['value'], message_str)                     
+                message_str = re.sub(rexWithSystem, element['value'], message_str)  
+    if 'template_head' in user:
+        ret = mongo.db.letter_heads.find({"_id":ObjectId(user['template_head'])})
+        ret = [serialize_doc(doc) for doc in ret]
+        user['template_head'] = [ret]
+    else:
+        pass   
+                                  
     user['message'] = message_str
     user['template_variables'] = unique_variables 
     return user              

@@ -61,6 +61,7 @@ def notification_message(message_origin):
 
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
+# @token.authentication
 @token.admin_required
 def special_var():
     if request.method == "GET":
@@ -96,8 +97,6 @@ def mail_message(message_origin):
                 "status": True
             }), 200
     if request.method == "PUT":
-        print(request.form)
-        # print(request.form['message'])
         MSG = request.form["message"]
         MSG_KEY = request.form["message_key"]
         working = True
@@ -109,7 +108,6 @@ def mail_message(message_origin):
         Doc_type = request.form["doc_type"]
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
-        # ver = mongo.db.mail_template.find_one({"_id": ObjectId(ID)})
         ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
         if ver is not None:
             attachment_file = None
@@ -181,8 +179,9 @@ def mail_message(message_origin):
             return jsonify({"Message": "Template Added", "status": True}), 200
 
 @bp.route('/letter_heads', methods=["GET", "PUT"])
+@bp.route('/letter_heads/<string:id>', methods=["DELETE"])
 @token.admin_required
-def letter_heads():
+def letter_heads(id=None):
     if request.method == "GET":
         ret = mongo.db.letter_heads.find({})
         ret = [serialize_doc(doc) for doc in ret]
@@ -200,7 +199,10 @@ def letter_heads():
                 "working": Working
             }
         },upsert=True)
-        return jsonify({"MSG": "Letter Head Created"}), 200
+        return jsonify({"MSG": "Letter Head Created","status":True}), 200
+    if request.method == "DELETE":
+        ret = mongo.db.letter_heads.remove({"_id": ObjectId(id)})
+        return jsonify({"MSG": "Letter Head Deleted","status":True}), 200
 
 
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',methods=["PUT"])
@@ -212,5 +214,3 @@ def assign_letter_heads(template_id, letter_head_id):
             "template_head": letter_head_id
         }})
     return jsonify({"MSG": "Letter Head Added To Template"}), 200
-
-
