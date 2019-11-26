@@ -97,6 +97,8 @@ def mail_message(message_origin):
                 "status": True
             }), 200
     if request.method == "PUT":
+        print(request.files)
+        print(request.form)
         MSG = request.form["message"]
         MSG_KEY = request.form["message_key"]
         working = True
