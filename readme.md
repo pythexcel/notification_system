@@ -8,6 +8,24 @@ First install python 3.6+ on your system
 
 and also mongodb
 
+and host on mongo atlas online
+
+url = https://cloud.mongodb.com/user#/atlas/login
+
+then create a cluster make a free cluster then 
+
+click on connect 
+
+select connect your application
+
+selcet driver : python and version : 3.6 +
+
+copy the connection string of mongo URI
+
+and add mongo URI in app/db.py file
+ 
+enter your username and password in URI
+
 Next install pip3
 
 > sudo apt-get install python3-pip
