@@ -29,6 +29,7 @@ bp = Blueprint('notify', __name__, url_prefix='/notify')
 
 
 @bp.route('/dispatch', methods=["POST"])
+@token.authentication
 def dispatch():
     if not request.json:
         abort(500)
@@ -76,6 +77,7 @@ def dispatch():
 
 @bp.route('/preview', methods=["POST"])
 # @token.admin_required
+# @token.authentication
 def send_mails():
     if not request.json:
         abort(500)
@@ -84,11 +86,14 @@ def send_mails():
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     if message_detail is not None: 
         attachment_file = None
-        if 'attachment_file' in message_detail:
-            attachment_file = message_detail['attachment_file']
         attachment_file_name = None
-        if 'attachment_file_name' in message_detail:
-            attachment_file_name = message_detail['attachment_file_name']
+        if 'attachment' in request.json:
+            if 'attachment_file' in message_detail:
+                attachment_file = message_detail['attachment_file']
+            if 'attachment_file_name' in message_detail:
+                attachment_file_name = message_detail['attachment_file_name']
+        else:
+            pass        
         header = None
         footer = None
         if 'template_head' in message_detail:        
@@ -123,7 +128,6 @@ def send_mails():
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
                         message_str = re.sub(rexWithSystem, element['value'], message_str)                     
 
-        print(message_str)
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
         del message[0]
@@ -144,22 +148,19 @@ def send_mails():
         filename = str(uuid.uuid4())+'.pdf'
         link = None
         if 'pdf' in request.json and request.json['pdf'] is True:
-            # pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-            pdfkit = HTML(string=message_str).write_pdf(filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
             try:
-                # file = cloudinary.uploader.upload(os.getcwd() + '/attached_documents/' + filename)
-                file = cloudinary.uploader.upload(filename)
+                file = cloudinary.uploader.upload(os.getcwd() + '/attached_documents/' + filename)
                 link = file['url']
             except ValueError:
                 link = Base_url + "/attached_documents/" + filename
         
-        # USE NAHI YAAD H NEECHE CODE KA        
-        # filelink = None
-        # if 'pdf' in request.json and request.json['pdf'] is True:
-        #     # for local attachment cloudnary link won't work
-        #     # filelink = os.getcwd() + '/pdf/' + filename
-        #     filelink = filename
-        
+        # if 'to' in request.json:
+        # to = request.json['to']
+        to = ["recruit_testing@mailinator.com","personal_recruit_testing@mailinator.com"]
+        bcc = ["bcc_testing_recruit@mailinator.com"]
+        cc = ["cc_testing_recruit@mailinator.com"]
+
         for elem in system_variable:
             if elem['name'] == "#page_header":
                 head = elem['value']
@@ -174,6 +175,15 @@ def send_mails():
             message_str = message_str.replace(header,'')
         if footer is not None:
             message_str = message_str.replace(footer,'')
+
+        # bcc = None
+        # if 'bcc' in request.json:
+        #     bcc = request.json['bcc']
+        # cc = None
+        # if 'cc' in request.json:
+        #     cc = request.json['cc']
+
+
         if message_detail['message_key'] == "interviewee_reject":
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": request.json['data']['email'],
@@ -183,7 +193,8 @@ def send_mails():
             'subject': message_subject
             }).inserted_id    
         else:
-            pass
+            send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
+
         if 'pdf' in request.json and request.json['pdf'] is True:
             return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"pdf": link,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
         else:
@@ -191,25 +202,23 @@ def send_mails():
 
             
 @bp.route('/send_mail', methods=["POST"])
-# @token.admin_required
+@token.admin_required
 def mails():
     if not request.json:
         abort(500)  
-    MAIL_SEND_TO = ["recruit_testing@mailinator.com","personal_recruit_testing@mailinator.com"]
-    # MAIL_SEND_TO = request.json.get("to",None)
+    MAIL_SEND_TO = request.json.get("to",None)
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)
     filelink = request.json.get("filelink",None)
-    print(filename,filelink)
     if not MAIL_SEND_TO and message:
         return jsonify({"MSG": "Invalid Request"}), 400
-    bcc = ["bcc_testing_recruit@mailinator.com"]
-    # if 'bcc' in request.json:
-    #     bcc = request.json['bcc']
-    cc = ["cc_testing_recruit@mailinator.com"]
-    # if 'cc' in request.json:
-    #     cc = request.json['cc']   
+    bcc = None
+    if 'bcc' in request.json:
+        bcc = request.json['bcc']
+    cc = None
+    if 'cc' in request.json:
+        cc = request.json['cc']   
     send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])

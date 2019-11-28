@@ -61,7 +61,7 @@ def notification_message(message_origin):
 
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
-# @token.authentication
+@token.authentication
 @token.admin_required
 def special_var():
     if request.method == "GET":
@@ -83,7 +83,7 @@ def special_var():
 
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT","DELETE"])
-# @token.admin_required
+@token.admin_required
 def mail_message(message_origin):
     if request.method == "GET":
         ret = mongo.db.mail_template.find({"message_origin": message_origin})
@@ -208,7 +208,7 @@ def letter_heads(id=None):
 
 
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',methods=["PUT"])
-# @token.admin_required
+@token.admin_required
 def assign_letter_heads(template_id, letter_head_id):
     ret = mongo.db.mail_template.update(
         {"_id": ObjectId(template_id)},
