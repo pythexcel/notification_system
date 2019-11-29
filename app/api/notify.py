@@ -29,7 +29,7 @@ bp = Blueprint('notify', __name__, url_prefix='/notify')
 
 
 @bp.route('/dispatch', methods=["POST"])
-@token.authentication
+# @token.authentication
 def dispatch():
     if not request.json:
         abort(500)
