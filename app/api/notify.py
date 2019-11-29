@@ -157,7 +157,7 @@ def send_mails():
         
         # if 'to' in request.json:
         # to = request.json['to']
-        to = ["recruit_testing@mailinator.com","personal_recruit_testing@mailinator.com"]
+        to = ["recruit_testing@mailinator.com","kaulaishwary11@gmail.com"]
         bcc = ["bcc_testing_recruit@mailinator.com"]
         cc = ["cc_testing_recruit@mailinator.com"]
 
@@ -202,7 +202,7 @@ def send_mails():
 
             
 @bp.route('/send_mail', methods=["POST"])
-@token.admin_required
+# @token.admin_required
 def mails():
     if not request.json:
         abort(500)  

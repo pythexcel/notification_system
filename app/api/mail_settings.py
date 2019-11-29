@@ -13,7 +13,7 @@ from flask_jwt_extended import (
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 
 @bp.route('/settings', methods=["PUT", "GET"])
-@token.admin_required
+# @token.admin_required
 def mail_setings():
     if request.method == "GET":
        mail = mongo.db.mail_settings.find_one({},{"_id":0,"mail_password":0})

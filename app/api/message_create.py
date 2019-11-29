@@ -16,7 +16,7 @@ bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
 
 @bp.route('/configuration/<string:message_origin>', methods=["GET", "PUT"])
-@token.admin_required
+# @token.admin_required
 def notification_message(message_origin):
     if request.method == "GET":
         ret = mongo.db.notification_msg.find(
@@ -61,8 +61,8 @@ def notification_message(message_origin):
 
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
-@token.authentication
-@token.admin_required
+# @token.authentication
+# @token.admin_required
 def special_var():
     if request.method == "GET":
         ret = mongo.db.mail_variables.find({})
@@ -83,7 +83,7 @@ def special_var():
 
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT","DELETE"])
-@token.admin_required
+# @token.admin_required
 def mail_message(message_origin):
     if request.method == "GET":
         ret = mongo.db.mail_template.find({"message_origin": message_origin})
@@ -182,7 +182,7 @@ def mail_message(message_origin):
 
 @bp.route('/letter_heads', methods=["GET", "PUT"])
 @bp.route('/letter_heads/<string:id>', methods=["DELETE"])
-@token.admin_required
+# @token.admin_required
 def letter_heads(id=None):
     if request.method == "GET":
         ret = mongo.db.letter_heads.find({})
@@ -208,7 +208,7 @@ def letter_heads(id=None):
 
 
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',methods=["PUT"])
-@token.admin_required
+# @token.admin_required
 def assign_letter_heads(template_id, letter_head_id):
     ret = mongo.db.mail_template.update(
         {"_id": ObjectId(template_id)},
