@@ -158,12 +158,16 @@ def template_requirement(user):
     ret = mongo.db.mail_variables.find({})
     ret = [serialize_doc(doc) for doc in ret]
     for data in ret:
-        if data['name'] != '#page_header':
-            if data['name'] != "#page_footer":
-                if data['name'] != "#page_break":
-                    # print(data['name'])
-                    special_val.append(data['name'])
-    # print(special_val)                
+        if data['value'] is None:
+            special_val.append(data['name'])
+        if data['value'] is not None:
+            unrequired.append(data['name'])
+    #     if data['name'] != '#page_header':
+    #         if data['name'] != "#page_footer":
+    #             if data['name'] != "#page_break":
+    #                 # print(data['name'])
+    #                 special_val.append(data['name'])
+    # # print(special_val)                
     message = user['message'].split("#")
     del message[0]
     message_variables = []
@@ -173,10 +177,12 @@ def template_requirement(user):
         if "#" + varb[0] in special_val:
             message_variables.append(varb[0])    
         if varb[0] not in message_variables:
-             if varb[0] != 'page_header':
-                if varb[0] != "page_footer":
-                    if varb[0] != "page_break":
-                        message_variables.append(varb[0])
+            if "#" + varb[0] not in unrequired:
+                message_variables.append(varb[0])
+            #  if varb[0] != 'page_header':
+            #     if varb[0] != "page_footer":
+            #         if varb[0] != "page_break":
+                        # message_variables.append(varb[0])
     for data in message_variables:
         if data not in unique_variables:
             unique_variables.append(data) 
