@@ -8,6 +8,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app import db
 
+from dotenv import load_dotenv
+
 mongo = db.init_db()
 
 from app import token
@@ -22,7 +24,12 @@ def create_app(test_config=None):
     CORS(app)
     UPLOAD_FOLDER = os.getcwd() + '/attached_documents/'
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
+    dotenv_path = os.path.join(APP_ROOT, '.env')
+    load_dotenv(dotenv_path)
+    app.config['ENV'] = os.getenv('ENVIRONMENT')
 
+    print(app.config)
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
@@ -30,6 +37,7 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
+    # print(app.config)
     # ensure the instance folder exists
     try:
         os.makedirs(app.instance_path)

@@ -169,11 +169,21 @@ def send_mails():
             except ValueError:
                 link = Base_url + "/attached_documents/" + filename
         
+        #will uncomment after complete testing
         # if 'to' in request.json:
-        # to = request.json['to']
-        to = ["logicalrt@mailinator.com","kaulaishwary11@gmail.com"]
-        bcc = ["bcc_testing_recruit@mailinator.com"]
-        cc = ["cc_testing_recruit@mailinator.com"]
+        
+        to = None
+        bcc = None
+        cc = None
+        if app.config['ENV'] = 'developemnt':
+            to = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
+            bcc = ["bcc_testing_recruit@mailinator.com"]
+            cc = ["cc_testing_recruit@mailinator.com"]
+        else:
+            if app.config['ENV'] = 'production'
+            to = request.json['to']
+            bcc = request.json['bcc']
+            cc = request.json['cc']    
 
         for elem in system_variable:
             if elem['name'] == "#page_header":
