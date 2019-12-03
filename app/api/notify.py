@@ -92,7 +92,7 @@ def send_mails():
         if elem in request.json['data']:
             if request.json['data'][elem] is not None:
                 if request.json['data'][elem] != "":
-                    date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%Y %B %d")
+                    date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%d %B %Y")
                     request.json['data'][elem] = date_formatted    
         
     MSG_KEY = request.json.get("message_key", None)  
