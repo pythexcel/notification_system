@@ -3,7 +3,7 @@ from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
-from app.config import message_needs,messages,config_info,Base_url
+from app.config import message_needs,messages,config_info,Base_url,dates_converter
 from app.slack_util import slack_message 
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
@@ -23,6 +23,8 @@ from flask import current_app as app
 import re
 import base64
 import bson
+import dateutil.parser
+import datetime
 
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
@@ -34,7 +36,6 @@ def dispatch():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  #salary slip,xyz
-    print("MSG_KEY=====>",MSG_KEY)
     missed_req = {}
     message_detail = mongo.db.notification_msg.find_one({"message_key": MSG_KEY})
     print("message_detail==>",message_detail)
@@ -71,12 +72,9 @@ def dispatch():
                     if not missing_payload:
                         input = request.json
                         try:
-                            print("message==>",message,"message_details==>",message_detail,"req_json",input)
                             validate_message(message=message,message_detail=message_detail,req_json=input) 
-                            print("validate_message")
                             return jsonify({"status":True,"Message":"Sended"}),200 
                         except Exception as error:
-                            print("Exception line number 70 notify")
                             return(repr(error)),400
                     else:
                         ret = ",".join(missing_payload)
@@ -90,6 +88,13 @@ def dispatch():
 def send_mails():
     if not request.json:
         abort(500)
+    for elem in dates_converter:
+        if elem in request.json['data']:
+            if request.json['data'][elem] is not None:
+                if request.json['data'][elem] != "":
+                    date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%Y %B %d")
+                    request.json['data'][elem] = date_formatted    
+        
     MSG_KEY = request.json.get("message_key", None)  
     Data = request.json.get("data",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
@@ -166,7 +171,7 @@ def send_mails():
         
         # if 'to' in request.json:
         # to = request.json['to']
-        to = ["recruit_testing@mailinator.com","kaulaishwary11@gmail.com"]
+        to = ["logicalrt@mailinator.com","kaulaishwary11@gmail.com"]
         bcc = ["bcc_testing_recruit@mailinator.com"]
         cc = ["cc_testing_recruit@mailinator.com"]
 

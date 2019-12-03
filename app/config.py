@@ -1,6 +1,14 @@
 import cloudinary
 Base_url = '176.9.137.77:8007'
 
+dates_converter = [
+    "dateofjoining",
+    "dob",
+    "training_completion_date",
+    "termination_date",
+    "next_increment_date",
+    "start_increment_date"
+    ]
 message_needs={
     "simple_message":[
             "message_type",
