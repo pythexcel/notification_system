@@ -175,15 +175,20 @@ def send_mails():
         to = None
         bcc = None
         cc = None
-        if app.config['ENV'] = 'developemnt':
+        if app.config['ENV'] == 'developemnt':
             to = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
             bcc = ["bcc_testing_recruit@mailinator.com"]
             cc = ["cc_testing_recruit@mailinator.com"]
         else:
-            if app.config['ENV'] = 'production'
-            to = request.json['to']
-            bcc = request.json['bcc']
-            cc = request.json['cc']    
+            if app.config['ENV'] == 'production':
+                if 'to' in request.json:
+                    to = request.json['to']
+                else:
+                    to = ["recruit_testing@mailinator.com"]
+                if 'bcc' in request.json:    
+                    bcc = request.json['bcc']
+                if 'cc' in request.json:    
+                    cc = request.json['cc']    
 
         for elem in system_variable:
             if elem['name'] == "#page_header":
