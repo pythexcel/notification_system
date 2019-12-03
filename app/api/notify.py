@@ -175,7 +175,7 @@ def send_mails():
         to = None
         bcc = None
         cc = None
-        if app.config['ENV'] == 'developemnt':
+        if app.config['ENV'] == 'development':
             to = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
             bcc = ["bcc_testing_recruit@mailinator.com"]
             cc = ["cc_testing_recruit@mailinator.com"]
