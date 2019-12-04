@@ -3,6 +3,7 @@ from app.util import serialize_doc
 import datetime
 from bson.objectid import ObjectId
 from app.mail_util import send_email
+from app.slack_util import slack_message
 
 def campaign_mail():
     print("CAMPAIGN MAIL>>>RUNNING...............")
@@ -67,3 +68,24 @@ def reject_mail():
             pass
     else:
         print("HERE")    
+
+
+def cron_messages():
+    print("CRON MESSAGES SENDER>>>>>>RUNNING ................")
+    ret = mongo.db.messages_cron.find_one({"cron_status":False})
+    if ret is not None:
+        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
+            {
+                "$set": {
+                        "cron_status": True
+                    }
+                    })
+
+        if ret['type'] == "email":
+            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
+        elif ret['type'] == "slack":
+            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
+        else:
+            pass    
+    else:
+        print("NO Messages Left")
