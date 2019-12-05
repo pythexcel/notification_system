@@ -38,18 +38,14 @@ def dispatch():
     MSG_KEY = request.json.get("message_key", None)  #salary slip,xyz
     missed_req = {}
     message_detail = mongo.db.notification_msg.find_one({"message_key": MSG_KEY})
-    print("message_detail==>",message_detail)
     # finding data of payload from request key via json
     for data in messages:
         if data['message_key'] == MSG_KEY:
-            print("line number 36")
             missed_req = data
     # below will checki if message detail is completely empty return data from json or else if its any value is none replace it from json data
     if message_detail is not None:
-        print("line number 40 if condition")
         update = message_detail.update((k,v) for k,v in missed_req.items() if v is None)
     else:
-        print("line number 43 else condition")
         message_detail = missed_req
     if message_detail and message_detail['message_type'] is not None:   
             message = message_detail['message']
@@ -57,7 +53,6 @@ def dispatch():
             # looping over all the needs check if my message type in that key and if found
             for key in message_needs:
                 if message_detail['message_type'] == key:
-                    print("line number 51 if condition")
                     need_found_in_payload = False
                     # LOOP OVER THE KEYS inside the need FOR REQUEST
                     for data in message_needs[key]:
@@ -113,6 +108,7 @@ def send_mails():
         if 'template_head' in message_detail:        
             var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
             if var is not None:
+                #letter heads ki value if attached
                 header = var['header_value']
                 footer = var['footer_value']
         system_variable = mongo.db.mail_variables.find({})
@@ -130,13 +126,6 @@ def send_mails():
                 rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
                 message_str = re.sub(rexWithString, request.json['data'][detail], message_str)
             else:
-                # HERE! NEED TO WRITE CONDITION FOR HEADER/FOOTER REPLACE WITH RE WHEN LETTER HEADS ARE ASSIGNED
-                if header is not None:
-                    header_rex = re.escape("#page_header") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                    message_str = re.sub(header_rex, header, message_str)
-                if footer is not None:
-                    footer_rex = re.escape("#page_footer") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                    message_str = re.sub(footer_rex, footer, message_str)
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
@@ -162,41 +151,49 @@ def send_mails():
         filename = str(uuid.uuid4())+'.pdf'
         link = None
         if 'pdf' in request.json and request.json['pdf'] is True:
-            pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            #Here below is specific for pdf creation if letter heads is attached will took that value or else default value will be used
+            # Give below line a look if right or wrong for pdf creation
+            download_pdf = "#letter_head #content #letter_foot"
+            if header is not None:
+                download_pdf = download_pdf.replace("#letter_head",header)
+            else:
+                for elem in system_variable:
+                    if elem['name'] == "#page_header":
+                        download_pdf = download_pdf.replace("#letter_head",elem['value'])
+
+            download_pdf = download_pdf.replace("#content",message_str)
+            if footer is not None:
+                download_pdf = download_pdf.replace("#letter_foot",footer)
+            else:
+                for elem in system_variable:
+                    if elem['name'] == "#page_footer":
+                        download_pdf = download_pdf.replace("#letter_foot",elem['value'])
+
+
+            pdfkit = HTML(string=download_pdf).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
             try:
                 file = cloudinary.uploader.upload(os.getcwd() + '/attached_documents/' + filename)
                 link = file['url']
             except ValueError:
                 link = Base_url + "/attached_documents/" + filename
         
-        # if 'to' in request.json:
-        # to = request.json['to']
-        to = ["logicalrt@mailinator.com","kaulaishwary11@gmail.com"]
-        bcc = ["bcc_testing_recruit@mailinator.com"]
-        cc = ["cc_testing_recruit@mailinator.com"]
-
-        for elem in system_variable:
-            if elem['name'] == "#page_header":
-                head = elem['value']
-            if elem['name'] == "#page_footer":
-                foo = elem['value']
-            if elem['name'] == "#page_break":
-                br = elem['value']                    
-                message_str = message_str.replace(head,'')
-                message_str = message_str.replace(foo,'')
-                message_str = message_str.replace(br,'') 
-        if header is not None:
-            message_str = message_str.replace(header,'')
-        if footer is not None:
-            message_str = message_str.replace(footer,'')
-
-        # bcc = None
-        # if 'bcc' in request.json:
-        #     bcc = request.json['bcc']
-        # cc = None
-        # if 'cc' in request.json:
-        #     cc = request.json['cc']
-
+        to = None
+        bcc = None
+        cc = None
+        if app.config['ENV'] == 'development':
+            to = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
+            bcc = ["bcc_testing_recruit@mailinator.com"]
+            cc = ["cc_testing_recruit@mailinator.com"]
+        else:
+            if app.config['ENV'] == 'production':
+                if 'to' in request.json:
+                    to = request.json['to']
+                else:
+                    to = ["recruit_testing@mailinator.com"]
+                if 'bcc' in request.json:    
+                    bcc = request.json['bcc']
+                if 'cc' in request.json:    
+                    cc = request.json['cc']    
 
         if message_detail['message_key'] == "interviewee_reject":
             reject_handling = mongo.db.rejection_handling.insert_one({
@@ -219,8 +216,13 @@ def send_mails():
 # @token.admin_required
 def mails():
     if not request.json:
-        abort(500)  
-    MAIL_SEND_TO = request.json.get("to",None)
+        abort(500) 
+    MAIL_SEND_TO = None     
+    if app.config['ENV'] == 'development':
+        MAIL_SEND_TO = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
+    else:
+        if app.config['ENV'] == 'production':
+            MAIL_SEND_TO = request.json.get("to",None)
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)

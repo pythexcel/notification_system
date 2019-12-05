@@ -97,8 +97,6 @@ def mail_message(message_origin):
                 "status": True
             }), 200
     if request.method == "PUT":
-        print(request.files)
-        print(request.form)
         MSG = request.form["message"]
         MSG_KEY = request.form["message_key"]
         working = True
@@ -157,12 +155,15 @@ def mail_message(message_origin):
         else:
             attachment_file = None
             attachment_file_name = None
-            file = request.files['attachment_file']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-                attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                attachment_file_name = filename     
+            if 'attachment_file' in request.files:
+                file = request.files['attachment_file']
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                    attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    attachment_file_name = filename
+            else:
+                pass             
             ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
                 "$set": {
                     "message": MSG,
