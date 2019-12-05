@@ -14,6 +14,12 @@ import click
 
 from dotenv import load_dotenv
 
+from app.mail_templates import templates
+
+from app.mail_variables import variables
+
+from app.slack_messages import slack_message
+
 mongo = db.init_db()
 
 from app import token
@@ -87,7 +93,7 @@ def create_app(test_config=None):
     schduled_messages_scheduler = BackgroundScheduler()
     schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=1)
     schduled_messages_scheduler.start()
-
+  
     try:
         print("create app..")
         return app
@@ -99,6 +105,23 @@ def create_app(test_config=None):
 @click.command("seed_db")
 @with_appcontext
 def seed_db():
-    ret = mongo.db.mail_template.insert_many()
-    
+    template_exist = mongo.db.mail_template.find({})
+    if template_exist:
+        mongo.db.mail_template.remove({})
+        mail_template = mongo.db.mail_template.insert_many(templates)
+    else:    
+        mail_template = mongo.db.mail_template.insert_many(templates)
+    mail_variable_exist = mongo.db.mail_variables.find({})
+    if mail_variable_exist:
+        mongo.db.mail_variables.remove({})
+        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
+    else:
+        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
+
+    notification_message_exist = mongo.db.notification_msg.find({})
+    if notification_message_exist:
+        mongo.db.notification_msg.remove({})
+        notification_message = mongo.db.notification_msg.insert_many(slack_message)
+    else:
+        notification_message = mongo.db.notification_msg.insert_many(slack_message)
     

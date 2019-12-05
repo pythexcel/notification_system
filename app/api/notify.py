@@ -251,3 +251,8 @@ def required_message(message_key):
             return jsonify(ret), 200
         else:
             return jsonify ({"Message": "no template exist"}), 200    
+
+@bp.route('/slack_test',methods=["POST"])
+def token_test():
+    slack_message(channel=["C3P9QVA8K"],message="TOKEN WORKING")
+    return 'TRUE'
