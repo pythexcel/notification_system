@@ -216,8 +216,13 @@ def send_mails():
 # @token.admin_required
 def mails():
     if not request.json:
-        abort(500)  
-    MAIL_SEND_TO = request.json.get("to",None)
+        abort(500) 
+    MAIL_SEND_TO = None     
+    if app.config['ENV'] == 'development':
+        MAIL_SEND_TO = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
+    else:
+        if app.config['ENV'] == 'production':
+            MAIL_SEND_TO = request.json.get("to",None)
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)
