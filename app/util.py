@@ -56,106 +56,101 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     slack_user_detail = req_json
     req_json = json.loads(json.dumps(req_json))
     email_user_detail = req_json
-    if status['slack_notfication'] is True:
-        if message_detail['for_email'] is False:
-            if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
-                slack = slack_id(slack_user_detail['user']['email'])
-                slack_user_detail['user'] = "<@" + slack + ">"
-            else:
-                pass            
-            message_str = message
-            for data in message_variables:
-                if data in slack_user_detail:
-                    message_str = message_str.replace("@"+data+":", slack_user_detail[data])
-                else:
-                    if data in slack_user_detail['data']:
-                        message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
-            for elem in system_require:
-                if elem in system_variable:  
-                    message_str = message_str.replace("@"+elem+":", system_variable[elem])
-            channels = []          
-            if 'slack_channel' in slack_user_detail:
-                for data in slack_user_detail['slack_channel']:
-                    channels.append(data)
-            else:
-                pass  
-            if message_detail['slack_channel'] is not None:
-                for elem in message_detail['slack_channel']:
-                    channels.append(elem)       
-            if message_detail['sended_to'] == "private":
-                channels.append(slack)
-            else:
-                pass      
-            if channels:                                                        
-                # slack_message(message=message_str,channel=channels,req_json=slack_user_detail,message_detail=message_detail)   
-                mongo.db.messages_cron.insert_one({
-                    "cron_status":False,
-                    "type": "slack",
-                    "message":message_str,
-                    "channel":channels,
-                    "req_json": slack_user_detail,
-                    "message_detail":message_detail
-                }).inserted_id
-            else:
-                pass
+    if message_detail['for_email'] is False:
+        if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
+            slack = slack_id(slack_user_detail['user']['email'])
+            slack_user_detail['user'] = "<@" + slack + ">"
         else:
-            pass
-    else:
-        pass
-    if status['send_email'] is True:
-        if message_detail['for_email'] is True:
-            if 'user' in email_user_detail and email_user_detail['user'] is not None:
-                username = json.loads(json.dumps(email_user_detail['user']['email']))
-                name = username.split('@')[0]
-                email_user_detail['user'] = name
+            pass            
+        message_str = message
+        for data in message_variables:
+            if data in slack_user_detail:
+                message_str = message_str.replace("@"+data+":", slack_user_detail[data])
             else:
-                pass    
-            message_str = message
-            for data in message_variables:
-                if data in email_user_detail:
-                    message_str = message_str.replace("@"+data+":", email_user_detail[data])
-                else:
-                    if data in email_user_detail['data']:
-                        message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
-            for elem in system_require:
-                if elem in system_variable:  
-                    message_str = message_str.replace("@"+elem+":", system_variable[elem])
-
-            recipient = []
-            if 'email_group' in email_user_detail:
-                for data in email_user_detail['email_group']:
-                    recipient.append(data)
-            else:
-                pass
-            if message_detail['sended_to'] == "private":
-                recipient.append(username)
-            else:
-                pass  
-
-            if message_detail['email_group'] is not None:
-                for elem in message_detail['email_group']:
-                    recipient.append(elem)
-
-            if 'subject' in email_user_detail['emailData']:
-                subject = email_user_detail['emailData']['subject']
-            else:
-                subject = message_detail['message_key']             
-            if recipient:
-                # send_email(message=message_str,recipients=recipient,subject=subject)
-                mongo.db.messages_cron.insert_one({
-                    "cron_status":False,
-                    "type": "email",
-                    "message":message_str,
-                    "recipients":recipient,
-                    "subject": subject
-                }).inserted_id
-            else:
-                pass
+                if data in slack_user_detail['data']:
+                    message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
+        for elem in system_require:
+            if elem in system_variable:  
+                message_str = message_str.replace("@"+elem+":", system_variable[elem])
+        channels = []          
+        if 'slack_channel' in slack_user_detail:
+            for data in slack_user_detail['slack_channel']:
+                channels.append(data)
+        else:
+            pass  
+        if message_detail['slack_channel'] is not None:
+            for elem in message_detail['slack_channel']:
+                channels.append(elem)       
+        if message_detail['sended_to'] == "private":
+            channels.append(slack)
+        else:
+            pass      
+        if channels:                                                      
+            # slack_message(message=message_str,channel=channels,req_json=slack_user_detail,message_detail=message_detail)   
+            mongo.db.messages_cron.insert_one({
+                "cron_status":False,
+                "type": "slack",
+                "message":message_str,
+                "channel":channels,
+                "req_json": slack_user_detail,
+                "message_detail":message_detail
+            }).inserted_id
         else:
             pass
     else:
         pass
 
+    if message_detail['for_email'] is True:
+        if 'user' in email_user_detail and email_user_detail['user'] is not None:
+            username = json.loads(json.dumps(email_user_detail['user']['email']))
+            name = username.split('@')[0]
+            email_user_detail['user'] = name
+        else:
+            pass    
+        message_str = message
+        for data in message_variables:
+            if data in email_user_detail:
+                message_str = message_str.replace("@"+data+":", email_user_detail[data])
+            else:
+                if data in email_user_detail['data']:
+                    message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
+        for elem in system_require:
+            if elem in system_variable:  
+                message_str = message_str.replace("@"+elem+":", system_variable[elem])
+
+        recipient = []
+        if 'email_group' in email_user_detail:
+            for data in email_user_detail['email_group']:
+                recipient.append(data)
+        else:
+            pass
+        if message_detail['sended_to'] == "private":
+            recipient.append(username)
+        else:
+            pass  
+
+        if message_detail['email_group'] is not None:
+            for elem in message_detail['email_group']:
+                recipient.append(elem)
+
+        if 'subject' in email_user_detail['emailData']:
+            subject = email_user_detail['emailData']['subject']
+        else:
+            subject = message_detail['message_key']             
+        if recipient:
+            # send_email(message=message_str,recipients=recipient,subject=subject)
+            mongo.db.messages_cron.insert_one({
+                "cron_status":False,
+                "type": "email",
+                "message":message_str,
+                "recipients":recipient,
+                "subject": subject
+            }).inserted_id
+        else:
+            pass
+    else:
+        pass
+    
 # this function will send back variables of html templates with variable from templates if there are None in special variables collection
 def template_requirement(user):
     special_val = []
@@ -168,12 +163,6 @@ def template_requirement(user):
             special_val.append(data['name'])
         if data['value'] is not None:
             unrequired.append(data['name'])
-    #     if data['name'] != '#page_header':
-    #         if data['name'] != "#page_footer":
-    #             if data['name'] != "#page_break":
-    #                 # print(data['name'])
-    #                 special_val.append(data['name'])
-    # # print(special_val)                
     message = user['message'].split("#")
     del message[0]
     message_variables = []
