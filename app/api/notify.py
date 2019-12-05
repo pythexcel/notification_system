@@ -4,7 +4,7 @@ from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_d
 from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
 from app.config import message_needs,messages,config_info,Base_url,dates_converter
-from app.slack_util import slack_message 
+from app.slack_util import slack_message,slack_id
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
@@ -157,17 +157,13 @@ def send_mails():
             if header is not None:
                 download_pdf = download_pdf.replace("#letter_head",header)
             else:
-                for elem in system_variable:
-                    if elem['name'] == "#page_header":
-                        download_pdf = download_pdf.replace("#letter_head",elem['value'])
+               download_pdf = download_pdf.replace("#letter_head",'')
 
             download_pdf = download_pdf.replace("#content",message_str)
             if footer is not None:
                 download_pdf = download_pdf.replace("#letter_foot",footer)
             else:
-                for elem in system_variable:
-                    if elem['name'] == "#page_footer":
-                        download_pdf = download_pdf.replace("#letter_foot",elem['value'])
+                download_pdf = download_pdf.replace("#letter_foot",'')
 
 
             pdfkit = HTML(string=download_pdf).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
@@ -254,5 +250,7 @@ def required_message(message_key):
 
 @bp.route('/slack_test',methods=["POST"])
 def token_test():
-    slack_message(channel=["C3P9QVA8K"],message="TOKEN WORKING")
+    email = request.json.get('email')
+    slack = slack_id(email)
+    slack_message(channel=[slack],message="Testing Slack Notification from HR System")
     return 'TRUE'

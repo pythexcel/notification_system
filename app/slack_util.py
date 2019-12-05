@@ -16,7 +16,7 @@ def slack_id(email):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
-                       email=email)                   
+                       email=email)
     print(sl_user_id['user']['id'])                   
 
     return (sl_user_id['user']['id'])
