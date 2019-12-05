@@ -12,7 +12,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
 bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
 
 @bp.route('/settings', methods=["PUT", "GET"])
-@token.admin_required
+# @token.admin_required
 def tms_setings():
     if request.method == "GET":
         slack = mongo.db.slack_settings.find_one({},{"_id":0})

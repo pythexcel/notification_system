@@ -108,6 +108,7 @@ def send_mails():
         if 'template_head' in message_detail:        
             var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
             if var is not None:
+                #letter heads ki value if attached
                 header = var['header_value']
                 footer = var['footer_value']
         system_variable = mongo.db.mail_variables.find({})
@@ -126,12 +127,12 @@ def send_mails():
                 message_str = re.sub(rexWithString, request.json['data'][detail], message_str)
             else:
                 # HERE! NEED TO WRITE CONDITION FOR HEADER/FOOTER REPLACE WITH RE WHEN LETTER HEADS ARE ASSIGNED
-                if header is not None:
-                    header_rex = re.escape("#page_header") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                    message_str = re.sub(header_rex, header, message_str)
-                if footer is not None:
-                    footer_rex = re.escape("#page_footer") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                    message_str = re.sub(footer_rex, footer, message_str)
+                # if header is not None:
+                #     header_rex = re.escape("#page_header") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                #     message_str = re.sub(header_rex, header, message_str)
+                # if footer is not None:
+                #     footer_rex = re.escape("#page_footer") + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                #     message_str = re.sub(footer_rex, footer, message_str)
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
@@ -157,7 +158,25 @@ def send_mails():
         filename = str(uuid.uuid4())+'.pdf'
         link = None
         if 'pdf' in request.json and request.json['pdf'] is True:
-            pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            
+            download_pdf = "#letter_head #content #letter_foot"
+            if header is not None:
+                download_pdf = download_pdf.replace("#letter_head",header)
+            else:
+                for elem in system_variable:
+                    if elem['name'] == "#page_header":
+                        download_pdf = download_pdf.replace("#letter_head",elem['value'])
+
+            download_pdf = download_pdf.replace("#content",message_str)
+            if footer is not None:
+                download_pdf = download_pdf.replace("#letter_foot",footer)
+            else:
+                for elem in system_variable:
+                    if elem['name'] == "#page_footer":
+                        download_pdf = download_pdf.replace("#letter_foot",elem['value'])
+
+
+            pdfkit = HTML(string=download_pdf).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
             try:
                 file = cloudinary.uploader.upload(os.getcwd() + '/attached_documents/' + filename)
                 link = file['url']
@@ -185,20 +204,20 @@ def send_mails():
                 if 'cc' in request.json:    
                     cc = request.json['cc']    
 
-        for elem in system_variable:
-            if elem['name'] == "#page_header":
-                head = elem['value']
-            if elem['name'] == "#page_footer":
-                foo = elem['value']
-            if elem['name'] == "#page_break":
-                br = elem['value']                    
-                message_str = message_str.replace(head,'')
-                message_str = message_str.replace(foo,'')
-                message_str = message_str.replace(br,'') 
-        if header is not None:
-            message_str = message_str.replace(header,'')
-        if footer is not None:
-            message_str = message_str.replace(footer,'')
+        # for elem in system_variable:
+        #     if elem['name'] == "#page_header":
+        #         head = elem['value']
+        #     if elem['name'] == "#page_footer":
+        #         foo = elem['value']
+        #     if elem['name'] == "#page_break":
+        #         br = elem['value']                    
+        #         message_str = message_str.replace(head,'')
+        #         message_str = message_str.replace(foo,'')
+        #         message_str = message_str.replace(br,'') 
+        # if header is not None:
+        #     message_str = message_str.replace(header,'')
+        # if footer is not None:
+        #     message_str = message_str.replace(footer,'')
 
         # bcc = None
         # if 'bcc' in request.json:
