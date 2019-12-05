@@ -188,8 +188,13 @@ def send_mails():
                     to = ["recruit_testing@mailinator.com"]
                 if 'bcc' in request.json:    
                     bcc = request.json['bcc']
+                else:
+                    ["bcc_testing_recruit@mailinator.com"]
+
                 if 'cc' in request.json:    
                     cc = request.json['cc']    
+                else:
+                    cc = ["cc_testing_recruit@mailinator.com"]
 
         if message_detail['message_key'] == "interviewee_reject":
             reject_handling = mongo.db.rejection_handling.insert_one({
