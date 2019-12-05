@@ -40,7 +40,6 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    # print(app.config)
     # ensure the instance folder exists
     try:
         os.makedirs(app.instance_path)
@@ -77,36 +76,29 @@ def create_app(test_config=None):
     
     app.cli.add_command(seed_db)
     
+    campaign_mail_scheduler = BackgroundScheduler()
+    campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=1)
+    campaign_mail_scheduler.start()
 
-    # campaign_mail_scheduler = BackgroundScheduler()
-    # campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=1)
-    # campaign_mail_scheduler.start()
+    reject_mail_scheduler = BackgroundScheduler()
+    reject_mail_scheduler.add_job(reject_mail, trigger='interval', seconds=5)
+    reject_mail_scheduler.start()
 
-    # reject_mail_scheduler = BackgroundScheduler()
-    # reject_mail_scheduler.add_job(reject_mail, trigger='interval', seconds=5)
-    # reject_mail_scheduler.start()
+    schduled_messages_scheduler = BackgroundScheduler()
+    schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=1)
+    schduled_messages_scheduler.start()
 
-    # schduled_messages_scheduler = BackgroundScheduler()
-    # schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=1)
-    # schduled_messages_scheduler.start()
-
-    # try:
-    #     print("create app..")
-    #     return app
-    # except:
-    #     schduled_messages_scheduler.shutdown()
-    #     # campaign_mail_scheduler.shutdown()
-    #     # reject_mail_scheduler.shutdown()
-
-
-
-    print("create app..")
-    return app
-
+    try:
+        print("create app..")
+        return app
+    except:
+        schduled_messages_scheduler.shutdown()
+        campaign_mail_scheduler.shutdown()
+        reject_mail_scheduler.shutdown()
+    
 @click.command("seed_db")
 @with_appcontext
 def seed_db():
-    
-    mongo.db.testing.insert_one({"name":"TESTING"}).inserted_id
+    ret = mongo.db.mail_template.insert_many()
     
     
