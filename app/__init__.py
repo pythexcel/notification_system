@@ -14,11 +14,11 @@ import click
 
 from dotenv import load_dotenv
 
-from app.mail_templates import templates
+from mail_templates import templates
 
-from app.mail_variables import variables
+from mail_variables import variables
 
-from app.slack_messages import slack_message
+from slack_messages import slack_message
 
 mongo = db.init_db()
 
