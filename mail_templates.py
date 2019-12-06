@@ -248,8 +248,8 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": "/home/etech/Desktop/slack_settings_Heroku/app/attached_documents/p.txt",
-        "attachment_file_name": "p.txt",
+        "attachment_file":  None,
+        "attachment_file_name": None,
         "for": "Required Joining Documents",
         "message": "<p>Dear <strong>#name:</strong>, #work_email:</p>\n<p>#salary_detail: , #username: , #work_email: , #user_Id: , #mobile_ph: , #training_completion_date: , #termination_date:</p>\n<p>This is to inform you that, You are requested to <strong>bring the following documents</strong> along with &nbsp;originals, <strong>mandatory</strong> on <strong>#reporting_date: </strong>at the</p>\n<p>venue <strong>#venue: </strong>at sharp #office_time:</p>\n<p><u><strong>Joining Documents, as required</strong></u>&nbsp;</p>\n<p>1. &nbsp;2 Passport Size Photograph.</p>\n<p>2. &nbsp;Mark Sheets and Passing Certificates of all educational Qualifications.</p>\n<p>3. &nbsp;PAN Card (2 Photocopy).</p>\n<p>4. &nbsp;One of the following as ID proof for opening New Bank Account.</p>\n<p>&nbsp;&nbsp;&nbsp;&nbsp;a. &nbsp;Copy of Passport</p>\n<p>&nbsp;&nbsp;&nbsp;&nbsp;b. &nbsp;Copy of Driving License</p>\n<p>&nbsp;&nbsp;&nbsp;&nbsp;c. &nbsp;Copy of Voter Identity Card.</p>\n<p>&nbsp;&nbsp;&nbsp;&nbsp;d. &nbsp;Aadhar Card</p>\n<p>#page_footer:</p>\n<p>#page_break:</p>\n<p>#page_header:</p>\n<p>5. Previous Company Document (if applicable)</p>\n<p>&nbsp;&nbsp;&nbsp;a. Experience Letter</p>\n<p>&nbsp;&nbsp;&nbsp;b. Offer Letter</p>\n<p>&nbsp;&nbsp;&nbsp;c. Latest Salary Slip&nbsp;</p>\n<p>&nbsp;</p>\n<p>Kindly bring all the originals supporting your photocopy.&nbsp;</p>\n<p>&nbsp;</p>\n<p>For any query kindly revert us.&nbsp;</p>\n<p>&nbsp;</p>\n<p><strong>Sincerely,</strong></p>\n<p><em><strong>#hr_signature:</strong></em></p>\n<p><em><strong>#logo:</strong></em></p>",
         "message_key": "Required Joining Documents",
@@ -260,7 +260,7 @@ templates = [
         "working": True
     },
     {
-        "Doc_type": "email",
+        "Doc_type": "document",
         "attachment_file": None,
         "attachment_file_name": None,
         "for": "Experience Certificate",

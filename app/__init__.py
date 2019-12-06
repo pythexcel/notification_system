@@ -80,7 +80,7 @@ def create_app(test_config=None):
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)
     
-    app.cli.add_command(seed_db)
+    app.cli.add_command(seed_hr)
     
     # campaign_mail_scheduler = BackgroundScheduler()
     # campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=1)
@@ -101,13 +101,13 @@ def create_app(test_config=None):
         schduled_messages_scheduler.shutdown()
         # campaign_mail_scheduler.shutdown()
         # reject_mail_scheduler.shutdown()
-    
-@click.command("seed_db")
+
+@click.command("seed_hr")
 @with_appcontext
-def seed_db():
-    template_exist = mongo.db.mail_template.find({})
+def seed_hr():
+    template_exist = mongo.db.mail_template.find({"message_origin": "HR"})
     if template_exist:
-        mongo.db.mail_template.remove({})
+        mongo.db.mail_template.remove({"message_origin":"HR"})
         mail_template = mongo.db.mail_template.insert_many(templates)
     else:    
         mail_template = mongo.db.mail_template.insert_many(templates)
@@ -118,10 +118,27 @@ def seed_db():
     else:
         mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
 
-    notification_message_exist = mongo.db.notification_msg.find({})
+    notification_message_exist = mongo.db.notification_msg.find({"message_origin": "HR"})
     if notification_message_exist:
-        mongo.db.notification_msg.remove({})
+        mongo.db.notification_msg.remove({"message_origin": "HR"})
         notification_message = mongo.db.notification_msg.insert_many(slack_message)
     else:
         notification_message = mongo.db.notification_msg.insert_many(slack_message)
     
+# @click.command("seed_recruit")
+# @with_appcontext
+# def seed_recruit():
+#     template_exist = mongo.db.mail_template.find({"message_origin": "RECRUIT"})
+#     if template_exist:
+#         mongo.db.mail_template.remove({"message_origin": "RECRUIT"})
+#         mail_template = mongo.db.mail_template.insert_many(templates)
+#     else:    
+#         mail_template = mongo.db.mail_template.insert_many(templates)
+#     
+#     notification_message_exist = mongo.db.notification_msg.find({"message_origin": "RECRUIT"})
+#     if notification_message_exist:
+#         mongo.db.notification_msg.remove({"message_origin": "RECRUIT"})
+#         notification_message = mongo.db.notification_msg.insert_many(slack_message)
+#     else:
+#         notification_message = mongo.db.notification_msg.insert_many(slack_message)
+
