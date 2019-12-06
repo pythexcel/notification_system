@@ -20,6 +20,8 @@ def tms_setings():
 
     if request.method == "PUT":
         slack_token = request.json.get("slack_token")
+        if not slack_token:
+            return jsonify({"MSG": "Slack Token missing"}), 400
         ret = mongo.db.slack_settings.update({}, {
             "$set": {
                 "slack_token": slack_token

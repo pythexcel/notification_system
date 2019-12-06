@@ -275,4 +275,4 @@ def token_test():
     email = request.json.get('email')
     slack = slack_id(email)
     slack_message(channel=[slack],message="Testing Slack Notification from HR System")
-    return 'TRUE'
+    return jsonify({"status":True,"Message": "Slack Token Tested"})
