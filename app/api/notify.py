@@ -207,26 +207,22 @@ def send_mails():
                         cc = request.json['cc']
                 else:        
                     cc = None
-
-        if not missing_payload:
-            if message_detail['message_key'] == "interviewee_reject":
-                reject_handling = mongo.db.rejection_handling.insert_one({
-                "email": request.json['data']['email'],
-                'rejection_time': request.json['data']['rejection_time'],
-                'send_status': False,
-                'message': message_str,
-                'subject': message_subject
-                }).inserted_id  
-                return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
-            else:
-                print(message_str)
-                if to is not None:
-                    send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
-                    return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
-                else:
-                    return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
+        if message_detail['message_key'] == "interviewee_reject":
+            reject_handling = mongo.db.rejection_handling.insert_one({
+            "email": request.json['data']['email'],
+            'rejection_time': request.json['data']['rejection_time'],
+            'send_status': False,
+            'message': message_str,
+            'subject': message_subject
+            }).inserted_id  
+            return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
-            return jsonify(missing_payload), 400
+            if to is not None:
+                send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
+                return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
+            else:
+                return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+        
 
 
             
