@@ -87,7 +87,6 @@ def send_mails():
             if request.json['data'][elem] is not None:
                 if request.json['data'][elem] != "":
                     if request.json['data'][elem] != "No Access":
-                        print(request.json['data'][elem])
                         date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%d %B %Y")
                         request.json['data'][elem] = date_formatted    
         
@@ -128,12 +127,19 @@ def send_mails():
                 rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
                 message_str = re.sub(rexWithString, request.json['data'][detail], message_str)
             else:
-                # missing_payload.append(detail)
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
                         message_str = re.sub(rexWithSystem, element['value'], message_str)    
-                                         
+
+
+        missing = message_str.split('#')
+        del missing[0]
+        missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        for elem in missing:
+            missing_data = re.split(missing_rex, elem)
+            missing_payload.append(missing_data[0])
+
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
         del message[0]
@@ -147,13 +153,18 @@ def send_mails():
                 rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
                 message_subject = re.sub(rexWithString, request.json['data'][detail], message_subject)
             else:
-                # missing_payload.append(detail)
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
                         message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
 
-        print(message_str)
+        missing_subject = message_subject.split("#")
+        del missing_subject[0]
+        missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        for elem in missing_subject:
+            sub_varb_missing = re.split(missing_sub_rex, elem)
+            missing_payload.append(sub_varb_missing[0])
+
         download_pdf = "#letter_head #content #letter_foot"
         if header is not None:
             download_pdf = download_pdf.replace("#letter_head",header)
@@ -215,8 +226,7 @@ def send_mails():
                 else:
                     return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
         else:
-            ret = ",".join(missing_payload)
-            return jsonify({"MSG": ret + " is missing from request"}), 400
+            return jsonify(missing_payload), 400
 
 
             
