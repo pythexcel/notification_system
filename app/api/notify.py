@@ -121,7 +121,7 @@ def send_mails():
         rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
         for elem in message:
             varb = re.split(rex, elem)
-            # message_variables.append(varb[0])
+            message_variables.append(varb[0])
         message_str = message_detail['message']
         for detail in message_variables:
             if detail in request.json['data']:
@@ -153,6 +153,7 @@ def send_mails():
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
                         message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
 
+        print(message_str)
         download_pdf = "#letter_head #content #letter_foot"
         if header is not None:
             download_pdf = download_pdf.replace("#letter_head",header)
@@ -207,6 +208,7 @@ def send_mails():
                 }).inserted_id  
                 return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
             else:
+                print(message_str)
                 if to is not None:
                     send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
                     return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
