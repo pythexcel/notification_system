@@ -1,5 +1,4 @@
 import cloudinary
-Base_url = '176.9.137.77:8007'
 
 dates_converter = [
     "dateofjoining",

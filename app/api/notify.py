@@ -3,7 +3,7 @@ from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
-from app.config import message_needs,messages,config_info,Base_url,dates_converter
+from app.config import message_needs,messages,config_info,dates_converter
 from app.slack_util import slack_message,slack_id
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
@@ -102,7 +102,8 @@ def send_mails():
             if 'attachment_file_name' in message_detail:
                 attachment_file_name = message_detail['attachment_file_name']
         else:
-            pass        
+            pass    
+            
         header = None
         footer = None
         if 'template_head' in message_detail:        
@@ -206,8 +207,17 @@ def send_mails():
                     else:
                         cc = request.json['cc']
                 else:        
-                    cc = None
+                    cc = None            
         if message_detail['message_key'] == "interviewee_reject":
+            reject_mail = None
+            if app.config['ENV'] == 'production':
+                if 'email' in request.json['data']:
+                    reject_mail = request.json['data']['email']
+                else:
+                    return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
+            else:
+                if app.config['ENV'] == 'development':
+                    reject_mail = ["recruit_testing@mailinator.com"]   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": request.json['data']['email'],
             'rejection_time': request.json['data']['rejection_time'],
@@ -223,8 +233,6 @@ def send_mails():
             else:
                 return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
         
-
-
             
 @bp.route('/send_mail', methods=["POST"])
 # @token.admin_required
@@ -275,4 +283,4 @@ def token_test():
     email = request.json.get('email')
     slack = slack_id(email)
     slack_message(channel=[slack],message="Testing Slack Notification from HR System")
-    return jsonify({"status":True,"Message": "Slack Token Tested"})
+    return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
