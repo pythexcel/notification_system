@@ -6,7 +6,9 @@ dates_converter = [
     "training_completion_date",
     "termination_date",
     "next_increment_date",
-    "start_increment_date"
+    "start_increment_date",
+    "fromDate",
+    "toDate"
     ]
 message_needs={
     "simple_message":[
