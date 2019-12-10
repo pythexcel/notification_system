@@ -1,6 +1,7 @@
 from app import mongo
 from app.util import serialize_doc
 import datetime
+import dateutil.parser
 from bson.objectid import ObjectId
 from app.mail_util import send_email
 from app.slack_util import slack_message
@@ -43,7 +44,7 @@ def campaign_mail():
         print("EMAIL_SENDED...............")
     
     else:
-        pass    
+        print('NO CAMPAIGN MESSAGES LEFT!!')  
 
 
 def reject_mail():
@@ -51,11 +52,14 @@ def reject_mail():
     ret = mongo.db.rejection_handling.find_one({"send_status":False})
     if ret is not None:
         mail = ret['email']
-        print(mail)
         message = ret['message']
-        rejected_time = ret['rejection_time']  
+        time = ret['rejection_time']  
+        time_update = dateutil.parser.parse(time).strftime("%Y-%m-%dT%H:%M:%SZ")
+        rejected_time = datetime.datetime.strptime(time_update,'%Y-%m-%dT%H:%M:%SZ')
         diffrence = datetime.datetime.utcnow() - rejected_time
-        if diffrence.days == 1:
+        print(diffrence)
+        print(rejected_time)
+        if diffrence.days >= 1:
             print(diffrence.days)
             print('CONDITION MATCHED')
             to = []
@@ -67,7 +71,7 @@ def reject_mail():
             print('SKIPPED')
             pass
     else:
-        print("HERE")    
+        print("No Rejection Mail left!!")    
 
 
 def cron_messages():

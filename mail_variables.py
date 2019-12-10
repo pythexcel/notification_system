@@ -50,7 +50,7 @@ variables = [
         "variable_type": "user"
     },
     {
-        "name": "#Venue",
+        "name": "#venue",
         "value": "C-86 B Excellence Technosoft Pvt. Ltd Noida Sector 8",
         "variable_type": "system"
     },

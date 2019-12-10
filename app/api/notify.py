@@ -3,7 +3,7 @@ from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
-from app.config import message_needs,messages,config_info,Base_url,dates_converter
+from app.config import message_needs,messages,config_info,dates_converter
 from app.slack_util import slack_message,slack_id
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
@@ -13,7 +13,6 @@ import json
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-from weasyprint import HTML, CSS
 import uuid
 import os 
 from app.phone_util import Push_notification
@@ -87,8 +86,9 @@ def send_mails():
         if elem in request.json['data']:
             if request.json['data'][elem] is not None:
                 if request.json['data'][elem] != "":
-                    date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%d %B %Y")
-                    request.json['data'][elem] = date_formatted    
+                    if request.json['data'][elem] != "No Access":
+                        date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%d %B %Y")
+                        request.json['data'][elem] = date_formatted    
         
     MSG_KEY = request.json.get("message_key", None)  
     Data = request.json.get("data",None)
@@ -102,17 +102,19 @@ def send_mails():
             if 'attachment_file_name' in message_detail:
                 attachment_file_name = message_detail['attachment_file_name']
         else:
-            pass        
+            pass    
+            
         header = None
         footer = None
         if 'template_head' in message_detail:        
             var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
             if var is not None:
-                #letter heads ki value if attached
                 header = var['header_value']
                 footer = var['footer_value']
         system_variable = mongo.db.mail_variables.find({})
         system_variable = [serialize_doc(doc) for doc in system_variable]
+
+        missing_payload = []
         message_variables = []
         message = message_detail['message'].split('#')
         del message[0]
@@ -129,7 +131,15 @@ def send_mails():
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                        message_str = re.sub(rexWithSystem, element['value'], message_str)                     
+                        message_str = re.sub(rexWithSystem, element['value'], message_str)    
+
+
+        missing = message_str.split('#')
+        del missing[0]
+        missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        for elem in missing:
+            missing_data = re.split(missing_rex, elem)
+            missing_payload.append(missing_data[0])
 
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
@@ -147,32 +157,26 @@ def send_mails():
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                        message_subject = re.sub(rexWithSystem, element['value'], message_subject)                     
-        filename = str(uuid.uuid4())+'.pdf'
-        link = None
-        if 'pdf' in request.json and request.json['pdf'] is True:
-            #Here below is specific for pdf creation if letter heads is attached will took that value or else default value will be used
-            # Give below line a look if right or wrong for pdf creation
-            download_pdf = "#letter_head #content #letter_foot"
-            if header is not None:
-                download_pdf = download_pdf.replace("#letter_head",header)
-            else:
-               download_pdf = download_pdf.replace("#letter_head",'')
+                        message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
 
-            download_pdf = download_pdf.replace("#content",message_str)
-            if footer is not None:
-                download_pdf = download_pdf.replace("#letter_foot",footer)
-            else:
-                download_pdf = download_pdf.replace("#letter_foot",'')
+        missing_subject = message_subject.split("#")
+        del missing_subject[0]
+        missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        for elem in missing_subject:
+            sub_varb_missing = re.split(missing_sub_rex, elem)
+            missing_payload.append(sub_varb_missing[0])
 
+        download_pdf = "#letter_head #content #letter_foot"
+        if header is not None:
+            download_pdf = download_pdf.replace("#letter_head",header)
+        else:
+            download_pdf = download_pdf.replace("#letter_head",'')
+        download_pdf = download_pdf.replace("#content",message_str)
+        if footer is not None:
+            download_pdf = download_pdf.replace("#letter_foot",footer)
+        else:
+            download_pdf = download_pdf.replace("#letter_foot",'')
 
-            pdfkit = HTML(string=download_pdf).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-            try:
-                file = cloudinary.uploader.upload(os.getcwd() + '/attached_documents/' + filename)
-                link = file['url']
-            except ValueError:
-                link = Base_url + "/attached_documents/" + filename
-        
         to = None
         bcc = None
         cc = None
@@ -183,35 +187,52 @@ def send_mails():
         else:
             if app.config['ENV'] == 'production':
                 if 'to' in request.json:
-                    to = request.json['to']
+                    if not request.json['to']:
+                        to = None
+                    else:     
+                        to = request.json['to']
                 else:
-                    to = ["recruit_testing@mailinator.com"]
+                    to = None
                 if 'bcc' in request.json:    
-                    bcc = request.json['bcc']
+                    if not request.json['bcc']:
+                        bcc = None
+                    else:
+                        bcc = request.json['bcc']
                 else:
-                    ["bcc_testing_recruit@mailinator.com"]
-
-                if 'cc' in request.json:    
-                    cc = request.json['cc']    
-                else:
-                    cc = ["cc_testing_recruit@mailinator.com"]
-
+                    bcci = None
+                
+                if 'cc' in request.json: 
+                    if not request.json['cc']:
+                        cc = None
+                    else:
+                        cc = request.json['cc']
+                else:        
+                    cc = None            
         if message_detail['message_key'] == "interviewee_reject":
+            reject_mail = None
+            if app.config['ENV'] == 'production':
+                if 'email' in request.json['data']:
+                    reject_mail = request.json['data']['email']
+                else:
+                    return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
+            else:
+                if app.config['ENV'] == 'development':
+                    reject_mail = ["recruit_testing@mailinator.com"]   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": request.json['data']['email'],
             'rejection_time': request.json['data']['rejection_time'],
             'send_status': False,
             'message': message_str,
             'subject': message_subject
-            }).inserted_id    
+            }).inserted_id  
+            return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
-            send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
-
-        if 'pdf' in request.json and request.json['pdf'] is True:
-            return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"pdf": link,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
-        else:
-            return jsonify({"status":True,"Subject":message_subject,"Message":message_str,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file}),200
-
+            if to is not None:
+                send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
+                return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+            else:
+                return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+        
             
 @bp.route('/send_mail', methods=["POST"])
 # @token.admin_required
@@ -235,11 +256,14 @@ def mails():
         bcc = request.json['bcc']
     cc = None
     if 'cc' in request.json:
-        cc = request.json['cc']   
-    send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
+        cc = request.json['cc'] 
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
-    return jsonify({"status":True,"Message":"Sended"}),200 
+    if MAIL_SEND_TO is not None:
+        send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
+        return jsonify({"status":True,"Message":"Sended"}),200 
+    else:
+        return jsonify({"status":False,"Message":"Please select a mail"}),400 
 
 
 @bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
@@ -254,8 +278,9 @@ def required_message(message_key):
             return jsonify ({"Message": "no template exist"}), 200    
 
 @bp.route('/slack_test',methods=["POST"])
+# @token.authentication
 def token_test():
     email = request.json.get('email')
     slack = slack_id(email)
     slack_message(channel=[slack],message="Testing Slack Notification from HR System")
-    return 'TRUE'
+    return jsonify({"status":True,"Message": "Slack Token Tested"}), 200

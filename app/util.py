@@ -86,7 +86,6 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
         else:
             pass      
         if channels:                                                      
-            # slack_message(message=message_str,channel=channels,req_json=slack_user_detail,message_detail=message_detail)   
             mongo.db.messages_cron.insert_one({
                 "cron_status":False,
                 "type": "slack",
@@ -138,7 +137,6 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
         else:
             subject = message_detail['message_key']             
         if recipient:
-            # send_email(message=message_str,recipients=recipient,subject=subject)
             mongo.db.messages_cron.insert_one({
                 "cron_status":False,
                 "type": "email",
@@ -174,10 +172,6 @@ def template_requirement(user):
         if varb[0] not in message_variables:
             if "#" + varb[0] not in unrequired:
                 message_variables.append(varb[0])
-            #  if varb[0] != 'page_header':
-            #     if varb[0] != "page_footer":
-            #         if varb[0] != "page_break":
-                        # message_variables.append(varb[0])
     for data in message_variables:
         if data not in unique_variables:
             unique_variables.append(data) 
