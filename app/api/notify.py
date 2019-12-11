@@ -199,7 +199,7 @@ def send_mails():
                     else:
                         bcc = request.json['bcc']
                 else:
-                    bcci = None
+                    bcc = None
                 
                 if 'cc' in request.json: 
                     if not request.json['cc']:
