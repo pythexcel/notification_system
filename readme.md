@@ -61,3 +61,6 @@ For filling the database for templates
 
 > export FLASK_APP=__init__
 
+Create a .env file where declare environment
+
+ENVIRONMENT=production
