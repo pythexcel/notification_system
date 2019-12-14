@@ -46,8 +46,18 @@ next do
 
 next
 
-> export FLASK_APP=app
+> export FLASK_APP=__init__
 
 > export FLASK_DEBUG=1
 
 > flask run
+
+Please create a folder attached_documents in the root of project folder 
+
+For filling the database for templates
+> go in app folder
+
+> export FLASK_SKIP_DOTENV=1
+
+> export FLASK_APP=__init__
+

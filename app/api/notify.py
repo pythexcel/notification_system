@@ -87,7 +87,7 @@ def send_mails():
             if request.json['data'][elem] is not None:
                 if request.json['data'][elem] != "":
                     if request.json['data'][elem] != "No Access":
-                        date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%d %B %Y")
+                        date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%d %b %Y")
                         request.json['data'][elem] = date_formatted    
         
     MSG_KEY = request.json.get("message_key", None)  

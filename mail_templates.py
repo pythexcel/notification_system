@@ -225,7 +225,7 @@ templates = [
         "attachment_file": None,
         "attachment_file_name": None,
         "for": "Leave rejected",
-        "message": "<p>Hi #name:,<br>\nThis is to inform you that your leave of #fromDate: has been rejected.<br>\nRegards<br>\n#hr_signature:<br>\n#logo:</p>",
+        "message": "<p>Hi #name:,<br>\nThis is to inform you that your leave of #fromDate: has been rejected.<br>Reason: #reason:<br>\nRegards<br>\n#hr_signature:<br>\n#logo:</p>",
         "message_key": "Leave rejected",
         "message_origin": "HR",
         "message_subject": "#name: your leave is rejected",
