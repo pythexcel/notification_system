@@ -284,6 +284,12 @@ def required_message(message_key):
 # @token.authentication
 def token_test():
     email = request.json.get('email')
-    slack = slack_id(email)
-    slack_message(channel=[slack],message="Testing Slack Notification from HR System")
-    return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
+    try:
+        slack = slack_id(email)
+        print(slack)
+        slack_message(channel=[slack],message="Testing Slack Notification from HR System")
+        return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
+    except Exception:
+        return jsonify({"status":False,"Message": "Slack User not exist or invalid token"}), 400
+        
+        

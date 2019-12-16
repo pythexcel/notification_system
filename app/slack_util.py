@@ -17,10 +17,10 @@ def slack_id(email):
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
-    print(sl_user_id['user']['id'])                   
-
-    return (sl_user_id['user']['id'])
-
+    if sl_user_id['ok'] is True:                   
+        return (sl_user_id['user']['id'])
+    else:
+        raise Exception("Slack profile not available in workspace")  
 
 def slack_message(channel, message,req_json=None,message_detail=None):
     slack_token = slack_load_token()
@@ -55,13 +55,14 @@ def slack_message(channel, message,req_json=None,message_detail=None):
         else:
             pass
     for data in channel:
-        print(data)
-        sc.api_call(
+        x = sc.api_call(
             "chat.postMessage",
             channel=data,
             text=message,
             attachments=attachments
         )
+
+        
 
 
 def slack_profile(email=None):
