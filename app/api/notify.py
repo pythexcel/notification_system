@@ -181,9 +181,12 @@ def send_mails():
         bcc = None
         cc = None
         if app.config['ENV'] == 'development':
-            to = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
-            bcc = ["bcc_testing_recruit@mailinator.com"]
-            cc = ["cc_testing_recruit@mailinator.com"]
+            if 'to' in request.json:
+                to = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
+                bcc = ["bcc_testing_recruit@mailinator.com"]
+                cc = ["cc_testing_recruit@mailinator.com"]
+            else:
+                pass    
         else:
             if app.config['ENV'] == 'production':
                 if 'to' in request.json:
