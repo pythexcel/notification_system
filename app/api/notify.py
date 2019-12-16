@@ -182,9 +182,9 @@ def send_mails():
         cc = None
         if app.config['ENV'] == 'development':
             if 'to' in request.json:
-                to = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
-                bcc = ["bcc_testing_recruit@mailinator.com"]
-                cc = ["cc_testing_recruit@mailinator.com"]
+                to = app.config['to']
+                bcc = app.config['bcc']
+                cc = app.config['cc']
             else:
                 pass    
         else:
@@ -220,7 +220,7 @@ def send_mails():
                     return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
                 if app.config['ENV'] == 'development':
-                    reject_mail = ["recruit_testing@mailinator.com"]   
+                    reject_mail = app.config['to']   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": request.json['data']['email'],
             'rejection_time': request.json['data']['rejection_time'],
@@ -244,7 +244,7 @@ def mails():
         abort(500) 
     MAIL_SEND_TO = None     
     if app.config['ENV'] == 'development':
-        MAIL_SEND_TO = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
+        MAIL_SEND_TO = app.config['to']
     else:
         if app.config['ENV'] == 'production':
             MAIL_SEND_TO = request.json.get("to",None)
