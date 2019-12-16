@@ -1,10 +1,4 @@
-#In .env file there will be a variable for environment of app which will be
-
-ENVIRONMENT=production or ENVIRONMENT=development
-
-#For default mail credentials there will be 3 fields
-
-
-to=[list of mails]
-bcc=[list of mails]
-cc=[list of mails]
+ENVIRONMENT=production 
+to=[recruit_testing@mailinator.com]
+bcc=[bcc_testing_recruit@mailinator.com]
+cc=[cc_testing_recruit@mailinator.com]
