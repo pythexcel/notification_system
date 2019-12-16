@@ -181,9 +181,12 @@ def send_mails():
         bcc = None
         cc = None
         if app.config['ENV'] == 'development':
-            to = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
-            bcc = ["bcc_testing_recruit@mailinator.com"]
-            cc = ["cc_testing_recruit@mailinator.com"]
+            if 'to' in request.json:
+                to = app.config['to']
+                bcc = app.config['bcc']
+                cc = app.config['cc']
+            else:
+                pass    
         else:
             if app.config['ENV'] == 'production':
                 if 'to' in request.json:
@@ -217,7 +220,7 @@ def send_mails():
                     return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
                 if app.config['ENV'] == 'development':
-                    reject_mail = ["recruit_testing@mailinator.com"]   
+                    reject_mail = app.config['to']   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": request.json['data']['email'],
             'rejection_time': request.json['data']['rejection_time'],
@@ -241,7 +244,7 @@ def mails():
         abort(500) 
     MAIL_SEND_TO = None     
     if app.config['ENV'] == 'development':
-        MAIL_SEND_TO = ["recruit_testing@mailinator.com","testingattach0@gmail.com"]
+        MAIL_SEND_TO = app.config['to']
     else:
         if app.config['ENV'] == 'production':
             MAIL_SEND_TO = request.json.get("to",None)
@@ -281,6 +284,11 @@ def required_message(message_key):
 # @token.authentication
 def token_test():
     email = request.json.get('email')
-    slack = slack_id(email)
-    slack_message(channel=[slack],message="Testing Slack Notification from HR System")
-    return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
+    try:
+        slack = slack_id(email)
+        slack_message(channel=[slack],message="Testing Slack Notification from HR System")
+        return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
+    except Exception:
+        return jsonify({"status":False,"Message": "Slack User not exist or invalid token"}), 400
+        
+        
