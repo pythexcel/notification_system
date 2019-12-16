@@ -286,7 +286,6 @@ def token_test():
     email = request.json.get('email')
     try:
         slack = slack_id(email)
-        print(slack)
         slack_message(channel=[slack],message="Testing Slack Notification from HR System")
         return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
     except Exception:

@@ -55,7 +55,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
         else:
             pass
     for data in channel:
-        x = sc.api_call(
+        sc.api_call(
             "chat.postMessage",
             channel=data,
             text=message,
