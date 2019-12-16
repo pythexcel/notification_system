@@ -1,0 +1,10 @@
+#In .env file there will be a variable for environment of app which will be
+
+ENVIRONMENT=production or ENVIRONMENT=development
+
+#For default mail credentials there will be 3 fields
+
+
+to=[list of mails]
+bcc=[list of mails]
+cc=[list of mails]
