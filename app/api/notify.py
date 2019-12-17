@@ -231,7 +231,6 @@ def send_mails():
             return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
             if to is not None:
-                print(to)
                 send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
                 return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
             else:
