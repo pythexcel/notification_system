@@ -182,9 +182,9 @@ def send_mails():
         cc = None
         if app.config['ENV'] == 'development':
             if 'to' in request.json:
-                to = app.config['to']
-                bcc = app.config['bcc']
-                cc = app.config['cc']
+                to = [app.config['to']]
+                bcc = [app.config['bcc']]
+                cc = [app.config['cc']]
             else:
                 pass    
         else:
@@ -220,7 +220,7 @@ def send_mails():
                     return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
                 if app.config['ENV'] == 'development':
-                    reject_mail = app.config['to']   
+                    reject_mail = [app.config['to']]   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": request.json['data']['email'],
             'rejection_time': request.json['data']['rejection_time'],
@@ -231,6 +231,7 @@ def send_mails():
             return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
             if to is not None:
+                print(to)
                 send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
                 return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
             else:
@@ -244,7 +245,7 @@ def mails():
         abort(500) 
     MAIL_SEND_TO = None     
     if app.config['ENV'] == 'development':
-        MAIL_SEND_TO = app.config['to']
+        MAIL_SEND_TO = [app.config['to']]
     else:
         if app.config['ENV'] == 'production':
             MAIL_SEND_TO = request.json.get("to",None)
