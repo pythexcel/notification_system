@@ -98,5 +98,16 @@ rec_templates = [
         "subject": "Thrid Round For Javascript Developer",
         "version": 1,
         "working": True
+    },
+    {
+        "Doc_type": "email",
+        "for": "Password reset",
+        "message": "<p>Dear #name:, <br/> Your password is reset below is the new password <br/> #password: </p> ",
+        "message_key": "Password reset",
+        "message_origin": "RECRUIT",
+        "message_subject": "#name: your password is reset",
+        "subject": "Password reset",
+        "version": 1,
+        "working": True
     }
 ]

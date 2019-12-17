@@ -43,8 +43,8 @@ def create_app(test_config=None):
     load_dotenv(dotenv_path)
     app.config['ENV'] = os.getenv('ENVIRONMENT')
     app.config['to'] = os.getenv('to')
-    app.config['to'] = os.getenv('cc')
-    app.config['to'] = os.getenv('bcc')
+    app.config['cc'] = os.getenv('cc')
+    app.config['bcc'] = os.getenv('bcc')
     
     if test_config is None:
         # load the instance config, if it exists, when not testing
