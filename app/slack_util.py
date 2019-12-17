@@ -32,7 +32,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
                 color = req_json['button']['color']        
             attachments = [
                 {
-                "fallback": "fallback",
+                "fallback": "Message from "+ message_detail['message_origin'],
                 "color" : color, 
                 "actions" : req_json['button']['actions']
                 }
@@ -46,7 +46,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
             color = message_detail['message_color']
             attachments = [
                 {
-                "fallback": "fallback",
+                "fallback": "Message from "+ message_detail['message_origin'],
                 "color" : color,
                 "text": message 
                 }

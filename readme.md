@@ -64,3 +64,33 @@ For filling the database for templates
 Create a .env file where declare environment
 
 ENVIRONMENT=production
+
+For deployment on server install supervisor
+
+> apt-get install supervisor 
+> service supervisor restart
+
+go to root then etc/supervisor/conf.d
+
+create a file name notify_sys.conf
+
+inside that file
+
+[program:notify_sys]
+command = ../../notification_system/notification_system/notify_env/bin/gunicorn "app:create_app()" --bind=0.0.0.0:port --access-logfile ../gunicorn-access.log --error-logfile ../gunicorn-error.log 
+directory = ../../notification_system
+user = username
+
+gunicorn error.log files can be big so in 
+/etc/logrotate.d/
+
+> create a file and put 
+
+ ../../gunicorn-access.log ../../gunicorn-error.log {
+  daily
+  rotate 60
+  copytruncate
+  compress
+  missingok
+  notifempty
+}
