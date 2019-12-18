@@ -60,6 +60,10 @@ For filling the database for templates
 > export FLASK_SKIP_DOTENV=1
 
 > export FLASK_APP=__init__
+to fill hr data run command
+> flask seed_hr
+to fill recruit data run command
+> flask seed_recruit
 
 Create a .env file where declare environment
 
