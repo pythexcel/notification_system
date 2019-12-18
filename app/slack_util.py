@@ -72,5 +72,9 @@ def slack_profile(email=None):
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
 
-    return (sl_user_id['user'])
+    if sl_user_id['ok'] is True:                   
+        return (sl_user_id['user']['id'])
+    else:
+        print(email)
+        raise Exception("Slack profile not available in workspace")  
                               
