@@ -75,6 +75,5 @@ def slack_profile(email=None):
     if sl_user_id['ok'] is True:                   
         return (sl_user_id['user']['id'])
     else:
-        print(email)
-        raise Exception("Slack profile not available in workspace")  
+        raise Exception("Slack profile not available in workspace for " + email)  
                               
