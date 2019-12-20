@@ -29,6 +29,7 @@ def notification_message(message_origin):
         MSG_TYPE = request.json.get("message_type", None)
         MSG_Color = request.json.get("message_color", None)
         Working = request.json.get("working", True)
+        submission_type = request.json.get("submission_type", None)
         slack_channel = request.json.get("slack_channel", None)
         email_group = request.json.get("email_group", None)
         channel = request.json.get("channels", None)
@@ -47,6 +48,7 @@ def notification_message(message_origin):
                 "message_origin": message_origin,
                 "message_type": MSG_TYPE,
                 "sended_to": sended_to,
+                "submission_type": submission_type,
                 "working": Working,
                 "message_color": MSG_Color,
                 "slack_channel": slack_channel,
@@ -217,3 +219,14 @@ def assign_letter_heads(template_id, letter_head_id):
             "template_head": letter_head_id
         }})
     return jsonify({"MSG": "Letter Head Added To Template"}), 200
+
+@bp.route('/slack_message_type/<string:message_origin>/<string:submission_type>', methods=["GET"])
+# @token.admin_required
+def slack_message_type(message_origin,submission_type):
+    ret = mongo.db.notification_msg.find(
+        {
+            "message_origin": message_origin,
+            "submission_type":submission_type
+        })
+    ret = [serialize_doc(doc) for doc in ret]
+    return jsonify(ret)

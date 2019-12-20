@@ -32,7 +32,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
                 color = req_json['button']['color']        
             attachments = [
                 {
-                "fallback": "fallback",
+                "fallback": "Message from "+ message_detail['message_origin'],
                 "color" : color, 
                 "actions" : req_json['button']['actions']
                 }
@@ -46,7 +46,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
             color = message_detail['message_color']
             attachments = [
                 {
-                "fallback": "fallback",
+                "fallback": "Message from "+ message_detail['message_origin'],
                 "color" : color,
                 "text": message 
                 }
@@ -72,5 +72,9 @@ def slack_profile(email=None):
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
 
-    return (sl_user_id['user'])
+    if sl_user_id['ok'] is True:                   
+        return (sl_user_id['user']['id'])
+    else:
+        print(email)
+        raise Exception("Slack profile not available in workspace")  
                               
