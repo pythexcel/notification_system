@@ -62,9 +62,6 @@ def slack_message(channel, message,req_json=None,message_detail=None):
             attachments=attachments
         )
 
-        
-
-
 def slack_profile(email=None):
     print(email)
     slack_token = slack_load_token()

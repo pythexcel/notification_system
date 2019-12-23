@@ -11,6 +11,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
 from werkzeug.utils import secure_filename
 import os
 from flask import current_app as app
+from slack_util import slack_message
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
@@ -220,13 +221,12 @@ def assign_letter_heads(template_id, letter_head_id):
         }})
     return jsonify({"MSG": "Letter Head Added To Template"}), 200
 
-@bp.route('/slack_message_type/<string:message_origin>/<string:submission_type>', methods=["GET"])
+@bp.route('/slack_channel_test', methods=["POST"])
 # @token.admin_required
-def slack_message_type(message_origin,submission_type):
-    ret = mongo.db.notification_msg.find(
-        {
-            "message_origin": message_origin,
-            "submission_type":submission_type
-        })
-    ret = [serialize_doc(doc) for doc in ret]
-    return jsonify(ret)
+def slack_channel_test():
+    channel = request.json.get("channel")
+    ret = mongo.db.working_channels.insert_one({
+        "channel_id" : channel,
+    })
+    slack_message(channel=[channel],message="Your slack account is integrated")
+    return jsonify({"Message": "Sended","status":True}), 200
