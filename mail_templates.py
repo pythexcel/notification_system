@@ -160,7 +160,7 @@ templates = [
         "attachment_file": None,
         "attachment_file_name": None,
         "for": "Leave apply",
-        "message": "<p>Dear #name:,<br>You have applied for #leave_type: from #fromDate: to #toDate:</p><p>Reason : #reason:<br>Link : #docLink:<br>Regards<br>#hr_signature:<br>#logo:</p>",
+        "message": "<p>Dear #name:,<br>You have applied for #leave_type: from #fromDate: to #toDate:</p><p>Reason : #reason:<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Leave apply",
         "message_origin": "HR",
         "message_subject": "Leave apply for #fromDate: to #toDate:",

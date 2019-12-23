@@ -220,13 +220,16 @@ def assign_letter_heads(template_id, letter_head_id):
         }})
     return jsonify({"MSG": "Letter Head Added To Template"}), 200
 
-@bp.route('/slack_message_type/<string:message_origin>/<string:submission_type>', methods=["GET"])
+@bp.route('/slack_message_type/<string:message_origin>/<string:submission_type>', methods=["PUT"])
 # @token.admin_required
 def slack_message_type(message_origin,submission_type):
-    ret = mongo.db.notification_msg.find(
+    channels = request.json.get("channels")
+    ret = mongo.db.notification_msg.update(
         {
             "message_origin": message_origin,
             "submission_type":submission_type
-        })
-    ret = [serialize_doc(doc) for doc in ret]
-    return jsonify(ret)
+        },{"$set": {
+            "slack_channel": channels
+        }
+        },upsert=False,multi=True)   
+    return jsonify({"Message": "Added channels","status":True}), 200
