@@ -45,6 +45,7 @@ def create_app(test_config=None):
     app.config['to'] = os.getenv('to')
     app.config['cc'] = os.getenv('cc')
     app.config['bcc'] = os.getenv('bcc')
+    app.config['origin'] = os.getenv('origin')
     
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -88,26 +89,35 @@ def create_app(test_config=None):
     
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
-    
-    campaign_mail_scheduler = BackgroundScheduler()
-    campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=1)
-    campaign_mail_scheduler.start()
 
-    reject_mail_scheduler = BackgroundScheduler()
-    reject_mail_scheduler.add_job(reject_mail, trigger='interval', seconds=5)
-    reject_mail_scheduler.start()
+    if app.config['origin'] == "hr":
+        
+        schduled_messages_scheduler = BackgroundScheduler()
+        schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=1)
+        schduled_messages_scheduler.start()
+        try:
+            print("create app..")
+            return app
+        except:
+            schduled_messages_scheduler.shutdown()
+            
+    elif app.config['origin'] == "recruit":
+        reject_mail_scheduler = BackgroundScheduler()
+        reject_mail_scheduler.add_job(reject_mail, trigger='interval', seconds=5)
+        reject_mail_scheduler.start()
 
-    schduled_messages_scheduler = BackgroundScheduler()
-    schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=1)
-    schduled_messages_scheduler.start()
-  
-    try:
-        print("create app..")
-        return app
-    except:
-        schduled_messages_scheduler.shutdown()
-        campaign_mail_scheduler.shutdown()
-        reject_mail_scheduler.shutdown()
+        campaign_mail_scheduler = BackgroundScheduler()
+        campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=1)
+        campaign_mail_scheduler.start()
+        
+        try:
+            print("create app..")
+            return app
+        except:
+            reject_mail_scheduler.shutdown()
+            campaign_mail_scheduler.shutdown()
+            
+        
     
 @click.command("seed_hr")
 @with_appcontext

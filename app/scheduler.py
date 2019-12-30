@@ -7,7 +7,6 @@ from app.mail_util import send_email
 from app.slack_util import slack_message
 
 def campaign_mail():
-    print("CAMPAIGN MAIL>>>RUNNING...............")
     ret = mongo.db.campaign_users.find_one({"send_status":False})
     if ret is not None:
         mail = ret['email']
@@ -41,14 +40,12 @@ def campaign_mail():
                         "send_status": True
                     }
                     })
-        print("EMAIL_SENDED...............")
-    
     else:
-        print('NO CAMPAIGN MESSAGES LEFT!!')  
+        pass
+    
 
 
 def reject_mail():
-    print("REJECT MAIL>>>>RUNNING ..................")  
     ret = mongo.db.rejection_handling.find_one({"send_status":False})
     if ret is not None:
         mail = ret['email']
@@ -57,25 +54,17 @@ def reject_mail():
         time_update = dateutil.parser.parse(time).strftime("%Y-%m-%dT%H:%M:%SZ")
         rejected_time = datetime.datetime.strptime(time_update,'%Y-%m-%dT%H:%M:%SZ')
         diffrence = datetime.datetime.utcnow() - rejected_time
-        print(diffrence)
-        print(rejected_time)
         if diffrence.days >= 1:
-            print(diffrence.days)
-            print('CONDITION MATCHED')
             to = []
             to.append(mail)
             send_email(message=message,recipients=to,subject='REJECTED')
             user_status = mongo.db.rejection_handling.remove({"_id":ObjectId(ret['_id'])})
-            print("EMAIL_SENDED...............")
         else:
-            print('SKIPPED')
             pass
     else:
-        print("No Rejection Mail left!!")    
-
+        pass
 
 def cron_messages():
-    print("CRON MESSAGES SENDER>>>>>>RUNNING ................")
     ret = mongo.db.messages_cron.find_one({"cron_status":False})
     if ret is not None:
         vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
@@ -92,4 +81,4 @@ def cron_messages():
         else:
             pass    
     else:
-        print("NO Messages Left")
+        

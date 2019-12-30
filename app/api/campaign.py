@@ -31,7 +31,7 @@ def create_campaign():
                 "active":active,
                 "cron_status": False
         }).inserted_id
-        return jsonify({"MSG":"Campaign Inserted"}),200
+        return jsonify(ret),200
 
 @bp.route('/list_campaign', methods=["GET"])
 # @token.admin_required
