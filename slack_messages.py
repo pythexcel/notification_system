@@ -619,3 +619,7 @@ slack_message = [
         "working": True
     }
 ]
+
+
+inventory_audit_issue_update_to_employee
+inventory_audit_issue
