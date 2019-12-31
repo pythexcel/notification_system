@@ -56,10 +56,18 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     slack_user_detail = req_json
     req_json = json.loads(json.dumps(req_json))
     email_user_detail = req_json
+    slack = ""
+    slack_details = None
     if message_detail['for_email'] is False:
         if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
-            slack = slack_id(slack_user_detail['user']['email'])
-            slack_user_detail['user'] = "<@" + slack + ">"
+            try:
+                slack = slack_id(slack_user_detail['user']['email'])
+            except Exception:
+                slack_details = False   
+            if slack_details is False:    
+                slack_user_detail['user'] = slack_user_detail['user']['name']
+            else:    
+                slack_user_detail['user'] = "<@" + slack + ">"
         else:
             pass            
         message_str = message
@@ -85,7 +93,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             channels.append(slack)
         else:
             pass      
-        if channels:                                                      
+        if channels:                                                   
             mongo.db.messages_cron.insert_one({
                 "cron_status":False,
                 "type": "slack",
