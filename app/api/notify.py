@@ -180,11 +180,14 @@ def send_mails():
         if 'fromDate' in request.json['data']:
             if 'toDate' in request.json['data']:
                 if request.json['data']['fromDate'] == request.json['data']['toDate']:
-                    message_str = message_str.replace(request.json['data']['fromDate'] + "to" + request.json['data']['toDate'],request.json['data']['fromDate'])
-        else:
-            pass    
+                    message_str = message_str.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
 
+        if 'fromDate' in request.json['data']:
+            if 'toDate' in request.json['data']:
+                if request.json['data']['fromDate'] == request.json['data']['toDate']:
+                    message_subject = message_subject.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
 
+        
         download_pdf = "#letter_head #content #letter_foot"
         if header is not None:
             download_pdf = download_pdf.replace("#letter_head",header)
