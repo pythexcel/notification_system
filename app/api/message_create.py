@@ -106,10 +106,18 @@ def mail_message(message_origin):
         if "working" in request.form:
             working = request.form["working"]
         MSG_SUBJECT = request.form["message_subject"]
-        for_detail = request.form["for"]
-        subject = request.form["subject"]
+        for_detail = None
+        if 'for_detail' in request.form:
+            for_detail = request.form["for"]
+        subject = None
+        if 'subject' in request.form['subject']:
+            subject = request.form["subject"]
         Doc_type = request.form["doc_type"]
-        default = request.form["default"]
+        default = False
+        if "default" in request.form:
+            default = request.form["default"]
+            
+
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
         ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
@@ -177,7 +185,7 @@ def mail_message(message_origin):
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
                     "version": 1,
-                    "default": default,
+                    "default": False,
                     "for": for_detail,
                     "subject":subject,
                     "Doc_type": Doc_type,

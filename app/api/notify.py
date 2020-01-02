@@ -103,7 +103,11 @@ def send_mails():
         if Subject is not None:
             message_detail['message_subject'] = Subject
         else:
-            pass     
+            pass    
+        if request.json['fromDate'] == request.json['toDate']:
+            message_detail['message'] = message_detail['message'].replace("#fromDate to #toDate",request.json['data']['fromDate'])
+        else:
+            pass    
         attachment_file = None
         attachment_file_name = None
         if 'attachment' in request.json:
