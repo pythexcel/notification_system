@@ -10,6 +10,7 @@ templates = [
         "message_subject": "Offer letter from #company:",
         "subject": "Offer letter",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -23,6 +24,7 @@ templates = [
         "message_subject": "Relieving certificate from #company:",
         "subject": "RELIEVING CERTIFICATE",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -36,6 +38,7 @@ templates = [
         "message_subject": "Welcome #name: to #company:",
         "subject": "New Employee Welcome Email",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -49,6 +52,7 @@ templates = [
         "message_subject": "Birthday wish to #name: ",
         "subject": "Birthday Wish",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -62,6 +66,7 @@ templates = [
         "message_subject": "Offer Letter with #company:",
         "subject": "Offer Letter with company",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -75,6 +80,7 @@ templates = [
         "message_subject": "Important Information - #company:",
         "subject": "Important HR guidelines and Company Policies",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -88,6 +94,7 @@ templates = [
         "message_subject": "Offer Discussion with #company:",
         "subject": "Offer Discussion",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -101,6 +108,7 @@ templates = [
         "message_subject": "Welcome #name: to #company:",
         "subject": "Welcome employee",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -114,6 +122,7 @@ templates = [
         "message_subject": "Employee termination  from #company:",
         "subject": "Employee Termination",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -127,6 +136,7 @@ templates = [
         "message_subject": "Employee Termination Policies",
         "subject": "Employee Termination Policies",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -140,6 +150,7 @@ templates = [
         "message_subject": "Employment Confirmation",
         "subject": "Employee Confirmation",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -153,6 +164,7 @@ templates = [
         "message_subject": "Employee Confirmation Policies ",
         "subject": "Employee Confirmation Policies",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -166,6 +178,7 @@ templates = [
         "message_subject": "Leave apply for #fromDate: to #toDate:",
         "subject": "Leave apply",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -179,6 +192,7 @@ templates = [
         "message_subject": "New employee important information from #company:",
         "subject": "New Employee Important Information",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -192,6 +206,7 @@ templates = [
         "message_subject": "General Introduction - #company:",
         "subject": "New Employee General Introduction",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -205,6 +220,7 @@ templates = [
         "message_subject": "#name: your salary is updated ",
         "subject": "Salary Update",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -218,6 +234,7 @@ templates = [
         "message_subject": "#name: your payslip for #month_text: #year: is generated",
         "subject": "Payslip",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -231,6 +248,7 @@ templates = [
         "message_subject": "#name: your leave is rejected",
         "subject": "Leave rejected",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -244,6 +262,7 @@ templates = [
         "message_subject": "#name: your leave is approved",
         "subject": "Leave approval",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -257,6 +276,7 @@ templates = [
         "message_subject": "Required joining documents from #company:",
         "subject": "Required Joining Documents",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -270,6 +290,7 @@ templates = [
         "message_subject": "Experience certificate  from #company:",
         "subject": "Experience Certificate",
         "version": 1,
+        "default" : True,
         "working": True
     },
     {
@@ -283,6 +304,7 @@ templates = [
         "message_subject": "#name: your leave is pending of #fromDate:",
         "subject": "Leave pending",
         "version": 1,
+        "default" : True,
         "working": True
     }
 ]

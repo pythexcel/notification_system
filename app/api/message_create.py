@@ -109,6 +109,7 @@ def mail_message(message_origin):
         for_detail = request.form["for"]
         subject = request.form["subject"]
         Doc_type = request.form["doc_type"]
+        default = request.form["default"]
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
         ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
@@ -145,6 +146,7 @@ def mail_message(message_origin):
                     "message_subject": MSG_SUBJECT,
                     "version": version,
                     "for": for_detail,
+                    "default": default,
                     "subject":subject,
                     "Doc_type": Doc_type,
                     "attachment_file": attachment_file,
@@ -175,6 +177,7 @@ def mail_message(message_origin):
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
                     "version": 1,
+                    "default": default,
                     "for": for_detail,
                     "subject":subject,
                     "Doc_type": Doc_type,
@@ -230,3 +233,13 @@ def slack_channel_test():
     })
     slack_message(channel=[channel],message="Your slack account is integrated")
     return jsonify({"Message": "Sended","status":True}), 200
+
+# @bp.route('simple_update',methods=["GET"])
+# def do():
+#     ret = mongo.db.mail_template.update({"message_origin": "HR"},
+#     {
+#         "$set": {
+#             "default": True
+#         }
+#     },upsert=False,multi=True)
+#     return 'DONE'
