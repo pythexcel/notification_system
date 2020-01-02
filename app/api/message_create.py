@@ -110,7 +110,7 @@ def mail_message(message_origin):
         if 'for_detail' in request.form:
             for_detail = request.form["for"]
         subject = None
-        if 'subject' in request.form['subject']:
+        if 'subject' in request.form:
             subject = request.form["subject"]
         Doc_type = request.form["doc_type"]
         default = False
