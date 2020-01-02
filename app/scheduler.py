@@ -1,3 +1,4 @@
+import re
 from app import mongo
 from app.util import serialize_doc
 import datetime
@@ -11,35 +12,87 @@ def campaign_mail():
     if ret is not None:
         mail = ret['email']
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
-        for data in cam['Template']:
-            temp = mongo.db.mail_template.find_one({"_id":ObjectId(data)})
-            subject = temp['message_subject']
-            message_variables = []
-            message = temp['message'].split()
-            for elem in message:
-                if elem[0]=='#':
-                    message_variables.append(elem[1:])     
-            message_str = temp['message']
-            for detail in message_variables:
-                if detail in ret:
-                    message_str = message_str.replace("#"+detail, ret[detail])
-            to = []
-            to.append(mail)        
-            send_email(message=message_str,recipients=to,subject=subject)
+        if cam is not None:
+            if 'Template' in cam:
+                for data in cam['Template']:
+                    system_variable = mongo.db.mail_variables.find({})
+                    system_variable = [serialize_doc(doc) for doc in system_variable]
+                    temp = mongo.db.mail_template.find_one({"_id":ObjectId(data)})
+                    subject = temp['message_subject']
+                    message_variables = []
+                    message = temp['message'].split('#')
+                    del message[0]
+                    rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+                    for elem in message:
+                        varb = re.split(rex, elem)
+                        message_variables.append(varb[0])
+                    message_str = temp['message']
+                    for detail in message_variables:
+                        if detail in ret:
+                            rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                            message_str = re.sub(rexWithString, ret[detail], message_str)
+                        else:
+                            for element in system_variable:
+                                if "#" + detail == element['name'] and element['value'] is not None:
+                                    rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                                    message_str = re.sub(rexWithSystem, element['value'], message_str)  
 
-        campaign = mongo.db.campaigns.update({"_id":ObjectId(ret['campaign'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
+                    subject_variables = []
+                    message_sub = subject.split('#')
+                    del message_sub[0]
+                    regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+                    for elem in message_sub:
+                        sub_varb = re.split(regex, elem)
+                        subject_variables.append(sub_varb[0])
+                    message_subject = subject
+                    for detail in subject_variables:
+                        if detail in ret:
+                            rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                            message_subject = re.sub(rexWithString, ret[detail], message_subject)
+                        else:
+                            for element in system_variable:
+                                if "#" + detail == element['name'] and element['value'] is not None:
+                                    rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                                    message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
+
+
+
+                    to = []
+                    to.append(mail)
+                    working_status = True
+                    try:        
+                        send_email(message=message_str,recipients=to,subject=subject)
+                    except Exception:
+                        working_status = False
+                    mail_data = mongo.db.mail_status.insert_one({
+                        "user_mail": mail,
+                        "user_id": str(ret['_id']),
+                        "sending_time": datetime.datetime.now(),
+                        "message": message_str,
+                        "mail_sended_status": working_status,
+                        "subject":subject,
+                        "recipients": to
+
                     })
 
-        user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "send_status": True
-                    }
-                    })
+
+                campaign = mongo.db.campaigns.update({"_id":ObjectId(ret['campaign'])},
+                    {
+                        "$set": {
+                                "cron_status": True
+                            }
+                            })
+
+                user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
+                    {
+                        "$set": {
+                                "send_status": True
+                            }
+                            })
+            else:
+                pass
+        else:
+            pass
     else:
         pass
     

@@ -92,8 +92,18 @@ def send_mails():
         
     MSG_KEY = request.json.get("message_key", None)  
     Data = request.json.get("data",None)
+    Message = request.json.get("message",None)
+    Subject = request.json.get("subject",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
-    if message_detail is not None: 
+    if message_detail is not None:
+        if Message is not None:
+            message_detail['message'] = Message
+        else:
+            pass
+        if Subject is not None:
+            message_detail['message_subject'] = Subject
+        else:
+            pass     
         attachment_file = None
         attachment_file_name = None
         if 'attachment' in request.json:
@@ -143,7 +153,7 @@ def send_mails():
 
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
-        del message[0]
+        del message_sub[0]
         regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
         for elem in message_sub:
             sub_varb = re.split(regex, elem)
