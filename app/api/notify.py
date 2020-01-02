@@ -104,10 +104,7 @@ def send_mails():
             message_detail['message_subject'] = Subject
         else:
             pass    
-        if request.json['fromDate'] == request.json['toDate']:
-            message_detail['message'] = message_detail['message'].replace("#fromDate to #toDate",request.json['data']['fromDate'])
-        else:
-            pass    
+        
         attachment_file = None
         attachment_file_name = None
         if 'attachment' in request.json:
@@ -179,6 +176,14 @@ def send_mails():
         for elem in missing_subject:
             sub_varb_missing = re.split(missing_sub_rex, elem)
             missing_payload.append(sub_varb_missing[0])
+
+        if 'fromDate' in request.json['data']:
+            if 'toDate' in request.json['data']:
+                if request.json['data']['fromDate'] == request.json['data']['toDate']:
+                    message_str = message_str.replace(request.json['data']['fromDate'] + "to" + request.json['data']['toDate'],request.json['data']['fromDate'])
+        else:
+            pass    
+
 
         download_pdf = "#letter_head #content #letter_foot"
         if header is not None:
