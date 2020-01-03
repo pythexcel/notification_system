@@ -241,13 +241,3 @@ def slack_channel_test():
     })
     slack_message(channel=[channel],message="Your slack account is integrated")
     return jsonify({"Message": "Sended","status":True}), 200
-
-# @bp.route('simple_update',methods=["GET"])
-# def do():
-#     ret = mongo.db.mail_template.update({"message_origin": "HR"},
-#     {
-#         "$set": {
-#             "default": True
-#         }
-#     },upsert=False,multi=True)
-#     return 'DONE'
