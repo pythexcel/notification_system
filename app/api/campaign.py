@@ -116,6 +116,7 @@ def add_user_campaign():
 
 @bp.route("/mails_status",methods=["GET"])
 def mails_status():
+        
     ret = mongo.db.mail_status.find({})
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200

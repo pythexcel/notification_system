@@ -105,7 +105,8 @@ def send_mails():
         else:
             pass    
         if request.json['fromDate'] == request.json['toDate']:
-            message_detail['message'] = message_detail['message'].replace("#fromDate to #toDate",request.json['data']['fromDate'])
+            rex = 
+            message_detail['message'] = message_detail['message'].replace("#fromDate: to #toDate:",request.json['data']['fromDate'])
         else:
             pass    
         attachment_file = None
