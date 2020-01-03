@@ -3,13 +3,13 @@ from app import mongo
 import smtplib    
 import os 
 import sys
-import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
+# <img src='http://176.9.137.77:8007/template_hit_rate?template=5e005c0f44f73ecd868cb8c5&hit_rate=1' style='display:none'/>
 
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,template_id=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None):
     mail_details = mongo.db.mail_settings.find_one({},{"_id":0})
     username = mail_details["mail_username"]
     password = mail_details["mail_password"]
@@ -44,11 +44,6 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         msg.attach(file)
     else:
         pass
-    if template_id is not None:
-        date = datetime.datetime.now()
-        formatted_date = date.strftime("%d-%m-%Y") 
-        url = "<img src='http://176.9.137.77:8007/template_hit_rate?template={}&hit_rate=1&date={}'style='display:none'/>".format(template_id,formatted_date)
-        message = message + url
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 

@@ -127,12 +127,8 @@ def mails_status():
 def hit_rate():
     template =  request.args.get('template', default=1, type=str)
     hit = request.args.get('hit_rate', default=0, type=int)
-    date = request.args.get('date', default=1, type=str)
-    format_date = dateutil.parser.parse(date)
-    print(format_date)
     hit_rate_calculation = mongo.db.template.update({
         "template":template,
-        "date": format_date
         },
         {"$inc": {"hit_rate":hit}},
         upsert=True)
