@@ -115,8 +115,10 @@ def add_user_campaign():
         return jsonify({"MSG":"Users added to campaign"}), 200  
 
 @bp.route("/mails_status",methods=["GET"])
-def mails_status():        
-    ret = mongo.db.mail_status.find({})
+def mails_status():
+    limit = request.args.get('limit',default=0, type=int)
+    skip = request.args.get('skip',default=0, type=int)         
+    ret = mongo.db.mail_status.find({}).skip(skip).limit(limit)
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
