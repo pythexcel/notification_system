@@ -125,7 +125,7 @@ def mails_status():
 
 @bp.route("/template_hit_rate",methods=['GET'])
 def hit_rate():
-    template =  request.args.get('template', default="", type=str)
+    template =  request.args.get('template', type=str)
     hit = request.args.get('hit_rate', default=0, type=int)
     hit_rate_calculation = mongo.db.template.update({
         "template":template,
