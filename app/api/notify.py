@@ -290,7 +290,6 @@ def mails():
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
 
-
 @bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
 @token.admin_required
 def required_message(message_key):
@@ -312,5 +311,3 @@ def token_test():
         return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
     except Exception:
         return jsonify({"status":False,"Message": "Slack User not exist or invalid token"}), 400
-        
-        

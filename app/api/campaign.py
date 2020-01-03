@@ -3,6 +3,7 @@ from app import token
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util import serialize_doc,Template_details,campaign_details
 import datetime
+import dateutil.parser
 from bson.objectid import ObjectId
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -124,10 +125,15 @@ def mails_status():
 
 @bp.route("/template_hit_rate",methods=['GET'])
 def hit_rate():
-    template =  request.args.get('template', default=1, type=int)
+    template =  request.args.get('template', default=1, type=str)
     hit = request.args.get('hit_rate', default=0, type=int)
+    date = request.args.get('date', default=1, type=str)
+    format_date = dateutil.parser.parse(date)
+    print(format_date)
     hit_rate_calculation = mongo.db.template.update({
-        "template":template},
+        "template":template,
+        "date": format_date
+        },
         {"$inc": {"hit_rate":hit}},
         upsert=True)
     return 'DONE'
