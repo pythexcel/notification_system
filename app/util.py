@@ -223,8 +223,18 @@ def Template_details(details):
 
 def campaign_details(user):
     name = user['campaign']
+    Id = user['_id']
+    print(Id)
+
+    Messages = []
+    vet = mongo.db.mail_status.find({"user_id":Id})
+    for data in vet:
+        print(data['message'])
+        Messages.append({"Message": data['message'],"Subject":data['subject'],"sending_time":data['sending_time']})
+
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(name)})
     user['campaign'] = serialize_doc(ret)
+    user['Messages_detail'] = Messages
     return user   
 
 def allowed_file(filename):

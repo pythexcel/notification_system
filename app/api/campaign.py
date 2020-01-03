@@ -113,3 +113,17 @@ def add_user_campaign():
 
         ret = mongo.db.campaign_users.insert_many(users)
         return jsonify({"MSG":"Users added to campaign"}), 200  
+
+@bp.route("/mails_status",methods=["GET"])
+def mails_status():
+    limit = request.args.get('limit',default=0, type=int)
+    skip = request.args.get('skip',default=0, type=int)         
+    ret = mongo.db.mail_status.find({}).skip(skip).limit(limit)
+    ret = [serialize_doc(doc) for doc in ret]        
+    return jsonify(ret), 200
+
+@bp.route("/template_hit_rate",methods=['GET'])
+def hit_rate():
+    template =  request.args.get('template')
+    hit = request.args.get('hit rate')
+    hit_rate_calculation = mongo.db.template.aggregate

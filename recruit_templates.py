@@ -8,6 +8,7 @@ rec_templates = [
         "message_subject": "#name!,your interview for First round of javascript developer is scheduled",
         "subject": "First Round For Javascript Developer",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -19,6 +20,7 @@ rec_templates = [
         "message_subject": "#name!,your interview for Second round for Php developer is scheduled",
         "subject": "Second Round For Php Developer",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -31,6 +33,7 @@ rec_templates = [
         "message_subject": "interviewee Rejection",
         "subject": "Interviwee Reject",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -42,6 +45,7 @@ rec_templates = [
         "message_subject": "interviewee put on hold",
         "subject": "Interviewee On Hold",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -53,6 +57,7 @@ rec_templates = [
         "message_subject": "interviewee selected",
         "subject": "Interviewee Selection",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -64,6 +69,7 @@ rec_templates = [
         "message_subject": "#name!,your interview for Third round for Php developer is scheduled ",
         "subject": "Third Round For Php Developer",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -75,6 +81,7 @@ rec_templates = [
         "message_subject": "#name!,your interview for First round for Php developer is scheduled",
         "subject": "First Round For Php Developer",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -86,6 +93,7 @@ rec_templates = [
         "message_subject": "#name!,your interview for Second round for Javascript developer is scheduled",
         "subject": "Second Round For Javascript Developer",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -97,6 +105,7 @@ rec_templates = [
         "message_subject": "#name!,your interview for Third round for Javascript developer is scheduled",
         "subject": "Thrid Round For Javascript Developer",
         "version": 1,
+        "default": True,
         "working": True
     },
     {
@@ -108,6 +117,7 @@ rec_templates = [
         "message_subject": "#name: your password is reset",
         "subject": "Password reset",
         "version": 1,
+        "default": True,
         "working": True
     }
 ]
