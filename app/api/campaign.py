@@ -1,6 +1,6 @@
 from app import mongo
 from app import token
-from flask import (Blueprint, flash, jsonify, abort, request)
+from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory)
 from app.util import serialize_doc,Template_details,campaign_details
 import datetime
 import dateutil.parser
@@ -132,4 +132,5 @@ def hit_rate():
         },
         {"$inc": {"hit_rate":hit}},
         upsert=True)
-    return 'DONE'
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               '1pxl.jpg')

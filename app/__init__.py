@@ -65,7 +65,7 @@ def create_app(test_config=None):
     
     @app.route('/images/<path:path>')
     def send_file(path):
-        return send_from_directory('images', path)
+        return send_from_directory(app.config['UPLOAD_FOLDER'], path)
 
     @app.errorhandler(500)
     def error_500(error):
