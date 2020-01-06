@@ -4,6 +4,7 @@ from flask import (Blueprint, flash, jsonify, abort, request, send_from_director
 from app.util import serialize_doc,Template_details,campaign_details
 import datetime
 import dateutil.parser
+from flask import current_app as app
 from bson.objectid import ObjectId
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -123,14 +124,15 @@ def mails_status():
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
-@bp.route("/template_hit_rate",methods=['GET'])
-def hit_rate():
+@bp.route("/template_hit_rate/<string:variable>",methods=['GET'])
+def hit_rate(variable):
     template =  request.args.get('template', type=str)
     hit = request.args.get('hit_rate', default=0, type=int)
     hit_rate_calculation = mongo.db.template.update({
         "template":template,
         },
         {"$inc": {"hit_rate":hit}},
-        upsert=True)
+        upsert=True)   
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                '1pxl.jpg')
+
