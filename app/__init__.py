@@ -63,7 +63,7 @@ def create_app(test_config=None):
     def not_found(error):
         return make_response(jsonify(error='Not found'), 400)
     
-    @app.route('/pdf/<path:path>')
+    @app.route('/attached_documents/<path:path>')
     def send_file(path):
         return send_from_directory('pdf', path)
 
