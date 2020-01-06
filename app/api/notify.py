@@ -101,7 +101,8 @@ def send_mails():
         else:
             pass
         if Subject is not None:
-            message_detail['message_subject'] = Subject
+            if Subject != "":
+                message_detail['message_subject'] = Subject
         else:
             pass    
         
@@ -137,12 +138,12 @@ def send_mails():
         for detail in message_variables:
             if detail in request.json['data']:
                 rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                message_str = re.sub(rexWithString, request.json['data'][detail], message_str)
+                message_str = re.sub(rexWithString, str(request.json['data'][detail]), message_str)
             else:
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                        message_str = re.sub(rexWithSystem, element['value'], message_str)    
+                        message_str = re.sub(rexWithSystem, str(element['value']), message_str)    
 
 
         missing = message_str.split('#')
@@ -163,12 +164,12 @@ def send_mails():
         for detail in subject_variables:
             if detail in request.json['data']:
                 rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                message_subject = re.sub(rexWithString, request.json['data'][detail], message_subject)
+                message_subject = re.sub(rexWithString, str(request.json['data'][detail]), message_subject)
             else:
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
                         rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                        message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
+                        message_subject = re.sub(rexWithSystem, str(element['value']), message_subject)  
 
         missing_subject = message_subject.split("#")
         del missing_subject[0]
