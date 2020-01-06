@@ -101,7 +101,8 @@ def send_mails():
         else:
             pass
         if Subject is not None:
-            message_detail['message_subject'] = Subject
+            if Subject != "":
+                message_detail['message_subject'] = Subject
         else:
             pass    
         
