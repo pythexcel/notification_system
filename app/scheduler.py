@@ -11,6 +11,7 @@ def campaign_mail():
     ret = mongo.db.campaign_users.find_one({"send_status":False})
     if ret is not None:
         mail = ret['email']
+        unique = str(ret['_id'])
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
             if 'Template' in cam:
@@ -61,7 +62,7 @@ def campaign_mail():
                     to.append(mail)
                     working_status = True
                     try:        
-                        send_email(message=message_str,recipients=to,subject=subject,template_id=temp['_id'],user=mail)
+                        send_email(message=message_str,recipients=to,subject=subject,template_id=temp['_id'],user=unique)
                     except Exception:
                         working_status = False
                     mail_data = mongo.db.mail_status.insert_one({

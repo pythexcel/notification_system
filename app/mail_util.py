@@ -47,7 +47,9 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     if template_id is not None:
         if user is not None:
             digit = str(uuid.uuid4())
-            url = "<img src='http://176.9.137.77:8007/template_hit_rate/{}?template={}&hit_rate=1&email={}'>".format(digit,template_id,user)
+            print(digit)
+            print(user)
+            url = "<img src='http://176.9.137.77:8007/template_hit_rate/{}/{}?template={}&hit_rate=1'>".format(digit,user,template_id)
             message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)

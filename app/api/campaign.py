@@ -1,7 +1,7 @@
 from app import mongo
 from app import token
 from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory)
-from app.util import serialize_doc,Template_details,campaign_details
+from app.util import serialize_doc,Template_details,campaign_details,user_data
 import datetime
 import dateutil.parser
 from flask import current_app as app
@@ -116,6 +116,14 @@ def add_user_campaign():
         ret = mongo.db.campaign_users.insert_many(users)
         return jsonify({"MSG":"Users added to campaign"}), 200  
 
+
+@bp.route("/campaign_detail/<string:Id>", methods=["PUT"])
+def mails_status(Id):
+    ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)}
+    detail = serialize_doc(ret)
+    return jsonify(user_data(detail)),200
+
+
 @bp.route("/mails_status",methods=["GET"])
 def mails_status():
     limit = request.args.get('limit',default=0, type=int)
@@ -124,16 +132,17 @@ def mails_status():
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
-@bp.route("/template_hit_rate/<string:variable>",methods=['GET'])
-def hit_rate(variable):
+@bp.route("/template_hit_rate/<string:variable>/<string:user>",methods=['GET'])
+def hit_rate(variable,user):
     template =  request.args.get('template', type=str)
     hit = request.args.get('hit_rate', default=0, type=int)
-    user = request.args.get('email', type=str)
     hit_rate_calculation = mongo.db.template.update({
         "template":template,
-        "email": user
+        "user":user
         },
-        {"$inc": {"hit_rate":hit}},
-        upsert=True)   
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               '1pxl.jpg')
+        {
+            "$inc": {
+                "hit_rate":hit
+                }
+        },upsert=True)   
+    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')

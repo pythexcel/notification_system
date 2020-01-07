@@ -14,6 +14,11 @@ def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
+def user_data(data):
+    details = mongo.db.campaign_users.find({"campaign":user['_id']})
+    details = [serialize_doc(doc) for doc in details]
+    data['users'] = details
+    return data
 
 def validate_message(user=None,message=None,req_json=None,message_detail=None):
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
