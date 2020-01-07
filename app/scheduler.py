@@ -61,7 +61,7 @@ def campaign_mail():
                     to.append(mail)
                     working_status = True
                     try:        
-                        send_email(message=message_str,recipients=to,subject=subject,template_id=temp['_id'])
+                        send_email(message=message_str,recipients=to,subject=subject,template_id=temp['_id'],user=mail)
                     except Exception:
                         working_status = False
                     mail_data = mongo.db.mail_status.insert_one({

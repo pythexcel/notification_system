@@ -9,7 +9,7 @@ import email.mime.application
 import mimetypes
 import uuid
 
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,template_id=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,template_id=None,user=None):
     mail_details = mongo.db.mail_settings.find_one({},{"_id":0})
     username = mail_details["mail_username"]
     password = mail_details["mail_password"]
@@ -45,9 +45,10 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     else:
         pass
     if template_id is not None:
-        digit = str(uuid.uuid4())
-        url = "<img src='http://176.9.137.77:8007/template_hit_rate/{}/?template={}&hit_rate=1'>".format(digit,template_id)
-        message = message + url 
+        if user is not None:
+            digit = str(uuid.uuid4())
+            url = "<img src='http://176.9.137.77:8007/template_hit_rate/{}?template={}&hit_rate=1&email={}'>".format(digit,template_id,user)
+            message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 
