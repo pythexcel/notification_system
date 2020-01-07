@@ -33,7 +33,7 @@ def create_campaign():
                 "active":active,
                 "cron_status": False
         }).inserted_id
-        return jsonify(ret),200
+        return jsonify(str(ret)),200
 
 @bp.route('/list_campaign', methods=["GET"])
 # @token.admin_required
@@ -117,11 +117,11 @@ def add_user_campaign():
         return jsonify({"MSG":"Users added to campaign"}), 200  
 
 
-@bp.route("/campaign_detail/<string:Id>", methods=["PUT"])
-def mails_status(Id):
-    ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)}
-    detail = serialize_doc(ret)
-    return jsonify(user_data(detail)),200
+# @bp.route("/campaign_detail/<string:Id>", methods=["PUT"])
+# def mails_status(Id):
+#     ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
+#     detail = serialize_doc(ret)
+#     return jsonify(user_data(detail)),200
 
 
 @bp.route("/mails_status",methods=["GET"])

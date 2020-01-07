@@ -6,11 +6,16 @@ import dateutil.parser
 from bson.objectid import ObjectId
 from app.mail_util import send_email
 from app.slack_util import slack_message
+from flask import current_app as app
 
 def campaign_mail():
     ret = mongo.db.campaign_users.find_one({"send_status":False})
     if ret is not None:
-        mail = ret['email']
+        mail = None
+        if app.config['development']:
+            mail = app.config['to']
+        else:
+            mail = ret['mail']
         unique = str(ret['_id'])
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
