@@ -14,11 +14,17 @@ def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
-def user_data(data):
-    details = mongo.db.campaign_users.find({"campaign":user['_id']})
+def user_data(campaign_details):
+    details = mongo.db.campaign_users.find({"campaign":campaign_details['_id']})
     details = [serialize_doc(doc) for doc in details]
-    data['users'] = details
-    return data
+    hit_data = []
+    for data in details:
+        for elem in campaign_details['Template']:
+            hit_details = mongo.db.template_hitrate.find_one({"user":data['_id'],"template":elem},{"_id":0})
+            hit_data.append(hit_details)
+        data['hit_details'] = hit_data
+    campaign_details['users'] = details
+    return campaign_details
 
 def validate_message(user=None,message=None,req_json=None,message_detail=None):
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}

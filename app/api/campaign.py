@@ -117,11 +117,11 @@ def add_user_campaign():
         return jsonify({"MSG":"Users added to campaign"}), 200  
 
 
-# @bp.route("/campaign_detail/<string:Id>", methods=["PUT"])
-# def mails_status(Id):
-#     ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
-#     detail = serialize_doc(ret)
-#     return jsonify(user_data(detail)),200
+@bp.route("/campaign_detail/<string:Id>", methods=["GET"])
+def campaign_detail(Id):
+    ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
+    detail = serialize_doc(ret)
+    return jsonify(user_data(detail)),200
 
 
 @bp.route("/mails_status",methods=["GET"])
@@ -136,13 +136,16 @@ def mails_status():
 def hit_rate(variable,user):
     template =  request.args.get('template', type=str)
     hit = request.args.get('hit_rate', default=0, type=int)
-    hit_rate_calculation = mongo.db.template.update({
+    hit_rate_calculation = mongo.db.template_hitrate.update({
         "template":template,
         "user":user
         },
         {
             "$inc": {
                 "hit_rate":hit
-                }
+                },
+            "$set":{
+                "seen_date": datetime.datetime.now()
+            }
         },upsert=True)   
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')

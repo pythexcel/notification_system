@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
 import uuid
+from app.config import base_url
 
 def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,template_id=None,user=None):
     mail_details = mongo.db.mail_settings.find_one({},{"_id":0})
@@ -49,7 +50,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
             digit = str(uuid.uuid4())
             print(digit)
             print(user)
-            url = "<img src='http://176.9.137.77:8007/template_hit_rate/{}/{}?template={}&hit_rate=1'>".format(digit,user,template_id)
+            url = "<img src= '{}template_hit_rate/{}/{}?template={}&hit_rate=1'>".format(base_url,digit,user,template_id)
             message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)

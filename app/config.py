@@ -1,5 +1,7 @@
 import cloudinary
 
+base_url = "http://176.9.137.77:8005/"
+
 dates_converter = [
     "dateofjoining",
     "dob",

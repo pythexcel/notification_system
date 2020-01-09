@@ -11,11 +11,8 @@ from flask import current_app as app
 def campaign_mail():
     ret = mongo.db.campaign_users.find_one({"send_status":False})
     if ret is not None:
-        mail = None
-        if app.config['development']:
-            mail = app.config['to']
-        else:
-            mail = ret['mail']
+        mail = ret['email']
+        mail = "recruit_testing@mailinator.com"
         unique = str(ret['_id'])
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
@@ -92,7 +89,9 @@ def campaign_mail():
                 user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
                     {
                         "$set": {
-                                "send_status": True
+                                "send_status": True,
+                                "successful":  working_status,
+                                "sended_date": datetime.datetime.now()
                             }
                             })
             else:
