@@ -325,5 +325,6 @@ def mail_test():
         email = request.json.get('email')
     try:
         send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
+        return jsonify({"status":True,"Message": "Smtp working"}), 200
     except Exception:
         return jsonify({"status":False,"Message": "Smtp invalid or not working"}), 400                
