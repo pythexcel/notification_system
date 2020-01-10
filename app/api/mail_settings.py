@@ -91,5 +91,5 @@ def mail_setings(origin,id=None):
                     "active": active,
                     "type": type_s,
                     "mass": mass
-            },upsert=True)
+            })
             return jsonify({"MSG":"upsert"}),200
