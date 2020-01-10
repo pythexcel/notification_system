@@ -23,8 +23,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
     missing_payload = []
     for data in message_special:
         if data[0]=='@':
-            if data[-1]==':':
-                message_variables.append(data[1:-1])           
+            message_variables.append(data[1:-1])           
     for data in system_variable:
         if data in message_variables:
             system_require.append(data)

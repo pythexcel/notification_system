@@ -9,17 +9,23 @@ from flask_jwt_extended import (
     verify_jwt_in_request
 )
 from flask import current_app as app
+from bson import ObjectId
 
 
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 
 @bp.route('/settings/<string:origin>', methods=["PUT", "GET"])
+@bp.route('/settings/<string:origin>/<string:id', methods=["DELETE"])
 # @token.admin_required
-def mail_setings(origin):
+def mail_setings(origin,id=None):
     if request.method == "GET":
        mail = mongo.db.mail_settings.find({"origin":origin},{"mail_password":0})
        mail = [serialize_doc(doc) for doc in mail]
        return jsonify (mail)
+    if request.method == "DELETE":
+        mail = mongo.db.mail_settings.remove({"origin":origin,"_id": ObjectId(str(id))})
+        return jsonify ({"Message": "Smtp conf deleted"}), 200
+
     if request.method == "PUT":
         if not request.json:
             abort(500)
@@ -53,6 +59,7 @@ def mail_setings(origin):
             mail_username = request.json.get("mail_username", None)
             mail_password = request.json.get("mail_password", None)
             active = request.json.get("active",True)
+            mass = request.json.get("active",False)
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
                 return jsonify({"msg": "Invalid Request"}), 400    
@@ -65,7 +72,8 @@ def mail_setings(origin):
                     "mail_use_tls": mail_use_tls,
                     "mail_username":mail_username,
                     "mail_password":mail_password,
-                    "active": active
+                    "active": active,
+                    "mass": mass
                 }
             },upsert=True)
             return jsonify({"MSG":"upsert"}),200
