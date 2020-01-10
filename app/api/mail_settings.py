@@ -14,8 +14,8 @@ from bson import ObjectId
 
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 
-@bp.route('/settings/<string:origin>', methods=["PUT", "GET"])
-@bp.route('/settings/<string:origin>/<string:id>', methods=["DELETE"])
+@bp.route('/settings/<string:origin>', methods=["POST", "GET"])
+@bp.route('/settings/<string:origin>/<string:id>', methods=["DELETE","PUT"])
 # @token.admin_required
 def mail_setings(origin,id=None):
     if request.method == "GET":
@@ -25,8 +25,23 @@ def mail_setings(origin,id=None):
     if request.method == "DELETE":
         mail = mongo.db.mail_settings.remove({"origin":origin,"_id": ObjectId(str(id))})
         return jsonify ({"Message": "Smtp conf deleted"}), 200
-
     if request.method == "PUT":
+        ret = mongo.db.mail_settings.update({"origin":origin},{
+            "$set":{
+                "active" : False
+            }
+
+        })
+        mail = mongo.db.mail_settings.update({"origin":origin,"_id": ObjectId(str(id))},{
+            "$set":{
+                "active" : True
+            }
+
+        })
+        return jsonify ({"Message": "Smtp conf set as active"}), 200
+
+
+    if request.method == "POST":
         if not request.json:
             abort(500)
         if origin == "HR":    
@@ -36,6 +51,7 @@ def mail_setings(origin,id=None):
             mail_use_tls = request.json.get("mail_use_tls", True)
             mail_username = request.json.get("mail_username", None)
             mail_password = request.json.get("mail_password", None)
+            type_s = request.json.get("type", "tls")
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
                 return jsonify({"msg": "Invalid Request"}), 400    
@@ -59,21 +75,20 @@ def mail_setings(origin,id=None):
             mail_username = request.json.get("mail_username", None)
             mail_password = request.json.get("mail_password", None)
             active = request.json.get("active",True)
-            mass = request.json.get("active",False)
+            mass = request.json.get("mass",False)
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
                 return jsonify({"msg": "Invalid Request"}), 400    
             
-            ret = mongo.db.mail_settings.update({"mail_server": mail_server,"origin": "RECRUIT"}, {
-                "$set": {
-                    "mail_server": mail_server,
+            ret = mongo.db.mail_settings.insert_one({
+                "mail_server": mail_server,
                     "mail_port": mail_port,
                     "origin": origin,
                     "mail_use_tls": mail_use_tls,
                     "mail_username":mail_username,
                     "mail_password":mail_password,
                     "active": active,
+                    "type": type_s,
                     "mass": mass
-                }
             },upsert=True)
             return jsonify({"MSG":"upsert"}),200
