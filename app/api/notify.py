@@ -319,7 +319,7 @@ def token_test():
 # @token.authentication
 def mail_test():
     email = None
-    if app.config['ENVIRONMENT']=='development':
+    if app.config['ENV']=='development':
         email = app.config['to']
     else:    
         email = request.json.get('email')
