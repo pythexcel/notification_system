@@ -15,7 +15,7 @@ from bson import ObjectId
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 
 @bp.route('/settings/<string:origin>', methods=["PUT", "GET"])
-@bp.route('/settings/<string:origin>/<string:id', methods=["DELETE"])
+@bp.route('/settings/<string:origin>/<string:id>', methods=["DELETE"])
 # @token.admin_required
 def mail_setings(origin,id=None):
     if request.method == "GET":
