@@ -51,7 +51,7 @@ def mail_setings(origin,id=None):
             mail_use_tls = request.json.get("mail_use_tls", True)
             mail_username = request.json.get("mail_username", None)
             mail_password = request.json.get("mail_password", None)
-            type_s = request.json.get("type", "tls")
+            
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
                 return jsonify({"msg": "Invalid Request"}), 400    
@@ -76,6 +76,7 @@ def mail_setings(origin,id=None):
             mail_password = request.json.get("mail_password", None)
             active = request.json.get("active",True)
             mass = request.json.get("mass",False)
+            type_s = request.json.get("type", "tls")
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
                 return jsonify({"msg": "Invalid Request"}), 400    
