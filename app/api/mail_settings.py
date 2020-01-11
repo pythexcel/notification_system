@@ -10,6 +10,7 @@ from flask_jwt_extended import (
 )
 from flask import current_app as app
 from bson import ObjectId
+from app.mail_util import send_email
 
 
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
@@ -79,22 +80,31 @@ def mail_setings(origin,id=None):
             type_s = request.json.get("type", "tls")
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
-                return jsonify({"msg": "Invalid Request"}), 400    
-            vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
-                    "mail_password":mail_password})
-            if vet is not None:
-                ret = mongo.db.mail_settings.insert_one({
-                    "mail_server": mail_server,
-                        "mail_port": mail_port,
-                        "origin": origin,
-                        "mail_use_tls": mail_use_tls,
-                        "mail_username":mail_username,
-                        "mail_password":mail_password,
-                        "active": active,
-                        "type": type_s,
-                        "mass": mass
-                })
-                return jsonify({"MSG":"upsert"}),200
+                return jsonify({"msg": "Invalid Request"}), 400  
+            email = app.config['to']
+            smtp_right = True
+            try:
+                send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password)
+            except Exception:
+                smtp_right = False
+            if smtp_right is True:                     
+                vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
+                        "mail_password":mail_password})
+                if vet is not None:
+                    ret = mongo.db.mail_settings.insert_one({
+                        "mail_server": mail_server,
+                            "mail_port": mail_port,
+                            "origin": origin,
+                            "mail_use_tls": mail_use_tls,
+                            "mail_username":mail_username,
+                            "mail_password":mail_password,
+                            "active": active,
+                            "type": type_s,
+                            "mass": mass
+                    })
+                    return jsonify({"MSG":"upsert"}),200
+                else:
+                    return jsonify({"MSG":"Smtp already exists"}),400
             else:
-                return jsonify({"MSG":"Smtp already exists"}),400
+                return jsonify({"MSG":"Invalid SMTP"}),400
 
