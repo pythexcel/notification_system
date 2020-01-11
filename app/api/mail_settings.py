@@ -55,7 +55,7 @@ def mail_setings(origin,id=None):
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
                 return jsonify({"msg": "Invalid Request"}), 400    
-            
+                    
             ret = mongo.db.mail_settings.update({}, {
                 "$set": {
                     "mail_server": mail_server,
@@ -80,16 +80,21 @@ def mail_setings(origin,id=None):
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
                 return jsonify({"msg": "Invalid Request"}), 400    
-            
-            ret = mongo.db.mail_settings.insert_one({
-                "mail_server": mail_server,
-                    "mail_port": mail_port,
-                    "origin": origin,
-                    "mail_use_tls": mail_use_tls,
-                    "mail_username":mail_username,
-                    "mail_password":mail_password,
-                    "active": active,
-                    "type": type_s,
-                    "mass": mass
-            })
-            return jsonify({"MSG":"upsert"}),200
+            vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
+                    "mail_password":mail_password})
+            if vet is not None:
+                ret = mongo.db.mail_settings.insert_one({
+                    "mail_server": mail_server,
+                        "mail_port": mail_port,
+                        "origin": origin,
+                        "mail_use_tls": mail_use_tls,
+                        "mail_username":mail_username,
+                        "mail_password":mail_password,
+                        "active": active,
+                        "type": type_s,
+                        "mass": mass
+                })
+                return jsonify({"MSG":"upsert"}),200
+            else:
+                return jsonify({"MSG":"Smtp already exists"}),400
+
