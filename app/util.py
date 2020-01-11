@@ -21,9 +21,11 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
     message_variables = []
     system_require = []
     missing_payload = []
+    rex = re.compile('\@[a-zA-Z0-9/_]+\:')
     for data in message_special:
-        if data[0]=='@':
-            message_variables.append(data[1:-1])           
+        reg = rex.match(data)
+        if reg is not None:
+            message_variables.append(data[1:-1])                              
     for data in system_variable:
         if data in message_variables:
             system_require.append(data)
@@ -73,9 +75,13 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
         message_str = message
         for data in message_variables:
             if data in slack_user_detail:
+                if slack_user_detail[data] is None:
+                    slack_user_detail[data] = "N/A"
                 message_str = message_str.replace("@"+data+":", slack_user_detail[data])
             else:
                 if data in slack_user_detail['data']:
+                    if slack_user_detail['data'][data] is None:
+                        slack_user_detail['data'][data] = "N/A"
                     message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
         for elem in system_require:
             if elem in system_variable:  
