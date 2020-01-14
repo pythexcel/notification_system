@@ -95,8 +95,12 @@ def mail_setings(origin,id=None):
                 if smtp_right is True:                     
                     vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
                             "mail_password":mail_password,"origin":origin})
-                    print(vet)        
                     if vet is None:
+                        exist = mongo.db.mail_settings.find_one({"mass":False,"origin":origin})
+                        if exist is None:
+                            active = True
+                        else:
+                            active = False    
                         ret = mongo.db.mail_settings.insert_one({
                             "mail_server": mail_server,
                                 "mail_port": mail_port,
