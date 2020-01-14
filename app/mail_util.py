@@ -44,7 +44,6 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     else:
         mail = smtplib.SMTP_SSL(str(mail_server), port)
         mail.login(username,password)
-    mail.set_debuglevel(1)
     delivered = []
     for element in recipients:
         delivered.append(element)

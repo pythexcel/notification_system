@@ -11,6 +11,7 @@ from flask_jwt_extended import (
 from flask import current_app as app
 from bson import ObjectId
 from app.mail_util import send_email
+import smtplib
 
 
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
@@ -83,29 +84,35 @@ def mail_setings(origin,id=None):
                 return jsonify({"msg": "Invalid Request"}), 400  
             email = app.config['to']
             smtp_right = True
+            unregister = False
             try:
                 send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
-            except Exception:
+            except smtplib.SMTPDataError:
+                unregister = True
+            except Exception:    
                 smtp_right = False
-            if smtp_right is True:                     
-                vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
-                        "mail_password":mail_password,"origin":origin})
-                print(vet)        
-                if vet is None:
-                    ret = mongo.db.mail_settings.insert_one({
-                        "mail_server": mail_server,
-                            "mail_port": mail_port,
-                            "origin": origin,
-                            "mail_use_tls": mail_use_tls,
-                            "mail_username":mail_username,
-                            "mail_password":mail_password,
-                            "active": active,
-                            "type": type_s,
-                            "mass": mass
-                    })
-                    return jsonify({"MSG":"upsert"}),200
+            if unregister is False:    
+                if smtp_right is True:                     
+                    vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
+                            "mail_password":mail_password,"origin":origin})
+                    print(vet)        
+                    if vet is None:
+                        ret = mongo.db.mail_settings.insert_one({
+                            "mail_server": mail_server,
+                                "mail_port": mail_port,
+                                "origin": origin,
+                                "mail_use_tls": mail_use_tls,
+                                "mail_username":mail_username,
+                                "mail_password":mail_password,
+                                "active": active,
+                                "type": type_s,
+                                "mass": mass
+                        })
+                        return jsonify({"MSG":"upsert"}),200
+                    else:
+                        return jsonify({"MSG":"Smtp already exists"}),400
                 else:
-                    return jsonify({"MSG":"Smtp already exists"}),400
+                    return jsonify({"MSG":"Invalid SMTP"}),400
             else:
-                return jsonify({"MSG":"Invalid SMTP"}),400
+                return jsonify({"MSG":"Mail account in not registered"}),400
 
