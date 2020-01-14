@@ -1,9 +1,8 @@
 import requests
 from app import mongo
-import smtplib    
+import smtplib,ssl    
 import os 
 import sys
-
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.mime.application
@@ -34,9 +33,18 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     if sending_server is None:        
         mail_server = mail_details['mail_server']
     else:
-        mail_server = sending_server    
-    mail = smtplib.SMTP_SSL(str(mail_server), port)
-    mail.login(username,password)
+        mail_server = sending_server  
+    context = ssl.create_default_context() 
+    if port == 587:       
+        mail = smtplib.SMTP(str(mail_server), port)
+        mail.ehlo() 
+        mail.starttls(context=context) 
+        mail.ehlo() 
+        mail.login(username,password)
+    else:
+        mail = smtplib.SMTP_SSL(str(mail_server), port)
+        mail.login(username,password)
+    mail.set_debuglevel(1)
     delivered = []
     for element in recipients:
         delivered.append(element)

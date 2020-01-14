@@ -89,8 +89,9 @@ def mail_setings(origin,id=None):
                 smtp_right = False
             if smtp_right is True:                     
                 vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
-                        "mail_password":mail_password})
-                if vet is not None:
+                        "mail_password":mail_password,"origin":origin})
+                print(vet)        
+                if vet is None:
                     ret = mongo.db.mail_settings.insert_one({
                         "mail_server": mail_server,
                             "mail_port": mail_port,
