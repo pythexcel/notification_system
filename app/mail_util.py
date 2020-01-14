@@ -10,7 +10,7 @@ import email.mime.application
 import mimetypes
 from flask import current_app as app
 
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None):
     # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
     if app.config['origin'] == "hr":
         mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
@@ -26,9 +26,15 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     if sending_password is None:       
         password = mail_details["mail_password"]
     else:
-        password = sending_password       
-    port = mail_details['mail_port']
-    mail_server = mail_details['mail_server']
+        password = sending_password   
+    if sending_port is None:        
+        port = mail_details['mail_port']
+    else:
+        port = sending_port
+    if sending_server is None:        
+        mail_server = mail_details['mail_server']
+    else:
+        mail_server = sending_server    
     mail = smtplib.SMTP_SSL(str(mail_server), port)
     mail.login(username,password)
     delivered = []
