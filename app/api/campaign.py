@@ -86,15 +86,12 @@ def assign_template(campaign_id,template_id):
         vac = [serialize_doc(doc) for doc in vac]
         for data in vac:
             if data['status'] is True:
-                if data['count'] >= 1:
-                    ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
-                        "$pull": {
-                            "Template": template_id  
-                        }
-                    })
-                    return jsonify({"MSG":"Template removed from campaign"}), 200
-                else:
-                    return jsonify({"MSG":"Template for the campaign cannot be none"}), 400
+                ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
+                    "$pull": {
+                        "Template": template_id  
+                    }
+                })
+                return jsonify({"MSG":"Template removed from campaign"}), 200
             else:
                 return jsonify({"MSG":"Template does not exist in this campaign"}), 400
 
@@ -122,6 +119,15 @@ def campaign_detail(Id):
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
     detail = serialize_doc(ret)
     return jsonify(user_data(detail)),200
+
+@bp.route("/campaign_mails", methods=["POST"])
+def campaign_start_mail():
+    ret = mongo.db.campaign_users.update({},{
+        "$set":{
+            "mail_cron":False
+        }
+    },multi=True)
+    return jsonify({"Message":"Mails sended"}),200
 
 
 @bp.route("/mails_status",methods=["GET"])
