@@ -7,19 +7,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
-<<<<<<< HEAD
-import uuid
-from app.config import base_url
-
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,template_id=None,user=None):
-    mail_details = mongo.db.mail_settings.find_one({},{"_id":0})
-    username = mail_details["mail_username"]
-    password = mail_details["mail_password"]
-    port = mail_details['mail_port']
-    mail_server = mail_details['mail_server']
-    mail = smtplib.SMTP_SSL(str(mail_server), port)
-    mail.login(username,password)
-=======
 from flask import current_app as app
 
 def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None):
@@ -57,7 +44,6 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     else:
         mail = smtplib.SMTP_SSL(str(mail_server), port)
         mail.login(username,password)
->>>>>>> 9375a7904c9529d56aee5e21dc7bdf8b1c6cec8a
     delivered = []
     for element in recipients:
         delivered.append(element)
