@@ -314,4 +314,17 @@ def token_test():
     except Exception:
         return jsonify({"status":False,"Message": "Slack User not exist or invalid token"}), 400
         
-        
+
+@bp.route('/mail_test',methods=["POST"])
+# @token.authentication
+def mail_test():
+    email = None
+    if app.config['ENV']=='development':
+        email = app.config['to']
+    else:    
+        email = request.json.get('email')
+    try:
+        send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
+        return jsonify({"status":True,"Message": "Smtp working"}), 200
+    except Exception:
+        return jsonify({"status":False,"Message": "Smtp invalid or not working"}), 400                
