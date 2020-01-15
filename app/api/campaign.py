@@ -122,7 +122,12 @@ def campaign_detail(Id):
 
 @bp.route("/campaign_mails", methods=["POST"])
 def campaign_start_mail():
-    ret = mongo.db.campaign_users.update({},{
+    ids = request.json.get("ids",[])
+    final_ids = []
+    for data in ids:
+        final_ids.append(ObjectId(data))
+
+    ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
         "$set":{
             "mail_cron":False
         }
