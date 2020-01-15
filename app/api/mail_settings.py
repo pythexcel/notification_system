@@ -123,7 +123,6 @@ def mail_setings(origin,id=None):
             mail_password = request.json.get("mail_password", None)
             active = request.json.get("active",True)
             type_s = request.json.get("type", "tls")
-            sending_count = request.json.get("sending_count", None)
             priority = request.json.get("priority", 0)
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
@@ -151,7 +150,7 @@ def mail_setings(origin,id=None):
                                 "mail_password":mail_password,
                                 "active": active,
                                 "type": type_s,
-                                "sending_count":sending_count
+                                "priority":priority
                         })
                         return jsonify({"MSG":"upsert"}),200
                     else:
