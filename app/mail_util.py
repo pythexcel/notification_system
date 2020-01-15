@@ -14,7 +14,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     if app.config['origin'] == "hr":
         mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
     elif app.config['origin'] == "recruit":    
-        mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT"},{"_id":0})
+        mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT"},{"_id":0})    
     username = None
     if sending_mail is None:    
         username = mail_details["mail_username"]

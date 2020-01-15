@@ -47,7 +47,6 @@ def mail_setings(origin,id=None):
         if not request.json:
             abort(500)
         if origin == "HR":    
-            #checking origin of api hit so if it is HR one smtp conf can be created or updated only
             mail_server = request.json.get("mail_server", None)
             mail_port = request.json.get("mail_port", 0)
             mail_use_tls = request.json.get("mail_use_tls", True)
@@ -70,14 +69,12 @@ def mail_setings(origin,id=None):
             },upsert=True)
             return jsonify({"MSG":"upsert"}),200
         elif origin == "RECRUIT":
-            #checking origin of api hit so if it is RECRUIT multiple smtp conf can be created 
             mail_server = request.json.get("mail_server", None)
             mail_port = request.json.get("mail_port", 0)
             mail_use_tls = request.json.get("mail_use_tls", True)
             mail_username = request.json.get("mail_username", None)
             mail_password = request.json.get("mail_password", None)
             active = request.json.get("active",True)
-            mass = request.json.get("mass",False)
             type_s = request.json.get("type", "tls")
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
@@ -96,7 +93,7 @@ def mail_setings(origin,id=None):
                     vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
                             "mail_password":mail_password,"origin":origin})
                     if vet is None:
-                        exist = mongo.db.mail_settings.find_one({"mass":False,"origin":origin})
+                        exist = mongo.db.mail_settings.find_one({"origin":origin})
                         if exist is None:
                             active = True
                         else:
@@ -109,8 +106,52 @@ def mail_setings(origin,id=None):
                                 "mail_username":mail_username,
                                 "mail_password":mail_password,
                                 "active": active,
+                                "type": type_s
+                        })
+                        return jsonify({"MSG":"upsert"}),200
+                    else:
+                        return jsonify({"MSG":"Smtp already exists"}),400
+                else:
+                    return jsonify({"MSG":"Invalid SMTP"}),400
+            else:
+                return jsonify({"MSG":"Mail account in not registered"}),400
+        elif origin == "CAMPAIGN":
+            mail_server = request.json.get("mail_server", None)
+            mail_port = request.json.get("mail_port", 0)
+            mail_use_tls = request.json.get("mail_use_tls", True)
+            mail_username = request.json.get("mail_username", None)
+            mail_password = request.json.get("mail_password", None)
+            active = request.json.get("active",True)
+            type_s = request.json.get("type", "tls")
+            sending_count = request.json.get("sending_count", None)
+            priority = request.json.get("priority", 0)
+            
+            if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
+                return jsonify({"msg": "Invalid Request"}), 400  
+            email = app.config['to']
+            smtp_right = True
+            unregister = False
+            try:
+                send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
+            except smtplib.SMTPDataError:
+                unregister = True
+            except Exception:    
+                smtp_right = False
+            if unregister is False:    
+                if smtp_right is True:                     
+                    vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
+                            "mail_password":mail_password,"origin":origin})
+                    if vet is None:    
+                        ret = mongo.db.mail_settings.insert_one({
+                                "mail_server": mail_server,
+                                "mail_port": mail_port,
+                                "origin": origin,
+                                "mail_use_tls": mail_use_tls,
+                                "mail_username":mail_username,
+                                "mail_password":mail_password,
+                                "active": active,
                                 "type": type_s,
-                                "mass": mass
+                                "sending_count":sending_count
                         })
                         return jsonify({"MSG":"upsert"}),200
                     else:
