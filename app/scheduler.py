@@ -11,9 +11,16 @@ from flask import current_app as app
 def campaign_mail():
     ret = mongo.db.campaign_users.find_one({"mail_cron":False})
     if ret is not None:
+<<<<<<< HEAD
         mail = ret['email']
         mail = "recruit_testing@mailinator.com"
         unique = str(ret['_id'])
+=======
+        if app.config['ENVIRONMENT'] == "development":
+            mail = "recruit_testing@mailinator.com"
+        else:
+            mail = ret['email']
+>>>>>>> 9375a7904c9529d56aee5e21dc7bdf8b1c6cec8a
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
             if 'Template' in cam:
@@ -68,7 +75,7 @@ def campaign_mail():
                     except Exception:
                         working_status = False
                     mail_data = mongo.db.mail_status.insert_one({
-                        "user_mail": mail,
+                        "user_mail": ret['email'],
                         "user_id": str(ret['_id']),
                         "sending_time": datetime.datetime.now(),
                         "message": message_str,

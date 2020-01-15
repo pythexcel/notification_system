@@ -1,12 +1,13 @@
 import requests
 from app import mongo
-import smtplib    
+import smtplib,ssl    
 import os 
 import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
+<<<<<<< HEAD
 import uuid
 from app.config import base_url
 
@@ -18,6 +19,45 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     mail_server = mail_details['mail_server']
     mail = smtplib.SMTP_SSL(str(mail_server), port)
     mail.login(username,password)
+=======
+from flask import current_app as app
+
+def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None):
+    # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
+    if app.config['origin'] == "hr":
+        mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
+    elif app.config['origin'] == "recruit":    
+        mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT"},{"_id":0})
+    username = None
+    if sending_mail is None:    
+        username = mail_details["mail_username"]
+    else:
+        username = sending_mail 
+    password = None
+    #below is written for recruit condition for multiple smtp as need to iterate over values from campaign schduler
+    if sending_password is None:       
+        password = mail_details["mail_password"]
+    else:
+        password = sending_password   
+    if sending_port is None:        
+        port = mail_details['mail_port']
+    else:
+        port = sending_port
+    if sending_server is None:        
+        mail_server = mail_details['mail_server']
+    else:
+        mail_server = sending_server  
+    context = ssl.create_default_context() 
+    if port == 587:       
+        mail = smtplib.SMTP(str(mail_server), port)
+        mail.ehlo() 
+        mail.starttls(context=context) 
+        mail.ehlo() 
+        mail.login(username,password)
+    else:
+        mail = smtplib.SMTP_SSL(str(mail_server), port)
+        mail.login(username,password)
+>>>>>>> 9375a7904c9529d56aee5e21dc7bdf8b1c6cec8a
     delivered = []
     for element in recipients:
         delivered.append(element)
