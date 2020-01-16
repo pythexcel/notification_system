@@ -19,10 +19,11 @@ def user_data(campaign_details):
     details = [serialize_doc(doc) for doc in details]
     hit_data = []
     for data in details:
-        for elem in campaign_details['Template']:
-            hit_details = mongo.db.template_hitrate.find_one({"user":data['_id'],"template":elem},{"_id":0})
-            hit_data.append(hit_details)
-        data['hit_details'] = hit_data
+        if 'Template' in data:
+            for elem in campaign_details['Template']:
+                hit_details = mongo.db.template_hitrate.find_one({"user":data['_id'],"template":elem},{"_id":0})
+                hit_data.append(hit_details)
+            data['hit_details'] = hit_data
     campaign_details['users'] = details
     return campaign_details
 
