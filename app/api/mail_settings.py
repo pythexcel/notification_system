@@ -140,23 +140,37 @@ def mail_setings(origin,id=None):
                 if smtp_right is True:                     
                     vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
                             "mail_password":mail_password,"origin":origin})
-                    if vet is None:    
-                        ret = mongo.db.mail_settings.insert_one({
-                                "mail_server": mail_server,
-                                "mail_port": mail_port,
-                                "origin": origin,
-                                "mail_use_tls": mail_use_tls,
-                                "mail_username":mail_username,
-                                "mail_password":mail_password,
-                                "active": active,
-                                "type": type_s,
-                                "priority":priority
-                        })
-                        return jsonify({"MSG":"upsert"}),200
+                    if vet is None:       
+                            ret = mongo.db.mail_settings.insert_one({
+                                    "mail_server": mail_server,
+                                    "mail_port": mail_port,
+                                    "origin": origin,
+                                    "mail_use_tls": mail_use_tls,
+                                    "mail_username":mail_username,
+                                    "mail_password":mail_password,
+                                    "active": active,
+                                    "type": type_s,
+                                    "priority": 0
+                            })
+                            return jsonify({"MSG":"upsert"}),200
                     else:
                         return jsonify({"MSG":"Smtp already exists"}),400
                 else:
                     return jsonify({"MSG":"Invalid SMTP"}),400
             else:
                 return jsonify({"MSG":"Mail account in not registered"}),400
+
+@bp.route('/smtp_priority/<string:Id>/<int:priority>', methods=["POST"])
+def smtp_priority(Id,priority):
+    prior_check = mongo.db.mail_settings.find({"origin":"CAMPAING","priority":priority})
+    prior_check = [serialize_doc(doc) for doc in prior_check]
+    if not prior_check:
+        vet = mongo.db.mail_settings.update({"_id":ObjectId(Id)},{
+            "$set":{
+                "priority" : priority
+            }
+        },upsert=False)
+        return jsonify({"Message":"Priority set"}), 200
+    else:
+        return jsonify({"Message":"Smtp with {} priority already assigned".format(priority)}), 400
 

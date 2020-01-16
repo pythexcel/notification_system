@@ -1,3 +1,4 @@
+import datetime
 import requests
 from app import mongo
 import smtplib,ssl    
@@ -8,8 +9,33 @@ from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
 from flask import current_app as app
+from app.config import smtp_counts
 
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None):
+
+def validate_smtp_counts():
+    mail = mongo.db.mail_settings.find({"origin": "CAMPAIGN"}).sort({"priority":-1})
+    mail = [serialize_doc(doc) for doc in mail]
+    valid_smtp = []
+    for data in mail:
+        mail_username = data['mail_username']
+        mail_password = data['mail_password']
+        mail_smtp = data['mail_server']
+        mail_port = data['mail_port']
+        if mail_smtp in smtp_counts:
+            smtp_validate = mongo.db.smtp_count_validate.find_one({"smtp":mail_smtp,"email":mail_username,"created_at":datetime.date.today()})
+            if smtp_validate is not None:
+                if smtp_validate['count'] < smtp_counts[mail_smtp]:
+                    valid_smtp.append({"mail_username":mail_username,"mail_password":mail_password,"mail_server":mail_smtp,"mail_port":mail_port})
+                else:
+                    valid_smtp.append({"Working":False})
+        else:
+            valid_smtp.append({"unactive":mail_smtp})
+
+
+    return valid_smtp
+
+
+def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,template_id=None):
     # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
     if app.config['origin'] == "hr":
         mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
