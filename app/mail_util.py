@@ -8,9 +8,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
-<<<<<<< HEAD
 from flask import current_app as app
-from app.config import smtp_counts
+from app.config import smtp_counts,base_url
+from dotenv import load_dotenv
+import uuid
 
 
 def validate_smtp_counts():
@@ -36,17 +37,10 @@ def validate_smtp_counts():
     return valid_smtp
 
 
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,template_id=None):
-=======
-from app.config import base_url
-from dotenv import load_dotenv
-import uuid
-
 def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,template_id=None,user=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
->>>>>>> 9f326339cb05a5cca115142acb7d1c09faa8b21c
     # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
     if os.getenv('origin') == "hr":
         mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
