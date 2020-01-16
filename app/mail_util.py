@@ -8,12 +8,16 @@ from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
 from flask import current_app as app
+from dotenv import load_dotenv
 
 def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None):
+    APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
+    dotenv_path = os.path.join(APP_ROOT, '.env')
+    load_dotenv(dotenv_path)
     # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
-    if app.config['origin'] == "hr":
+    if os.getenv('origin') == "hr":
         mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
-    elif app.config['origin'] == "recruit":    
+    elif os.getenv('origin') == "recruit":    
         mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT"},{"_id":0})
     username = None
     if sending_mail is None:    
