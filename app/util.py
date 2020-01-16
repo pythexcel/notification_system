@@ -17,13 +17,18 @@ def serialize_doc(doc):
 def user_data(campaign_details):
     details = mongo.db.campaign_users.find({"campaign":campaign_details['_id']})
     details = [serialize_doc(doc) for doc in details]
-    hit_data = []
+    
     for data in details:
-        if 'Template' in data:
+        hit_data = []
+        if 'Template' in campaign_details:
             for elem in campaign_details['Template']:
                 hit_details = mongo.db.template_hitrate.find_one({"user":data['_id'],"template":elem},{"_id":0})
-                hit_data.append(hit_details)
-            data['hit_details'] = hit_data
+                if hit_details is not None:
+                    if hit_details not in hit_data:
+                        hit_data.append(hit_details)
+                 
+        data['hit_details'] = hit_data
+    
     campaign_details['users'] = details
     return campaign_details
 
