@@ -28,12 +28,7 @@ def validate_smtp_counts():
             if smtp_validate is not None:
                 if smtp_validate['count'] < smtp_counts[mail_smtp]:
                     valid_smtp.append({"mail_username":mail_username,"mail_password":mail_password,"mail_server":mail_smtp,"mail_port":mail_port})
-                else:
-                    valid_smtp.append({"Working":False})
-        else:
-            valid_smtp.append({"unactive":mail_smtp})
-
-
+    
     return valid_smtp
 
 

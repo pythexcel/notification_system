@@ -20,14 +20,16 @@ def campaign_mail():
                 for data in cam['Template']:
                     validate = validate_smtp_counts()
                     if validate:
-                        unactive = False
-                        working_stoped = False
-                        for data in validate:
-                            if 'Message' in data:
-                                working_stoped = True
-                            if 'unactive' in data:
-                                unactive = True    
-                        
+                        mail_username = None
+                        mail_password = None
+                        mail_smtp = None
+                        mail_port = None
+                        for element in validate:
+                            mail_username = data['mail_username']
+                            mail_password = data['mail_password']
+                            mail_smtp = data['mail_server']
+                            mail_port = data['mail_port']
+
                         system_variable = mongo.db.mail_variables.find({})
                         system_variable = [serialize_doc(doc) for doc in system_variable]
                         temp = mongo.db.mail_template.find_one({"_id":ObjectId(data)})
@@ -79,14 +81,15 @@ def campaign_mail():
                             subject=subject,
                             template_id=temp['_id'],
                             user=unique,
-                            sending_mail=,
-                            sending_password=,
-                            sending_server=,
-                            sending_port=)
+                            sending_mail= mail_username,
+                            sending_password=mail_password,
+                            sending_server=mail_smtp,
+                            sending_port=mail_port)
 
 
                         except Exception:
                             working_status = False
+                        smtp = mongo.db.smtp_count_validate.update({"smtp":mail_smtp,"email":mail_username,"created_at":datetime.date.today()})
                         mail_data = mongo.db.mail_status.insert_one({
                             "user_mail": ret['email'],
                             "user_id": str(ret['_id']),
@@ -94,38 +97,33 @@ def campaign_mail():
                             "message": message_str,
                             "mail_sended_status": working_status,
                             "subject":subject,
-                            "recipients": to
+                            "recipients": to,
+                            "sending_mail": mail_username,
+                            "sending_password":mail_password,
+                            "sending_server":mail_smtp,
+                            "sending_port":mail_port
 
                         })
 
 
-                    campaign = mongo.db.campaigns.update({"_id":ObjectId(ret['campaign'])},
-                        {
-                            "$set": {
-                                    "cron_status": True
-                                }
-                                })
+                        campaign = mongo.db.campaigns.update({"_id":ObjectId(ret['campaign'])},
+                            {
+                                "$set": {
+                                        "cron_status": True
+                                    }
+                                    })
 
-                    user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
-                        {
-                            "$set": {
-                                    "send_status": True,
-                                    "mail_cron": True,
-                                    "successful":  working_status,
-                                    "sended_date": datetime.datetime.now()
-                                }
-                                })
+                        user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
+                            {
+                                "$set": {
+                                        "send_status": True,
+                                        "mail_cron": True,
+                                        "successful":  working_status,
+                                        "sended_date": datetime.datetime.now()
+                                    }
+                                    })
                     else:
-                        campaign_smtp_status = mongo.db.campaign_smtp_status.insert_one({
-                            "user_mail": ret['email'],
-                            "user_id": str(ret['_id']),
-                            "sending_time": datetime.datetime.now(),
-                            "message": message_str,
-                            "mail_sended_status": working_status,
-                            "subject":subject,
-                            "recipients": to
-
-                        })           
+                        pass
             else:
                 pass
         else:

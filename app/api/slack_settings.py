@@ -7,7 +7,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
 
-
+import datetime
 
 bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
 
@@ -28,3 +28,11 @@ def tms_setings():
             }
         },upsert=True)
         return jsonify({"MSG":"upserted","status":True}), 200
+@bp.route('/st', methods=["PUT", "GET"])
+def st():
+    ret = mongo.db.random.update({"date":datetime.date.today()},
+    {
+        "$inc": {
+            "count": 1
+        }
+    },upsert=True)
