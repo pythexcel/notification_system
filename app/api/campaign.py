@@ -38,7 +38,7 @@ def create_campaign():
 @bp.route('/delete_campaign/<string:Id>', methods=["DELETE"])
 def delete_campaign(Id):
     ret = mongo.db.campaigns.remove({"_id":ObjectId(Id)})
-    return jsonify("message":"Campaign deleted"),200
+    return jsonify({"message":"Campaign deleted"}),200
 
 @bp.route('/list_campaign', methods=["GET"])
 # @token.admin_required
