@@ -3,9 +3,8 @@ import cloudinary
 base_url = "http://176.9.137.77:8005/"
 
 smtp_counts = {
-    'smtp.google.com' : 5 ,
-    'smtp.mail.yahoo.com' : 2 ,
-    'smtp.office365.com' : 3 
+    'smtp.gmail.com' : 5 ,
+    'smtp.office365.com' : 2
 }
 
 dates_converter = [

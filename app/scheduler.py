@@ -9,26 +9,29 @@ from app.slack_util import slack_message
 from flask import current_app as app
 
 def campaign_mail():
-    ret = mongo.db.campaign_users.find_one({"mail_cron":False})
+    ret = mongo.db.campaign_users.find_one({"to":False})
     if ret is not None:
         mail = ret['email']
-        mail = "recruit_testing@mailinator.com"
+        mail = "logicalrte@mailinator.com"
         unique = str(ret['_id'])
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
             if 'Template' in cam:
                 for data in cam['Template']:
+                    # this will call validate smtp function which will send back the correct smtp we want to use
                     validate = validate_smtp_counts()
                     if validate:
                         mail_username = None
                         mail_password = None
                         mail_smtp = None
                         mail_port = None
+                        count_details = None
                         for element in validate:
-                            mail_username = data['mail_username']
-                            mail_password = data['mail_password']
-                            mail_smtp = data['mail_server']
-                            mail_port = data['mail_port']
+                            mail_username = element['mail_username']
+                            mail_password = element['mail_password']
+                            mail_smtp = element['mail_server']
+                            mail_port = element['mail_port']
+                            count_details = element['count_details']
 
                         system_variable = mongo.db.mail_variables.find({})
                         system_variable = [serialize_doc(doc) for doc in system_variable]
@@ -89,7 +92,6 @@ def campaign_mail():
 
                         except Exception:
                             working_status = False
-                        smtp = mongo.db.smtp_count_validate.update({"smtp":mail_smtp,"email":mail_username,"created_at":datetime.date.today()})
                         mail_data = mongo.db.mail_status.insert_one({
                             "user_mail": ret['email'],
                             "user_id": str(ret['_id']),
@@ -104,7 +106,12 @@ def campaign_mail():
                             "sending_port":mail_port
 
                         })
-                        smtp_val = mongo.db.smtp_count_validate.update
+                        print(count_details)
+                        smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(count_details)},{
+                            "$inc": {
+                                "count": 1
+                                }
+                        })
 
                         campaign = mongo.db.campaigns.update({"_id":ObjectId(ret['campaign'])},
                             {
@@ -118,6 +125,7 @@ def campaign_mail():
                                 "$set": {
                                         "send_status": True,
                                         "mail_cron": True,
+                                        "to":True,
                                         "successful":  working_status,
                                         "sended_date": datetime.datetime.now()
                                     }

@@ -1,6 +1,7 @@
 import datetime
 import requests
 from app import mongo
+from dotenv import load_dotenv
 import smtplib,ssl    
 import os 
 import sys
@@ -8,15 +9,16 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
-from flask import current_app as app
 from app.config import smtp_counts,base_url
-from dotenv import load_dotenv
 import uuid
 
+def serialize_doc(doc):
+    doc["_id"] = str(doc["_id"])
+    return doc
 
 def validate_smtp_counts():
-    mail = mongo.db.mail_settings.find({"origin": "CAMPAIGN"}).sort({"priority":-1})
-    mail = [serialize_doc(doc) for doc in mail]
+    mail = mongo.db.mail_settings.find({"origin": "CAMPAIGN"}).sort("priority",1)
+    mail = [serialize_doc(doc)for doc in mail]
     valid_smtp = []
     for data in mail:
         mail_username = data['mail_username']
@@ -24,6 +26,7 @@ def validate_smtp_counts():
         mail_smtp = data['mail_server']
         mail_port = data['mail_port']
         if mail_smtp in smtp_counts:
+            # here below is the condtions we will check for smtp counts and values 
             today = datetime.datetime.today()
             next_day = datetime.datetime.today() + datetime.timedelta(days=1)
             smtp_validate = mongo.db.smtp_count_validate.find_one({"smtp":mail_smtp,"email":mail_username,
@@ -32,15 +35,27 @@ def validate_smtp_counts():
             "$lte": datetime.datetime(next_day.year, next_day.month, next_day.day)}})
             if smtp_validate is not None:
                 if smtp_validate['count'] < smtp_counts[mail_smtp]:
-                    valid_smtp.append({"mail_username":mail_username,"mail_password":mail_password,"mail_server":mail_smtp,"mail_port":mail_port})
+                    valid_smtp.append({
+                        "mail_username":mail_username,
+                        "mail_password":mail_password,
+                        "mail_server":mail_smtp,
+                        "mail_port":mail_port,
+                        "count_details":str(smtp_validate['_id'])})
+                    return valid_smtp
             else:
                 smtp_validate_insert = mongo.db.smtp_count_validate.insert_one({
                     "smtp":mail_smtp,
                     "email":mail_username,
                     "created_at": today,
                     "count": 0
-            
-    return valid_smtp
+                }).inserted_id
+                valid_smtp.append({
+                    "mail_username":mail_username,
+                    "mail_password":mail_password,
+                    "mail_server":mail_smtp,
+                    "mail_port":mail_port,
+                    "count_details":str(smtp_validate_insert)})      
+                return valid_smtp
 
 
 def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,template_id=None,user=None):
