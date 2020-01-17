@@ -104,7 +104,7 @@ def campaign_mail():
                             "sending_port":mail_port
 
                         })
-
+                        smtp_val = mongo.db.smtp_count_validate.update
 
                         campaign = mongo.db.campaigns.update({"_id":ObjectId(ret['campaign'])},
                             {

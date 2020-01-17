@@ -24,11 +24,22 @@ def validate_smtp_counts():
         mail_smtp = data['mail_server']
         mail_port = data['mail_port']
         if mail_smtp in smtp_counts:
-            smtp_validate = mongo.db.smtp_count_validate.find_one({"smtp":mail_smtp,"email":mail_username,"created_at":datetime.date.today()})
+            today = datetime.datetime.today()
+            next_day = datetime.datetime.today() + datetime.timedelta(days=1)
+            smtp_validate = mongo.db.smtp_count_validate.find_one({"smtp":mail_smtp,"email":mail_username,
+            "created_at":{
+            "$gte": datetime.datetime(today.year, today.month, today.day),
+            "$lte": datetime.datetime(next_day.year, next_day.month, next_day.day)}})
             if smtp_validate is not None:
                 if smtp_validate['count'] < smtp_counts[mail_smtp]:
                     valid_smtp.append({"mail_username":mail_username,"mail_password":mail_password,"mail_server":mail_smtp,"mail_port":mail_port})
-    
+            else:
+                smtp_validate_insert = mongo.db.smtp_count_validate.insert_one({
+                    "smtp":mail_smtp,
+                    "email":mail_username,
+                    "created_at": today,
+                    "count": 0
+            
     return valid_smtp
 
 
