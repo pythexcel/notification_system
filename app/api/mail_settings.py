@@ -12,6 +12,7 @@ from flask import current_app as app
 from bson import ObjectId
 from app.mail_util import send_email
 import smtplib
+import datetime
 
 
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
@@ -123,7 +124,6 @@ def mail_setings(origin,id=None):
             mail_password = request.json.get("mail_password", None)
             active = request.json.get("active",True)
             type_s = request.json.get("type", "tls")
-            priority = request.json.get("priority", 0)
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
                 return jsonify({"msg": "Invalid Request"}), 400  
@@ -140,19 +140,28 @@ def mail_setings(origin,id=None):
                 if smtp_right is True:                     
                     vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
                             "mail_password":mail_password,"origin":origin})
-                    if vet is None:       
-                            ret = mongo.db.mail_settings.insert_one({
-                                    "mail_server": mail_server,
-                                    "mail_port": mail_port,
-                                    "origin": origin,
-                                    "mail_use_tls": mail_use_tls,
-                                    "mail_username":mail_username,
-                                    "mail_password":mail_password,
-                                    "active": active,
-                                    "type": type_s,
-                                    "priority": 0
-                            })
-                            return jsonify({"MSG":"upsert"}),200
+                    if vet is None:
+                        priority = 1
+                        previous =  mongo.db.mail_settings.find({"origin":"CAMPAIGN"}).sort("created_at", -1).limit(1)
+                        prior_check = [serialize_doc(doc) for doc in previous]
+                        if prior_check:
+                            for data in prior_check:
+                                priority = data['priority'] + 1
+                        ret = mongo.db.mail_settings.insert_one({
+                                "mail_server": mail_server,
+                                "mail_port": mail_port,
+                                "origin": origin,
+                                "mail_use_tls": mail_use_tls,
+                                "mail_username":mail_username,
+                                "mail_password":mail_password,
+                                "active": active,
+                                "type": type_s,
+                                "priority": priority,
+                                "created_at": datetime.datetime.today()
+
+
+                        })
+                        return jsonify({"MSG":"upsert"}),200
                     else:
                         return jsonify({"MSG":"Smtp already exists"}),400
                 else:
@@ -160,17 +169,32 @@ def mail_setings(origin,id=None):
             else:
                 return jsonify({"MSG":"Mail account in not registered"}),400
 
-@bp.route('/smtp_priority/<string:Id>/<int:priority>', methods=["POST"])
-def smtp_priority(Id,priority):
-    prior_check = mongo.db.mail_settings.find({"origin":"CAMPAING","priority":priority})
+@bp.route('/smtp_priority/<string:Id>/<int:position>', methods=["POST"])
+def smtp_priority(Id,position):
+    prior_check = mongo.db.mail_settings.find({"origin": "CAMPAIGN"}).sort("priority",1)
     prior_check = [serialize_doc(doc) for doc in prior_check]
-    if not prior_check:
-        vet = mongo.db.mail_settings.update({"_id":ObjectId(Id)},{
-            "$set":{
-                "priority" : priority
-            }
-        },upsert=False)
-        return jsonify({"Message":"Priority set"}), 200
-    else:
-        return jsonify({"Message":"Smtp with {} priority already assigned".format(priority)}), 400
+    index = 0
+    value = 0
+    for data in prior_check:
+        if str(data['_id']) == str(Id):
+            value = index
+        index = index + 1
+    val = None
+    if position == 1:
+        val = value - 1
+    elif position == 0:
+        val = value + 1    
+    final = prior_check[val]
+    current = prior_check[value]
+    ret = mongo.db.mail_settings.update({"_id":ObjectId(Id)},{
+        "$set":{
+            "priority": final['priority']
+        }
+    },upsert=False)
+    vet = mongo.db.mail_settings.update({"_id":ObjectId(final['_id'])},{
+        "$set":{
+            "priority": current['priority']
+        }
+    },upsert=False) 
 
+    return jsonify({"message": "priority changed"}), 200
