@@ -42,6 +42,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
     for data in message_special:
         reg = rex.match(data)
         if reg is not None:
+            vl = data.find(":") - len(data)
             message_variables.append(data[1:vl])                              
     for data in system_variable:
         if data in message_variables:
