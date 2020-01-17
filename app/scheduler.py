@@ -9,10 +9,10 @@ from app.slack_util import slack_message
 from flask import current_app as app
 
 def campaign_mail():
-    ret = mongo.db.campaign_users.find_one({"to":False})
+    ret = mongo.db.campaign_users.find_one({"mail_cron":False})
     if ret is not None:
         mail = ret['email']
-        mail = "logicalrte@mailinator.com"
+        mail = "recruit_testing@mailinator.com"
         unique = str(ret['_id'])
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
@@ -125,7 +125,6 @@ def campaign_mail():
                                 "$set": {
                                         "send_status": True,
                                         "mail_cron": True,
-                                        "to":True,
                                         "successful":  working_status,
                                         "sended_date": datetime.datetime.now()
                                     }
