@@ -26,7 +26,7 @@ def create_campaign():
         description = request.json.get("campaign_description",None)
         active = request.json.get("active",True)
         if not name:
-            return jsonify({"msg": "Invalid Request"}), 400    
+            return jsonify({"message": "Invalid Request"}), 400    
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
                 "Campaign_description": description,
@@ -34,13 +34,16 @@ def create_campaign():
                 "cron_status": False
         }).inserted_id
         return jsonify(str(ret)),200
+        
+@bp.route('/delete_campaign/<string:Id>', methods=["DELETE"])
+def delete_campaign(Id):
+    ret = mongo.db.campaigns.remove({"_id":ObjectId(Id)})
+    return jsonify({"message":"Campaign deleted"}),200
 
 @bp.route('/list_campaign', methods=["GET"])
 # @token.admin_required
 def list_campaign():
-        ret = mongo.db.campaigns.aggregate([
-            {"$match": {"active":True}}
-        ])
+        ret = mongo.db.campaigns.aggregate([])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
 
@@ -58,7 +61,7 @@ def update_campaign(Id):
         "active":active
     }
     })
-    return jsonify({"MSG":"Campaign Updated"}),200
+    return jsonify({"message":"Campaign Updated"}),200
 
 @bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["PUT","DELETE"])
 def assign_template(campaign_id,template_id):
@@ -75,9 +78,9 @@ def assign_template(campaign_id,template_id):
                         "Template": template_id  
                     }
                 })
-                return jsonify({"MSG":"Template added to campaign"}), 200
+                return jsonify({"message":"Template added to campaign"}), 200
             else:
-                return jsonify({"MSG":"Template exist in campaign"}), 200
+                return jsonify({"message":"Template exist in campaign"}), 200
     if request.method == "DELETE":
         vac = mongo.db.campaigns.aggregate([
             { "$match": { "_id": ObjectId(campaign_id)}},
@@ -91,9 +94,9 @@ def assign_template(campaign_id,template_id):
                         "Template": template_id  
                     }
                 })
-                return jsonify({"MSG":"Template removed from campaign"}), 200
+                return jsonify({"message":"Template removed from campaign"}), 200
             else:
-                return jsonify({"MSG":"Template does not exist in this campaign"}), 400
+                return jsonify({"message":"Template does not exist in this campaign"}), 400
 
 
 @bp.route('/user_list_campaign',methods=["GET","POST"])
@@ -111,7 +114,7 @@ def add_user_campaign():
             data['campaign'] = campaign
 
         ret = mongo.db.campaign_users.insert_many(users)
-        return jsonify({"MSG":"Users added to campaign"}), 200  
+        return jsonify({"message":"Users added to campaign"}), 200  
 
 
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
