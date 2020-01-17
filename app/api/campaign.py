@@ -11,6 +11,8 @@ from flask_jwt_extended import (
     get_jwt_identity, get_current_user, jwt_refresh_token_required,
     verify_jwt_in_request
 )
+from app.mail_util import send_email
+
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
 
@@ -125,17 +127,39 @@ def campaign_detail(Id):
 
 @bp.route("/campaign_mails", methods=["POST"])
 def campaign_start_mail():
-    ids = request.json.get("ids",[])
-    final_ids = []
-    for data in ids:
-        final_ids.append(ObjectId(data))
+    mail = mongo.db.mail_settings.find({"origin":"CAMPAIGN"})
+    mail = [serialize_doc(doc) for doc in mail]
+    sending_for = []
+    not_working = []
+    for data in mail:
+        try:
+            send_email(
+                message='SMTP TEST SUCCESFUL',
+                recipients=[app.config['to']],
+                subject='SMTP TEST',
+                sending_mail= data['mail_username'],
+                sending_password=data['mail_password'],
+                sending_server=data['mail_server'],
+                sending_port=data['mail_port']
+                ),
+            sending_for.append(data['mail_server'])
+        except Exception:
+            not_working.append(data['mail_server'])
+    if not not_working:
+        ids = request.json.get("ids",[])
+        final_ids = []
+        for data in ids:
+            final_ids.append(ObjectId(data))
 
-    ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
-        "$set":{
-            "mail_cron":False
-        }
-    },multi=True)
-    return jsonify({"Message":"Mails sended"}),200
+        ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
+            "$set":{
+                "mail_cron":False
+            }
+        },multi=True)
+        return jsonify({"Message":"Mails sended"}),200
+    else:
+        ret = ",".join(not_working)
+        return jsonify("These smtp servers are not working currently {}".format(ret)),400
 
 
 @bp.route("/mails_status",methods=["GET"])

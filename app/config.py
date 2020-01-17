@@ -1,10 +1,14 @@
 import cloudinary
 
+# PLEASE UPDATE AS PER DEPLOYMENT SYSYTME EXAMPLE RECRUIT OR HR
 base_url = "http://176.9.137.77:8005/"
 
 smtp_counts = {
-    'smtp.gmail.com' : 5 ,
-    'smtp.office365.com' : 2
+    'smtp.gmail.com' : 100 ,
+    'smtp.office365.com' : 50,
+    'smtp.mail.yahoo.com': 100,
+    'smtp.zoho.com': 50,
+    'smtp.mail.me.com' : 1000
 }
 
 dates_converter = [
