@@ -228,7 +228,7 @@ templates = [
         "attachment_file": None,
         "attachment_file_name": None,
         "for": "Payslip",
-        "message": "<p>Dear #name:,<br>Your payslip has been generated. Kindly check your mail box and contact HR in case of discrepancies.<br>Regards<br>#hr_signature:<br>#logo:</p>",
+        "message": "<p>Dear #name:,<br>Your payslip has been generated. Here are the details for the same.<br>Total Working Days = #total_working_days:<br>Days Present = #days_present:<br>Paid Leave Taken = #paid_leaves: <br>Leave Without Pay = #unpaid_leaves: <br>Total leave taken = #total_leave_taken: <br>Allocated Leave = #allocated_leaves: <br>Previous month leave balance = #leave_balance: <br>Final leave balance = #final_leave_balance: <br>Arrears = #arrear: <br>Misc Deduction = #misc_deduction: <br>Bonus =#bonus:<br>Total earning = #total_earning:<br>Total deduction = #total_deduction: <br>Net Salary = #net_salary:<br>In case of discrepancies please contact your HR.<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Payslip",
         "message_origin": "HR",
         "message_subject": "#name: your payslip for #month_text: #year: is generated",
