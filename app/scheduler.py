@@ -18,7 +18,7 @@ def campaign_mail():
     if ret is not None:
         mail = ret['email']
         if os.getenv('ENVIRONMENT') == "development":
-            mail = [os.getenv('to')]
+            mail = os.getenv('to')
         unique = str(ret['_id'])
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
@@ -112,7 +112,6 @@ def campaign_mail():
                             "sending_port":mail_port
 
                         })
-                        print(count_details)
                         smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(count_details)},{
                             "$inc": {
                                 "count": 1
