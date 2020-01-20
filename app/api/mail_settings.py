@@ -26,7 +26,16 @@ def mail_setings(origin,id=None):
        mail = [serialize_doc(doc) for doc in mail]
        return jsonify (mail)
     if request.method == "DELETE":
+        prior = mongo.db.mail_settings.find_one({"origin":origin,"_id": ObjectId(str(id))})
+        priority = prior['priority'] 
         mail = mongo.db.mail_settings.remove({"origin":origin,"_id": ObjectId(str(id))})
+        if origin == "CAMPAIGN":
+            campaign_smtp = mongo.db.mail_settings.update({"priority":{ "$gt": priority } },{
+                        "$inc" :{
+                            "priority": -1
+                        }
+
+                    },multi=True)
         return jsonify ({"Message": "Smtp conf deleted"}), 200
     if request.method == "PUT":
         ret = mongo.db.mail_settings.update({"origin":origin,"active":True},{
@@ -142,7 +151,7 @@ def mail_setings(origin,id=None):
                             "mail_password":mail_password,"origin":origin})
                     if vet is None:
                         priority = 1
-                        previous =  mongo.db.mail_settings.find({"origin":"CAMPAIGN"}).sort("created_at", -1).limit(1)
+                        previous =  mongo.db.mail_settings.find({"origin":"CAMPAIGN"}).sort("priority", -1).limit(1)
                         prior_check = [serialize_doc(doc) for doc in previous]
                         if prior_check:
                             for data in prior_check:
