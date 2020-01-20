@@ -617,9 +617,70 @@ slack_message = [
         "sended_to": "private",
         "slack_channel": None,
         "working": True
+    },
+    {
+        "channels": "private",
+        "email_group": None,
+        "for_email": False,
+        "for_phone": False,
+        "for_slack": False,
+        "message": "Inventory Audit Alert: @inventoryName: ( @inventoryType: ) by @user: \n Type: @issueType: \n Message: @message:",
+        "message_color": None,
+        "submission_type": "HR",
+        "message_key": "inventory_audit_issue",
+        "message_origin": "HR",
+        "message_type": "simple_message",
+        "sended_to": "private",
+        "slack_channel": None,
+        "working": True
+    },
+    {
+        "channels": "private",
+        "email_group": None,
+        "for_email": False,
+        "for_phone": False,
+        "for_slack": False,
+        "message": "Hi @user: \n Your audit reported inventory @inventoryName: ( @inventoryType: ) status has been changed to. \n Type: @issueType: \n Message: @message:",
+        "message_color": None,
+        "submission_type": "HR",
+        "message_key": "inventory_audit_issue_update_to_employee",
+        "message_origin": "HR",
+        "message_type": "simple_message",
+        "sended_to": "private",
+        "slack_channel": None,
+        "working": True
+    },
+    {
+        "channels": "private",
+        "email_group": None,
+        "for_email": False,
+        "for_phone": False,
+        "for_slack": False,
+        "message": "Hi @user:, \n Your attendance is missing for below dates due to which salary slip cannot be generated. \n  @dates: \n Get them updated either by manually updating the time OR by applying leaves.",
+        "message_color": None,
+        "submission_type": "HR",
+        "message_key": "notify_emp_missing_timings_for_payslip",
+        "message_origin": "HR",
+        "message_type": "simple_message",
+        "sended_to": "private",
+        "slack_channel": None,
+        "working": True
+    },
+    {
+        "channels": "private",
+        "email_group": None,
+        "for_email": False,
+        "for_phone": False,
+        "for_slack": False,
+        "message": "You have requested for ownership of inventory @inventoryName: ( @inventoryType: ). HR will follow up for same",
+        "message_color": None,
+        "submission_type": "HR",
+        "message_key": "inventory_ownership_change_request_to_employee",
+        "message_origin": "HR",
+        "message_type": "simple_message",
+        "sended_to": "private",
+        "slack_channel": None,
+        "working": True
     }
 ]
 
-
-# inventory_audit_issue_update_to_employee
-# inventory_audit_issue
