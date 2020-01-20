@@ -7,12 +7,17 @@ from bson.objectid import ObjectId
 from app.mail_util import send_email,validate_smtp_counts
 from app.slack_util import slack_message
 from flask import current_app as app
+from dotenv import load_dotenv
 
 def campaign_mail():
+    APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
+    dotenv_path = os.path.join(APP_ROOT, '.env')
+    load_dotenv(dotenv_path)
     ret = mongo.db.campaign_users.find_one({"mail_cron":False})
     if ret is not None:
         mail = ret['email']
-        mail = "recruit_testing@mailinator.com"
+        if os.getenv('ENVIRONMENT') == "development":
+            mail = [os.getenv('to')]
         unique = str(ret['_id'])
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
