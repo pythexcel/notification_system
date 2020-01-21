@@ -174,9 +174,10 @@ def mails_status():
 def hit_rate(variable,user):
     template =  request.args.get('template', type=str)
     hit = request.args.get('hit_rate', default=0, type=int)
-    hit_rate_calculation = mongo.db.template_hitrate.update({
+    hit_rate_calculation = mongo.db.mail_status.update({
         "template":template,
-        "user":user
+        "user":user,
+        "digit": variable
         },
         {
             "$inc": {
@@ -184,7 +185,7 @@ def hit_rate(variable,user):
                 },
             "$set":{
                 "seen_date": datetime.datetime.now(),
-                "campaign_digit": variable
+                "seen": True
             }
-        },upsert=True)   
+        })   
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
