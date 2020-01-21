@@ -58,7 +58,7 @@ def validate_smtp_counts():
                 return valid_smtp
 
 
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,template_id=None,user=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,template_id=None,user=None,digit=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
@@ -125,7 +125,6 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         pass
     if template_id is not None:
         if user is not None:
-            digit = str(uuid.uuid4())
             url = "<img src= '{}template_hit_rate/{}/{}?template={}&hit_rate=1'>".format(base_url,digit,user,template_id)
             message = message + url 
     main = MIMEText(message,'html')

@@ -10,6 +10,7 @@ from app.mail_util import send_email,validate_smtp_counts
 from app.slack_util import slack_message
 from flask import current_app as app
 from dotenv import load_dotenv
+import uuid
 
 def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -80,7 +81,7 @@ def campaign_mail():
                                     message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
 
 
-
+                    digit = str(uuid.uuid4())
                     to = []
                     to.append(mail)
                     working_status = True
@@ -93,6 +94,7 @@ def campaign_mail():
                         sending_mail= mail_username,
                         sending_password=mail_password,
                         sending_server=mail_smtp,
+                        digit=digit
                         sending_port=mail_port)
                     except Exception:
                         working_status = False
@@ -105,6 +107,7 @@ def campaign_mail():
                         "subject":subject,
                         "recipients": to,
                         "template": data,
+                        "digit": digit,
                         "campaign": str(cam['_id']),
                         "sending_mail": mail_username,
                         "sending_password":mail_password,
@@ -134,8 +137,7 @@ def campaign_mail():
                             },
                                 "$push": {
                                     "mail_message": {
-                                    "sended_message_details": str(mail_data),
-                                    "campaign": str(cam['_id']) 
+                                    "sended_message_details": digit
                                 }
                             }
                         })

@@ -183,7 +183,8 @@ def hit_rate(variable,user):
                 "hit_rate":hit
                 },
             "$set":{
-                "seen_date": datetime.datetime.now()
+                "seen_date": datetime.datetime.now(),
+                "campaign_digit": variable
             }
         },upsert=True)   
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
