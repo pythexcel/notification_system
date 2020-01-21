@@ -176,7 +176,7 @@ def hit_rate(variable,user):
     hit = request.args.get('hit_rate', default=0, type=int)
     hit_rate_calculation = mongo.db.mail_status.update({
         "template":template,
-        "user":user,
+        "user_id":user,
         "digit": variable
         },
         {
