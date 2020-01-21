@@ -132,9 +132,8 @@ def campaign_mail():
                                     "successful":  working_status,
                                     "sended_date": datetime.datetime.now(),
                             },
-                            "mail_message" : {
-                                "$push":
-                                {
+                                "$push": {
+                                    "mail_message": {
                                     "sended_message_details": str(mail_data),
                                     "campaign": str(cam['_id']) 
                                 }
