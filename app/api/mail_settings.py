@@ -27,7 +27,10 @@ def mail_setings(origin,id=None):
        return jsonify (mail)
     if request.method == "DELETE":
         prior = mongo.db.mail_settings.find_one({"origin":origin,"_id": ObjectId(str(id))})
-        priority = prior['priority'] 
+        if origin == "CAMPAIGN":
+            priority = prior['priority']
+        else:
+            pass     
         mail = mongo.db.mail_settings.remove({"origin":origin,"_id": ObjectId(str(id))})
         if origin == "CAMPAIGN":
             campaign_smtp = mongo.db.mail_settings.update({"priority":{ "$gt": priority } },{
