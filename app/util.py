@@ -22,7 +22,7 @@ def user_data(campaign_details):
         hit_data = []
         if 'mail_message' in data:
             for element in data['mail_message']:
-                if element['sended_message_details'] == campaign_details['_id']:
+                if element['campaign'] == campaign_details['_id']:
                     hit_details = mongo.db.mail_status.find_one({"digit": element['sended_message_details']},
                     {   
 
