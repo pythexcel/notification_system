@@ -22,22 +22,23 @@ def user_data(campaign_details):
         hit_data = []
         if 'mail_message' in data:
             for element in data['mail_message']:
-                hit_details = mongo.db.mail_status.find_one({"digit": element['sended_message_details']},
-                {   
+                if element['sended_message_details'] == campaign_details['_id']:
+                    hit_details = mongo.db.mail_status.find_one({"digit": element['sended_message_details']},
+                    {   
 
-                    "hit_rate":1,
-                    "message":1,
-                    "mail_sended_status":1,
-                    "seen_date":1,
-                    "sending_time": 1,
-                    "subject": 1,
-                    "seen": 1 
+                        "hit_rate":1,
+                        "message":1,
+                        "mail_sended_status":1,
+                        "seen_date":1,
+                        "sending_time": 1,
+                        "subject": 1,
+                        "seen": 1 
 
-                })
-                if hit_details is not None:
-                    hit_details['_id'] = str(hit_details['_id'])
-                    if hit_details not in hit_data:
-                        hit_data.append(hit_details)
+                    })
+                    if hit_details is not None:
+                        hit_details['_id'] = str(hit_details['_id'])
+                        if hit_details not in hit_data:
+                            hit_data.append(hit_details)
                     
         data['hit_details'] = hit_data
         data['mail_message'] = None
