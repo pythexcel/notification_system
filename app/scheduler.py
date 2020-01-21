@@ -16,7 +16,7 @@ def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
-    ret = mongo.db.campaign_users.find_one({"mail_cron":False})
+    ret = mongo.db.campaign_users.find_one({"mail_crone":False})
     if ret is not None:
         mail = ret['email']
         if os.getenv('ENVIRONMENT') == "development":
@@ -85,19 +85,19 @@ def campaign_mail():
                     to = []
                     to.append(mail)
                     working_status = True
-                    try:        
-                        send_email(message=message_str,
-                        recipients=to,
-                        subject=subject,
-                        template_id=temp['_id'],
-                        user=unique,
-                        sending_mail= mail_username,
-                        sending_password=mail_password,
-                        sending_server=mail_smtp,
-                        digit=digit
-                        sending_port=mail_port)
-                    except Exception:
-                        working_status = False
+                    # try:        
+                    send_email(message=message_str,
+                    recipients=to,
+                    subject=subject,
+                    template_id=temp['_id'],
+                    user=unique,
+                    sending_mail= mail_username,
+                    sending_password=mail_password,
+                    sending_server=mail_smtp,
+                    digit=digit,
+                    sending_port=mail_port)
+                    # except Exception:
+                    #     working_status = False
                     mail_data = mongo.db.mail_status.insert_one({
                         "user_mail": ret['email'],
                         "user_id": str(ret['_id']),
@@ -131,7 +131,7 @@ def campaign_mail():
                         {
                             "$set": {
                                     "send_status": True,
-                                    "mail_cron": True,
+                                    "mail_crone": True,
                                     "successful":  working_status,
                                     "sended_date": datetime.datetime.now(),
                             },

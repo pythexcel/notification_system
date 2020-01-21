@@ -20,13 +20,18 @@ def user_data(campaign_details):
     
     for data in details:
         hit_data = []
-        if 'Template' in campaign_details:
-            for elem in campaign_details['Template']:
-                hit_details = mongo.db.template_hitrate.find_one({"user":data['_id'],"template":elem},{"_id":0})
+        if 'mail_message' in data:
+            ds = {}
+            for element in data['mail_message']:
+                hit_details = mongo.db.template_hitrate.find_one({"digit": element},{"_id":0})
                 if hit_details is not None:
-                    if hit_details not in hit_data:
-                        hit_data.append(hit_details)
-                 
+                    ds.update(hit_details)
+                message = mongo.db.mail_status.find_one({"digit": element})
+                if message is not None:
+                    ds.update(message)
+                    # if hit_details not in hit_data:
+            hit_data.append(ds)
+                    
         data['hit_details'] = hit_data
     
     campaign_details['users'] = details
