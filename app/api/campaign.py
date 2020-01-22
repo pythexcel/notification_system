@@ -114,8 +114,17 @@ def add_user_campaign():
         for data in users:
             data['send_status'] = False
             data['campaign'] = campaign
-
-        ret = mongo.db.campaign_users.insert_many(users)
+        final_user_data = []
+        for elem in users:
+            ret = mongo.db.campaign_users.find_one({"campaign":elem['campaign'],"email":elem['email']})
+            if ret is not None:
+                if ret not in final_user_data:
+                    final_user_data.append(ret)
+                else:
+                    pass
+            else:
+                pass 
+        ret = mongo.db.campaign_users.insert_many(final_user_data)
         return jsonify({"message":"Users added to campaign"}), 200  
 
 
