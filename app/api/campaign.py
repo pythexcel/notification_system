@@ -128,7 +128,7 @@ def add_user_campaign():
             ret = mongo.db.campaign_users.insert_many(final_user_data)
         else:
             pass
-        return jsonify({"message":"Users added to campaign"}), 200  
+        return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200  
 
 
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
