@@ -277,7 +277,7 @@ def hit_rate(variable,user):
         })   
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
 
-@bp.route("campaign_redirect/<string:unique_key",methods=['GET'])
+@bp.route("campaign_redirect/<string:unique_key>",methods=['GET'])
 def redirectes(unique_key):
     url =  request.args.get('url', type=str)
     action = request.args.get('action', type=str,default='')
