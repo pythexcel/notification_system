@@ -16,7 +16,7 @@ def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
-    ret = mongo.db.campaign_users.find_one({"mail_cron":False})
+    ret = mongo.db.campaign_users.find_one({"mail_cron":False,"block":False})
     if ret is not None:
         mail = ret['email']
         if os.getenv('ENVIRONMENT') == "development":
@@ -24,6 +24,7 @@ def campaign_mail():
         unique = str(ret['_id'])
         cam = mongo.db.campaigns.find_one({"_id":ObjectId(ret['campaign'])})
         if cam is not None:
+            # Here i am checking for campaign is in running status and not paused still picking one user at time 
             if 'Template' in cam:
                 data = random.choice(cam['Template'])
                 validate = validate_smtp_counts()
@@ -121,12 +122,6 @@ def campaign_mail():
                             "count": 1
                             }
                     })
-                    campaign = mongo.db.campaigns.update({"_id":ObjectId(ret['campaign'])},
-                        {
-                            "$set": {
-                                    "cron_status": True
-                                }
-                                })
 
                     user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
                         {
@@ -143,6 +138,18 @@ def campaign_mail():
                                 }
                             }
                         })
+                    # finding if campaign have no user left which mail is needed to be send mark it as completed
+                    user_completed = mongo.db.campaign_users.find({"campaign": cam['_id'],"send_status": True,"successful":True})
+                    user_completed = [serialize_doc(doc) for doc in user_completed]
+                    if not user_completed:
+                        campaign = mongo.db.campaigns.update({"_id":ObjectId(cam['_id'])},
+                            {
+                                "$set": {
+                                        "status": "Completed"
+                                    }
+                            })
+                    else:
+                        pass
                 else:
                     pass
             else:

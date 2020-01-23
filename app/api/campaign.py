@@ -1,6 +1,6 @@
 from app import mongo
 from app import token
-from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory)
+from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory,redirect)
 from app.util import serialize_doc,Template_details,campaign_details,user_data
 import datetime
 import dateutil.parser
@@ -12,6 +12,7 @@ from flask_jwt_extended import (
     verify_jwt_in_request
 )
 from app.mail_util import send_email
+import smtplib
 
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
@@ -26,17 +27,40 @@ def create_campaign():
     if request.method == "POST":
         name = request.json.get("campaign_name",None)
         description = request.json.get("campaign_description",None)
-        active = request.json.get("active",True)
+        status = request.json.get("status","Idle")
         if not name:
             return jsonify({"message": "Invalid Request"}), 400    
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
+                "creation_date": datetime.datetime.now(),
                 "Campaign_description": description,
-                "active":active,
-                "cron_status": False
+                "status":status
         }).inserted_id
         return jsonify(str(ret)),200
-        
+
+@bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
+def pause_campaign(Id,status):
+    working = None
+    if status == 1:
+        block = False
+        working = "Running"
+    elif status == 0:
+        block = True
+        working = "Paused"
+
+    ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
+        "$set": {
+            "status": working
+        }
+    })
+    users = mongo.db.campaign_users.update({"campaign":Id},{
+        "$set": {
+            "block": block
+        }
+    },multi=True)
+    return jsonify({"message":"Campaign status changed to {}".format(working)}),200
+
+
 @bp.route('/delete_campaign/<string:Id>', methods=["DELETE"])
 def delete_campaign(Id):
     ret = mongo.db.campaigns.remove({"_id":ObjectId(Id)})
@@ -45,7 +69,7 @@ def delete_campaign(Id):
 @bp.route('/list_campaign', methods=["GET"])
 # @token.admin_required
 def list_campaign():
-        ret = mongo.db.campaigns.aggregate([])
+        ret = mongo.db.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
 
@@ -55,12 +79,12 @@ def list_campaign():
 def update_campaign(Id):
     name = request.json.get("campaign_name")
     description = request.json.get("campaign_description")
-    active = request.json.get("active")  
+    status = request.json.get("status")  
     ret = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
     "$set": {
         "Campaign_name": name,
         "Campaign_description": description,
-        "active":active
+        "status": status
     }
     })
     return jsonify({"message":"Campaign Updated"}),200
@@ -73,7 +97,6 @@ def assign_template(campaign_id,template_id):
             { "$project": {"status":{"$cond":{"if":{"$ifNull": ["$Template",False]},"then":{"state": {"$in":[template_id,"$Template"]}},"else":{"state":False }}}}},
         ])
         for data in vac:
-            print(data['status'])
             if data['status'] is not None and data['status']['state'] is False:
                 ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
                     "$push": {
@@ -114,6 +137,7 @@ def add_user_campaign():
         for data in users:
             data['send_status'] = False
             data['campaign'] = campaign
+            data['block'] = False
         final_user_data = []
         for elem in users:
             ret = mongo.db.campaign_users.find_one({"campaign":elem['campaign'],"email":elem['email']})
@@ -137,8 +161,38 @@ def campaign_detail(Id):
     detail = serialize_doc(ret)
     return jsonify(user_data(detail)),200
 
-@bp.route("/campaign_mails", methods=["POST"])
-def campaign_start_mail():
+@bp.route("/campaign_smtp_test", methods=["POST"])
+def campaign_smtp_test():
+    mail = mongo.db.mail_settings.find({"origin":"CAMPAIGN"})
+    mail = [serialize_doc(doc) for doc in mail]
+    not_working = []
+    for data in mail:
+        try:
+            send_email(
+                message='SMTP TEST SUCCESFUL',
+                recipients=[request.json.get('email')],
+                subject='SMTP TEST',
+                sending_mail= data['mail_username'],
+                sending_password=data['mail_password'],
+                sending_server=data['mail_server'],
+                sending_port=data['mail_port']
+                ),
+            sending_for.append(data['mail_server'])
+            mongo.db.mail_settings.update({"_id":ObjectId(data)},{
+                "$set":{
+                "current_working_status" : True
+            }})
+        except Exception:
+            not_working.append({"server":data['mail_server'],"reason": "something went wrong"})
+        except smtplib.SMTPDataError:
+            not_working.append({"server":data['mail_server'],"reason": "account not activated"})
+        except smtplib.SMTPAuthenticationError:
+            not_working.append({"server":data['mail_server'],"reason": "username and password is wrong"})
+
+    return jsonify({"message": "sended"}),200
+
+@bp.route("/campaign_mails/<string:campaign>", methods=["POST"])
+def campaign_start_mail(campaign):
     mail = mongo.db.mail_settings.find({"origin":"CAMPAIGN"})
     mail = [serialize_doc(doc) for doc in mail]
     sending_for = []
@@ -155,24 +209,45 @@ def campaign_start_mail():
                 sending_port=data['mail_port']
                 ),
             sending_for.append(data['mail_server'])
+            mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
+                "$set":{
+                "current_working_status" : True
+            }})
         except Exception:
-            not_working.append(data['mail_server'])
-    if not not_working:
-        ids = request.json.get("ids",[])
-        final_ids = []
-        for data in ids:
-            final_ids.append(ObjectId(data))
-
-        ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
-            "$set":{
-                "mail_cron":False
-            }
-        },multi=True)
-        return jsonify({"Message":"Mails sended"}),200
-    else:
-        ret = ",".join(not_working)
-        return jsonify("These smtp servers are not working currently {}".format(ret)),400
-
+            mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
+                "$set":{
+                "current_working_status" : False
+            }})
+            not_working.append({"server":data['mail_server'],"reason": "something went wrong"})
+        except smtplib.SMTPDataError:
+            mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
+                "$set": {
+                "current_working_status" : False
+            }})
+            not_working.append({"server":data['mail_server'],"reason": "account not activated"})
+        except smtplib.SMTPAuthenticationError:
+            mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
+                "$set":{
+                "current_working_status" : False
+            }})
+            not_working.append({"server":data['mail_server'],"reason": "username and password is wrong"})
+    
+    ids = request.json.get("ids",[])
+    final_ids = []
+    for data in ids:
+        final_ids.append(ObjectId(data))
+    ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
+        "$set":{
+            "mail_cron":False
+        }
+    },multi=True)
+    campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
+        "$set": {
+            "status": "Running"
+        }
+    })
+    # not_working array need to check how to send with below response
+    return jsonify({"Message":"Mails sended"}),200
 
 @bp.route("/mails_status",methods=["GET"])
 def mails_status():
@@ -200,4 +275,4 @@ def hit_rate(variable,user):
                 "seen": True
             }
         })   
-    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
+    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg') 
