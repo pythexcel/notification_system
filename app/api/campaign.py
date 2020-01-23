@@ -275,9 +275,4 @@ def hit_rate(variable,user):
                 "seen": True
             }
         })   
-    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
-
-@bp.route("TEST",methods=['GET'])
-def redirectes():
-    return redirect("https://staginghr.excellencetechnologies.in/#/"), 302
-    
+    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg') 
