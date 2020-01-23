@@ -126,7 +126,10 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     if template_id is not None:
         if user is not None:
             url = "<img src= '{}template_hit_rate/{}/{}?template={}&hit_rate=1'>".format(base_url,digit,user,template_id)
-            message = message.replace(base_url+'campaign_redirect/',base_url+'campaign_redirect/'+ '{}'.format(digit))
+            url_create = message.split("href=")
+            for data in url_create:
+                data = data.split("/?")
+                message = message.replace(data[0][1:],base_url+'campaign_redirect/'+ '{}'.format(digit))
             message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)
