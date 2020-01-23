@@ -31,7 +31,8 @@ def user_data(campaign_details):
                         "seen_date":1,
                         "sending_time": 1,
                         "subject": 1,
-                        "seen": 1 
+                        "seen": 1 ,
+                        "clicked": 1
 
                     })
                     if hit_details is not None:

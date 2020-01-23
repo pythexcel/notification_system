@@ -89,7 +89,7 @@ def campaign_mail():
                     try:        
                         send_email(message=message_str,
                         recipients=to,
-                        subject=subject,
+                        subject=message_subject,
                         template_id=temp['_id'],
                         user=unique,
                         sending_mail= mail_username,
@@ -105,7 +105,7 @@ def campaign_mail():
                         "sending_time": datetime.datetime.now(),
                         "message": message_str,
                         "mail_sended_status": working_status,
-                        "subject":subject,
+                        "subject":message_subject,
                         "recipients": to,
                         "template": data,
                         "digit": digit,
