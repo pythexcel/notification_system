@@ -32,7 +32,7 @@ def create_campaign():
             return jsonify({"message": "Invalid Request"}), 400    
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
-                "creation_date": datetime.datetime.now(),
+                "creation_date": datetime.datetime.utcnow(),
                 "Campaign_description": description,
                 "status":status
         }).inserted_id
@@ -275,4 +275,16 @@ def hit_rate(variable,user):
                 "seen": True
             }
         })   
-    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg') 
+    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
+
+@bp.route("campaign_redirect/<string:unique_key>",methods=['GET'])
+def redirectes(unique_key):
+    url =  request.args.get('url', type=str)
+    action = request.args.get('action', type=str,default='')
+    clicked = mongo.db.mail_status.update({"digit": unique_key},{
+        "$set":{
+            "clicked": True
+        }
+    })
+    final_link = url+action
+    return redirect(final_link), 302

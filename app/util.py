@@ -31,7 +31,8 @@ def user_data(campaign_details):
                         "seen_date":1,
                         "sending_time": 1,
                         "subject": 1,
-                        "seen": 1 
+                        "seen": 1 ,
+                        "clicked": 1
 
                     })
                     if hit_details is not None:
@@ -250,10 +251,11 @@ def template_requirement(user):
 def Template_details(details):
     users = 0
     Template_data = []
-    user_data = mongo.db.campaign_users.find({"campaign":details['_id']})
+    user_data = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
     user_data = [serialize_doc(doc) for doc in user_data]
     if user_data:
-        users = len(user_data)
+        for data in user_data:
+            users = data['count']
     details['users'] = users    
     if 'Template' in details:
         for elem in details['Template']:
