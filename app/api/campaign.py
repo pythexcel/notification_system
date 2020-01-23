@@ -32,7 +32,7 @@ def create_campaign():
             return jsonify({"message": "Invalid Request"}), 400    
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
-                "creation_date": datetime.datetime.now(),
+                "creation_date": datetime.datetime.utcnow(),
                 "Campaign_description": description,
                 "status":status
         }).inserted_id
@@ -288,4 +288,3 @@ def redirectes(unique_key):
     })
     final_link = url+action
     return redirect(final_link), 302
-    

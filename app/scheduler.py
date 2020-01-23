@@ -140,15 +140,23 @@ def campaign_mail():
                             }
                         })
                     # finding if campaign have no user left which mail is needed to be send mark it as completed
-                    user_completed = mongo.db.campaign_users.find({"campaign": cam['_id'],"send_status": True,"successful":True})
+                    user_available = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":cam['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+                    user_available = [serialize_doc(doc) for doc in user_available]
+
+                    user_completed = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":cam['_id'],"send_status":True}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
                     user_completed = [serialize_doc(doc) for doc in user_completed]
-                    if not user_completed:
-                        campaign = mongo.db.campaigns.update({"_id":ObjectId(cam['_id'])},
-                            {
-                                "$set": {
-                                        "status": "Completed"
-                                    }
-                            })
+
+                    for data in user_available:
+                        for elemetn in user_completed:
+                            if data['count'] == element['count']:
+                                campaign = mongo.db.campaigns.update({"_id":ObjectId(cam['_id'])},
+                                    {
+                                        "$set": {
+                                                "status": "Completed"
+                                            }
+                                    })
+                            else:
+                                pass
                     else:
                         pass
                 else:
