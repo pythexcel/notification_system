@@ -11,6 +11,8 @@ import email.mime.application
 import mimetypes
 from app.config import smtp_counts,base_url
 import uuid
+from bs4 import BeautifulSoup
+
 
 def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
@@ -123,13 +125,14 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         msg.attach(file)
     else:
         pass
+
     if template_id is not None:
         if user is not None:
             url = "<img src= '{}template_hit_rate/{}/{}?template={}&hit_rate=1'>".format(base_url,digit,user,template_id)
-            url_create = message.split("href=")
-            for data in url_create:
-                data = data.split("/?")
-                message = message.replace(data[0][1:],base_url+'campaign_redirect/'+ '{}'.format(digit))
+            soup = BeautifulSoup(message)
+            for data in soup.find_all('a', href=True):
+                required_url = data['href'].split("/?")
+                message = message.split(required_url,base_url+'campaign_redirect/'+ '{}'.format(digit))
             message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)
