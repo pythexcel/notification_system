@@ -254,7 +254,8 @@ def Template_details(details):
     user_data = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
     user_data = [serialize_doc(doc) for doc in user_data]
     if user_data:
-        users = user_data['count']
+        for data in user_data:
+            users = data['count']
     details['users'] = users    
     if 'Template' in details:
         for elem in details['Template']:
