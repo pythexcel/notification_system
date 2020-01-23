@@ -250,7 +250,7 @@ def template_requirement(user):
 def Template_details(details):
     users = 0
     Template_data = []
-    user_data = mongo.db.campaign_users_test.find({"campaign":details['_id']})
+    user_data = mongo.db.campaign_users.find({"campaign":details['_id']})
     user_data = [serialize_doc(doc) for doc in user_data]
     if user_data:
         users = len(user_data)

@@ -1,6 +1,6 @@
 from app import mongo
 from app import token
-from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory)
+from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory,redirect)
 from app.util import serialize_doc,Template_details,campaign_details,user_data
 import datetime
 import dateutil.parser
@@ -38,12 +38,14 @@ def create_campaign():
         }).inserted_id
         return jsonify(str(ret)),200
 
-@bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["DELETE"])
+@bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
 def pause_campaign(Id,status):
     working = None
     if status == 1:
+        block = False
         working = "Running"
     elif status == 0:
+        block = True
         working = "Paused"
 
     ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
@@ -51,6 +53,11 @@ def pause_campaign(Id,status):
             "status": working
         }
     })
+    users = mongo.db.campaign_users.update({"campaign":Id},{
+        "$set": {
+            "block": block
+        }
+    },multi=True)
     return jsonify({"message":"Campaign status changed to {}".format(working)}),200
 
 
@@ -90,7 +97,6 @@ def assign_template(campaign_id,template_id):
             { "$project": {"status":{"$cond":{"if":{"$ifNull": ["$Template",False]},"then":{"state": {"$in":[template_id,"$Template"]}},"else":{"state":False }}}}},
         ])
         for data in vac:
-            print(data['status'])
             if data['status'] is not None and data['status']['state'] is False:
                 ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
                     "$push": {
@@ -121,7 +127,7 @@ def assign_template(campaign_id,template_id):
 @bp.route('/user_list_campaign',methods=["GET","POST"])
 def add_user_campaign():
     if request.method == "GET":
-        ret = mongo.db.campaign_users_test.aggregate([])
+        ret = mongo.db.campaign_users.aggregate([])
         ret = [campaign_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
     if request.method == "POST":
@@ -131,9 +137,10 @@ def add_user_campaign():
         for data in users:
             data['send_status'] = False
             data['campaign'] = campaign
+            data['block'] = False
         final_user_data = []
         for elem in users:
-            ret = mongo.db.campaign_users_test.find_one({"campaign":elem['campaign'],"email":elem['email']})
+            ret = mongo.db.campaign_users.find_one({"campaign":elem['campaign'],"email":elem['email']})
             if ret is None:
                 if ret not in final_user_data:
                     final_user_data.append(elem)
@@ -142,7 +149,7 @@ def add_user_campaign():
             else:
                 pass 
         if final_user_data:
-            ret = mongo.db.campaign_users_test.insert_many(final_user_data)
+            ret = mongo.db.campaign_users.insert_many(final_user_data)
         else:
             pass
         return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200  
@@ -172,8 +179,9 @@ def campaign_smtp_test():
                 ),
             sending_for.append(data['mail_server'])
             mongo.db.mail_settings.update({"_id":ObjectId(data)},{
+                "$set":{
                 "current_working_status" : True
-            })
+            }})
         except Exception:
             not_working.append({"server":data['mail_server'],"reason": "something went wrong"})
         except smtplib.SMTPDataError:
@@ -202,30 +210,33 @@ def campaign_start_mail(campaign):
                 ),
             sending_for.append(data['mail_server'])
             mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
+                "$set":{
                 "current_working_status" : True
-            })
+            }})
         except Exception:
             mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
+                "$set":{
                 "current_working_status" : False
-            })
+            }})
             not_working.append({"server":data['mail_server'],"reason": "something went wrong"})
         except smtplib.SMTPDataError:
             mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
+                "$set": {
                 "current_working_status" : False
-            })
+            }})
             not_working.append({"server":data['mail_server'],"reason": "account not activated"})
         except smtplib.SMTPAuthenticationError:
             mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
+                "$set":{
                 "current_working_status" : False
-            })
+            }})
             not_working.append({"server":data['mail_server'],"reason": "username and password is wrong"})
     
     ids = request.json.get("ids",[])
     final_ids = []
     for data in ids:
         final_ids.append(ObjectId(data))
-    print(final_ids)
-    ret = mongo.db.campaign_users_test.update({"_id":{ "$in": final_ids}},{
+    ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
         "$set":{
             "mail_cron":False
         }
@@ -265,3 +276,8 @@ def hit_rate(variable,user):
             }
         })   
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
+
+@bp.route("TEST",methods=['GET'])
+def redirectes():
+    return redirect("https://staginghr.excellencetechnologies.in/#/"), 302
+    
