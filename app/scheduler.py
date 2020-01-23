@@ -114,7 +114,8 @@ def campaign_mail():
                         "sending_password":mail_password,
                         "sending_server":mail_smtp,
                         "seen": False,
-                        "sending_port":mail_port
+                        "sending_port":mail_port,
+                        "clicked": False
 
                     }).inserted_id
                     smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(count_details)},{

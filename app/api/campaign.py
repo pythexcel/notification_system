@@ -275,4 +275,17 @@ def hit_rate(variable,user):
                 "seen": True
             }
         })   
-    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg') 
+    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
+
+@bp.route("campaign_redirect/<string:unique_key",methods=['GET'])
+def redirectes(unique_key):
+    url =  request.args.get('url', type=str)
+    action = request.args.get('action', type=str,default='')
+    clicked = mongo.db.mail_status.update({"digit": unique_key},{
+        "$set":{
+            "clicked": True
+        }
+    })
+    final_link = url+action
+    return redirect(final_link), 302
+    

@@ -126,7 +126,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     if template_id is not None:
         if user is not None:
             url = "<img src= '{}template_hit_rate/{}/{}?template={}&hit_rate=1'>".format(base_url,digit,user,template_id)
-            revert_link = '<span>If interested please <a href='+ base_url + '>Click Here!</a></span>'
+            message = message.replace(base_url,base_url + '/{}'.format(digit))
             message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)
