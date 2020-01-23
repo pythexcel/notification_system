@@ -275,6 +275,7 @@ def mails():
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)
     filelink = request.json.get("filelink",None)
+    is_reminder = request.json.get("is_reminder",True)
     if not MAIL_SEND_TO and message:
         return jsonify({"MSG": "Invalid Request"}), 400
     bcc = None
@@ -286,6 +287,14 @@ def mails():
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
     if MAIL_SEND_TO is not None:
+        for mail_store in MAIL_SEND_TO:
+            id = mongo.db.recruit_mail.insert_one({
+                "message": message,
+                "subject": subject,
+                "filename": filename,
+                "to":mail_store,
+                "is_reminder":is_reminder
+            }).inserted_id
         send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
         return jsonify({"status":True,"Message":"Sended"}),200 
     else:

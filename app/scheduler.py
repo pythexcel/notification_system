@@ -7,6 +7,10 @@ from bson.objectid import ObjectId
 from app.mail_util import send_email
 from app.slack_util import slack_message
 from flask import current_app as app
+import imapclient
+import pyzmail
+import email
+
 
 def campaign_mail():
     ret = mongo.db.campaign_users.find_one({"send_status":False})
@@ -140,3 +144,37 @@ def cron_messages():
     else:
         pass 
         
+
+def bounced_mail():
+    print("bounced mail running")
+    imapObj = imapclient.IMAPClient('imap.gmail.com', ssl=True)
+    imapObj.login('rasealex000000@gmail.com','Rase@123')
+    imapObj.select_folder('INBOX')
+
+    search_bounce_mails=imapObj.search(['FROM','mailer-daemon@googlemail.com'])
+
+    #all_bounced_mails = []
+    for search_bounce_mail in search_bounce_mails:
+        rawMessages = imapObj.fetch(search_bounce_mail,['BODY[]'])
+        message_body = pyzmail.PyzMessage.factory(rawMessages[search_bounce_mail][b'BODY[]'])
+        mail_subject = message_body.get_subject()
+        mail_from =message_body.get_addresses('from')
+        mail_to =message_body.get_addresses('to')
+        if message_body.text_part != None:
+            mail_text = message_body.text_part.get_payload().decode(message_body.text_part.charset)
+            text_lists = mail_text.split()
+            count = 0
+            for text_list in text_lists:
+                if text_list == 'delivered':
+                    mail_checker = count+1
+                    if text_lists[mail_checker] == 'to':
+                        email_index = mail_checker + 1
+                        bounced_mail = text_lists[email_index]
+                        ret = mongo.db.bounce_emails.update({
+                                "bounced_mail": bounced_mail
+                            }, {
+                                "$set": {
+                                    "bounced_mail": bounced_mail
+                                }},upsert=True)
+                count = count + 1
+
