@@ -288,3 +288,12 @@ def redirectes(unique_key):
     })
     final_link = url+action
     return redirect(final_link), 302
+
+@bp.route('edit_templates/<string:template_id>',methods=["POST"])
+def edit_template(template_id):
+    mongo.db.mail_template.update({"_id": ObjectId(template_id)}, {
+    "$set": request.json
+    })
+    return jsonify({
+        "Message": "Template Updated",
+        "status": True}), 200
