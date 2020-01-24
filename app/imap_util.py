@@ -10,15 +10,15 @@ from app.config import bounced_mail_since,remind_mail_since
 
 #Function for login with email_id and password all info fetching from db can set dynamically
 def imap_login():
-    mail_setting = mongo.db.mail_settings.find_one({"origin":"rase_test","active":True})
-    if mail_setting is not None:
+    mail_setting = mongo.db.mail_settings.find_one({"origin":"rase_tes","active":True})
+    try:
         mail_username = mail_setting['mail_username']
         mail_password = mail_setting['mail_password']
         mail_server = mail_setting['mail_server']
         imapObj = imapclient.IMAPClient(mail_server, ssl=True)
         imapObj.login(mail_username,mail_password)
         return imapObj
-    else:
+    except Exception:
         return None
 
 

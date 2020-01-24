@@ -96,7 +96,7 @@ def create_app(test_config=None):
     bounced_mail_scheduler.start()
 
     mail_reminder_scheduler = BackgroundScheduler()
-    mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=18,minute=24)
+    mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=18,minute=34)
     mail_reminder_scheduler.start()
 
 
