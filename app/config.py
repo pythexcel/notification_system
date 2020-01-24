@@ -1,5 +1,8 @@
 import cloudinary
 
+bounced_mail_since = '23-Jan-2020'
+remind_mail_since = '24-Jan-2020'
+
 dates_converter = [
     "dateofjoining",
     "dob",

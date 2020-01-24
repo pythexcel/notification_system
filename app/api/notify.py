@@ -288,13 +288,13 @@ def mails():
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
     if MAIL_SEND_TO is not None:
         for mail_store in MAIL_SEND_TO:
-            id = mongo.db.recruit_mail.insert_one({
+            id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
+            "$set":{
                 "message": message,
                 "subject": subject,
-                "filename": filename,
                 "to":mail_store,
                 "is_reminder":is_reminder
-            }).inserted_id
+            }},upsert=True)
         send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
         return jsonify({"status":True,"Message":"Sended"}),200 
     else:

@@ -28,7 +28,8 @@ mongo = db.init_db()
 
 from app import token
 
-from app.scheduler import campaign_mail,reject_mail,cron_messages,bounced_mail
+from app.scheduler import campaign_mail,reject_mail,cron_messages
+from app.imap_util import bounced_mail,mail_reminder
 
 def create_app(test_config=None):
     # create and configure the app
@@ -91,8 +92,13 @@ def create_app(test_config=None):
     app.cli.add_command(seed_recruit)
 
     bounced_mail_scheduler = BackgroundScheduler()
-    bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=19,minute=11)
+    bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=17,minute=12)
     bounced_mail_scheduler.start()
+
+    mail_reminder_scheduler = BackgroundScheduler()
+    mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=17,minute=14)
+    mail_reminder_scheduler.start()
+
 
     '''
     if app.config['origin'] == "hr":
