@@ -18,32 +18,29 @@ def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
-def validate_smtp_counts():
-    mail = mongo.db.mail_settings.find({"origin": "CAMPAIGN","current_working_status":True}).sort("priority",1)
-    mail = [serialize_doc(doc)for doc in mail]
-    valid_smtp = []
-    for data in mail:
-        mail_username = data['mail_username']
-        mail_password = data['mail_password']
-        mail_smtp = data['mail_server']
-        mail_port = data['mail_port']
-        if mail_smtp in smtp_counts:
+def validate_smtp_counts(username,password,server):
+    mail = mongo.db.mail_settings.find_one({"origin": "CAMPAIGN","mail_username":username,"mail_password":password,"mail_server":server})
+    valid_smtp = dict()
+    if mail is not None:
+        if mail['mail_server'] in smtp_counts:
             # here below is the condtions we will check for smtp counts and values 
             today = datetime.datetime.today()
             next_day = datetime.datetime.today() + datetime.timedelta(days=1)
-            smtp_validate = mongo.db.smtp_count_validate.find_one({"smtp":mail_smtp,"email":mail_username,
+            smtp_validate = mongo.db.smtp_count_validate.find_one({"smtp":mail['mail_server'],"email":mail['mail_username'],
             "created_at":{
             "$gte": datetime.datetime(today.year, today.month, today.day),
             "$lte": datetime.datetime(next_day.year, next_day.month, next_day.day)}})
             if smtp_validate is not None:
-                if smtp_validate['count'] < smtp_counts[mail_smtp]:
-                    valid_smtp.append({
-                        "mail_username":mail_username,
-                        "mail_password":mail_password,
-                        "mail_server":mail_smtp,
-                        "mail_port":mail_port,
+                if smtp_validate['count'] < smtp_counts[mail['mail_server']]:
+                    valid_smtp.update({
+                        "mail_username":mail['mail_username'],
+                        "mail_password":mail['mail_password'],
+                        "mail_server":mail['mail_server'],
+                        "mail_port":mail['mail_port'],
                         "count_details":str(smtp_validate['_id'])})
                     return valid_smtp
+                else:
+                    raise Exception("These smtp has reached it's count")
             else:
                 smtp_validate_insert = mongo.db.smtp_count_validate.insert_one({
                     "smtp":mail_smtp,
@@ -51,16 +48,17 @@ def validate_smtp_counts():
                     "created_at": today,
                     "count": 0
                 }).inserted_id
-                valid_smtp.append({
-                    "mail_username":mail_username,
-                    "mail_password":mail_password,
-                    "mail_server":mail_smtp,
-                    "mail_port":mail_port,
+                valid_smtp.update({
+                    "mail_username":mail['mail_username'],
+                    "mail_password":mail['mail_password'],
+                    "mail_server":mail['mail_server'],
+                    "mail_port":mail['mail_port'],
                     "count_details":str(smtp_validate_insert)})      
                 return valid_smtp
+    else:
+        raise Exception("Smtp is not available")
 
-
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,template_id=None,user=None,digit=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
@@ -68,7 +66,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     if os.getenv('origin') == "hr":
         mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
     elif os.getenv('origin') == "recruit":    
-        mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT"},{"_id":0})
+        mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True},{"_id":0})
     username = None
     if sending_mail is None:    
         username = mail_details["mail_username"]
@@ -128,7 +126,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
 
     if template_id is not None:
         if user is not None:
-            url = "<img src= '{}template_hit_rate/{}/{}?template={}&hit_rate=1'>".format(base_url,digit,user,template_id)
+            url = "<img src= '{}template_hit_rate/{}/{}?hit_rate=1'>".format(base_url,digit,user)
             soup = BeautifulSoup(message)
             for data in soup.find_all('a', href=True):
                 required_url = data['href'].split("/?")

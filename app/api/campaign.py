@@ -11,7 +11,7 @@ from flask_jwt_extended import (
     get_jwt_identity, get_current_user, jwt_refresh_token_required,
     verify_jwt_in_request
 )
-from app.mail_util import send_email
+from app.mail_util import send_email,validate_smtp_counts
 import smtplib
 
 
@@ -28,12 +28,16 @@ def create_campaign():
         name = request.json.get("campaign_name",None)
         description = request.json.get("campaign_description",None)
         status = request.json.get("status","Idle")
+        message = request.json.get("message",None)
+        message_subject = request.json.get("message_subject",None) 
         if not name:
             return jsonify({"message": "Invalid Request"}), 400    
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
                 "creation_date": datetime.datetime.utcnow(),
                 "Campaign_description": description,
+                "message": message,
+                "message_subject": message_subject,
                 "status":status
         }).inserted_id
         return jsonify(str(ret)),200
@@ -80,11 +84,15 @@ def update_campaign(Id):
     name = request.json.get("campaign_name")
     description = request.json.get("campaign_description")
     status = request.json.get("status")  
+    message = request.json.get("message",None)
+    message_subject = request.json.get("message_subject",None) 
     ret = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
     "$set": {
         "Campaign_name": name,
         "Campaign_description": description,
-        "status": status
+        "status": status,
+        "message": message,
+        "message_subject": message_subject
     }
     })
     return jsonify({"message":"Campaign Updated"}),200
@@ -155,6 +163,7 @@ def add_user_campaign():
         return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200  
 
 
+
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
 def campaign_detail(Id):
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
@@ -193,62 +202,54 @@ def campaign_smtp_test():
 
 @bp.route("/campaign_mails/<string:campaign>", methods=["POST"])
 def campaign_start_mail(campaign):
-    mail = mongo.db.mail_settings.find({"origin":"CAMPAIGN"})
-    mail = [serialize_doc(doc) for doc in mail]
-    sending_for = []
-    not_working = []
-    for data in mail:
-        try:
-            send_email(
+    mail_server = request.json.get("mail_server")
+    mail_port = request.json.get("mail_port")
+    mail_username = request.json.get("mail_username")
+    mail_password = request.json.get("mail_password") 
+    delay = request.json.get("delay",30)
+    try:
+        send_email(
                 message='SMTP TEST SUCCESFUL',
                 recipients=[app.config['to']],
                 subject='SMTP TEST',
-                sending_mail= data['mail_username'],
-                sending_password=data['mail_password'],
-                sending_server=data['mail_server'],
-                sending_port=data['mail_port']
-                ),
-            sending_for.append(data['mail_server'])
-            mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
-                "$set":{
-                "current_working_status" : True
-            }})
-        except Exception:
-            mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
-                "$set":{
-                "current_working_status" : False
-            }})
-            not_working.append({"server":data['mail_server'],"reason": "something went wrong"})
-        except smtplib.SMTPDataError:
-            mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
-                "$set": {
-                "current_working_status" : False
-            }})
-            not_working.append({"server":data['mail_server'],"reason": "account not activated"})
-        except smtplib.SMTPAuthenticationError:
-            mongo.db.mail_settings.update({"_id":ObjectId(data['_id'])},{
-                "$set":{
-                "current_working_status" : False
-            }})
-            not_working.append({"server":data['mail_server'],"reason": "username and password is wrong"})
-    
-    ids = request.json.get("ids",[])
-    final_ids = []
-    for data in ids:
-        final_ids.append(ObjectId(data))
-    ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
-        "$set":{
-            "mail_cron":False
-        }
-    },multi=True)
-    campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
-        "$set": {
-            "status": "Running"
-        }
-    })
-    # not_working array need to check how to send with below response
-    return jsonify({"Message":"Mails sended"}),200
+                sending_mail= mail_username,
+                sending_password=mail_password,
+                sending_server=mail_server,
+                sending_port=mail_port
+                )
+    except Exception:
+        return jsonify({"message":"smtp not working"}),400        
+    except smtplib.SMTPDataError:
+        return jsonify({"message": "account not activated for smtp"}),400
+    except smtplib.SMTPAuthenticationError:
+        return jsonify({"message": "username and password is wrong for smtp"}), 400
 
+    try:
+        validate = validate_smtp_counts(username=mail_username,password=mail_password,server=mail_server)
+        ids = request.json.get("ids",[])
+        final_ids = []
+        for data in ids:
+            final_ids.append(ObjectId(data))
+        ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
+            "$set":{
+                "mail_cron":False,
+                "mail_server": validate['mail_server'],
+                "mail_username": validate['mail_username'],
+                "mail_password": validate['mail_password'],
+                "mail_port": validate['mail_port'],
+                "count_details": validate['count_details']
+            }
+        },multi=True)
+        campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
+            "$set": {
+                "status": "Running",
+                "delay": delay
+            }
+        })
+        return jsonify({"Message":"Mails sended"}),200
+    except Exception as error:
+        return(repr(error)),400
+    
 @bp.route("/mails_status",methods=["GET"])
 def mails_status():
     limit = request.args.get('limit',default=0, type=int)
@@ -259,10 +260,8 @@ def mails_status():
 
 @bp.route("/template_hit_rate/<string:variable>/<string:user>",methods=['GET'])
 def hit_rate(variable,user):
-    template =  request.args.get('template', type=str)
     hit = request.args.get('hit_rate', default=0, type=int)
     hit_rate_calculation = mongo.db.mail_status.update({
-        "template":template,
         "user_id":user,
         "digit": variable
         },
