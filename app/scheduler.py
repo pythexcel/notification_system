@@ -30,14 +30,43 @@ def campaign_mail():
                 Template_details = mongo.db.mail_template.find_one({"_id":ObjectId(campaign['_id'])})
                 message_subject_details.append({"message": Template_details['message'],"message_subject": Template_details["message_subject"]})
             campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"blocked":False})
+            campaign_users = [serialize_doc(doc) for doc in campaign_users]
             for user in campaign_users:
                 if user is not None:
+                    count_failed = False
+                    try:
+                        validate = validate_smtp_counts(campaign['smtps'])
+                    except Exception as error:
+                        mail_failed = mongo.db.smtp_issue.insert_one{
+                            "issue_time": datetime.datetime.utcnow()
+                            "Reason": "Assigned smtp's daily counts exhausted",
+                            "campaign": campaign['_id'],
+                            "campaign_name": campaign['name'], 
+                        }
+                        campaign_count_update = mongo.db.campaigns.find_one({"_id":campaign['_id']},{
+                            "$set":{
+                                "status":"Count error"
+                            }
+                        })
+
+
+                    mail_server = None
+                    mail_port = None
+                    mail_username = None
+                    mail_password = None
+                    count_details = None
+                    for val in validate:
+                        mail_server = val['mail_server']
+                        mail_port = val['mail_port']
+                        mail_username = val['mail_username']
+                        mail_password = val['mail_password']
+                        count_details = val['count_details']
+                        
                     final_message = random.choice(message_subject_details)
                     mail = user['email']
                     if os.getenv('ENVIRONMENT') == "development":
                         mail = os.getenv('to')
                     unique = str(user['_id'])
-
                     system_variable = mongo.db.mail_variables.find({})
                     system_variable = [serialize_doc(doc) for doc in system_variable]
                     subject = final_message['message_subject']
@@ -83,15 +112,15 @@ def campaign_mail():
                     to.append(mail)
                     working_status = True
                     try:        
-                            send_email(message=message_str,
-                            recipients=to,
-                            subject=message_subject,
-                            user=unique,
-                            sending_mail= user['mail_username'],
-                            sending_password=user['mail_password'],
-                            sending_server=user['mail_server'],
-                            digit=digit,
-                            sending_port=user['mail_port'])
+                        send_email(message=message_str,
+                        recipients=to,
+                        subject=message_subject,
+                        user=unique,
+                        sending_mail= mail_username,
+                        sending_password= mail_password,
+                        sending_server= mail_server,
+                        digit=digit,
+                        sending_port= mail_port)
                     except Exception:
                         working_status = False
                     mail_data = mongo.db.mail_status.insert_one({
@@ -104,15 +133,15 @@ def campaign_mail():
                         "recipients": to,
                         "digit": digit,
                         "campaign": str(campaign['_id']),
-                        "sending_mail": user['mail_username'],
-                        "sending_password":user['mail_password'],
-                        "sending_server":user['mail_server'],
+                        "sending_mail": mail_username,
+                        "sending_password":mail_password,
+                        "sending_server":mail_server,
                         "seen": False,
-                        "sending_port":user['mail_port'],
+                        "sending_port":mail_port,
                         "clicked": False
 
                     }).inserted_id
-                    smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(user['count_details'])},{
+                    smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(count_details)},{
                         "$inc": {
                             "count": 1
                             }
