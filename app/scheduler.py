@@ -92,66 +92,66 @@ def campaign_mail():
                             sending_server=user['mail_server'],
                             digit=digit,
                             sending_port=user['mail_port'])
-                        except Exception:
-                            working_status = False
-                        mail_data = mongo.db.mail_status.insert_one({
-                            "user_mail": user['email'],
-                            "user_id": str(user['_id']),
-                            "sending_time": datetime.datetime.now(),
-                            "message": message_str,
-                            "mail_sended_status": working_status,
-                            "subject":message_subject,
-                            "recipients": to,
-                            "digit": digit,
-                            "campaign": str(campaign['_id']),
-                            "sending_mail": user['mail_username'],
-                            "sending_password":user['mail_password'],
-                            "sending_server":user['mail_server'],
-                            "seen": False,
-                            "sending_port":user['mail_port'],
-                            "clicked": False
+                    except Exception:
+                        working_status = False
+                    mail_data = mongo.db.mail_status.insert_one({
+                        "user_mail": user['email'],
+                        "user_id": str(user['_id']),
+                        "sending_time": datetime.datetime.now(),
+                        "message": message_str,
+                        "mail_sended_status": working_status,
+                        "subject":message_subject,
+                        "recipients": to,
+                        "digit": digit,
+                        "campaign": str(campaign['_id']),
+                        "sending_mail": user['mail_username'],
+                        "sending_password":user['mail_password'],
+                        "sending_server":user['mail_server'],
+                        "seen": False,
+                        "sending_port":user['mail_port'],
+                        "clicked": False
 
-                        }).inserted_id
-                        smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(user['count_details'])},{
-                            "$inc": {
-                                "count": 1
+                    }).inserted_id
+                    smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(user['count_details'])},{
+                        "$inc": {
+                            "count": 1
+                            }
+                    })
+
+                    user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
+                        {
+                            "$set": {
+                                    "send_status": True,
+                                    "mail_cron": True,
+                                    "successful":  working_status,
+                                    "sended_date": datetime.datetime.now(),
+                            },
+                                "$push": {
+                                    "mail_message": {
+                                    "sended_message_details": digit,
+                                    "campaign": str(campaign['_id'])
                                 }
+                            }
                         })
+                    # finding if campaign have no user left which mail is needed to be send mark it as completed
+                    user_available = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+                    user_available = [serialize_doc(doc) for doc in user_available]
 
-                        user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
-                            {
-                                "$set": {
-                                        "send_status": True,
-                                        "mail_cron": True,
-                                        "successful":  working_status,
-                                        "sended_date": datetime.datetime.now(),
-                                },
-                                    "$push": {
-                                        "mail_message": {
-                                        "sended_message_details": digit,
-                                        "campaign": str(campaign['_id'])
-                                    }
-                                }
-                            })
-                        # finding if campaign have no user left which mail is needed to be send mark it as completed
-                        user_available = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
-                        user_available = [serialize_doc(doc) for doc in user_available]
+                    user_completed = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id'],"send_status":True}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+                    user_completed = [serialize_doc(doc) for doc in user_completed]
 
-                        user_completed = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id'],"send_status":True}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
-                        user_completed = [serialize_doc(doc) for doc in user_completed]
-
-                        for data in user_available:
-                            for elemetn in user_completed:
-                                if data['count'] == element['count']:
-                                    campaign = mongo.db.campaigns.update({"_id":ObjectId(campaign['_id'])},
-                                        {
-                                            "$set": {
-                                                    "status": "Completed"
-                                                }
-                                        })
-                                else:
-                                    pass
-                        time.sleep(campaign['delay'])
+                    for data in user_available:
+                        for elemetn in user_completed:
+                            if data['count'] == element['count']:
+                                campaign = mongo.db.campaigns.update({"_id":ObjectId(campaign['_id'])},
+                                    {
+                                        "$set": {
+                                                "status": "Completed"
+                                            }
+                                    })
+                            else:
+                                pass
+                    time.sleep(campaign['delay'])
                 else:
                     pass
         else:
