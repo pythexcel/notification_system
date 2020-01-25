@@ -18,6 +18,30 @@ def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
+def validate_smtp(username,password,port,smtp):
+    try:
+        if port == 587:   
+            context = ssl.create_default_context()     
+            mail = smtplib.SMTP(str(smtp), port)
+            mail.ehlo() 
+            mail.starttls(context=context) 
+            mail.ehlo() 
+            mail.login(username,password)
+        else:
+            mail = smtplib.SMTP_SSL(str(smtp), port)
+            mail.login(username,password)
+        mail.quit()
+
+    except Exception:
+        raise Exception("Something went wrong with smtp")
+            
+    except smtplib.SMTPDataError:
+        raise Exception("Account is not activated")
+                
+    except smtplib.SMTPAuthenticationError:
+        raise Exception("Username and password is incorrect")
+        
+
 def validate_smtp_counts(ids):
     smtp_mail = mongo.db.mail_settings.find({"origin": "CAMPAIGN","_id": {"$in":ids}})
     smtp_mail = [serialize_doc(doc) for doc in smtp_mail]

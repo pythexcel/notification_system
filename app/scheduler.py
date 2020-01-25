@@ -1,4 +1,5 @@
 import os
+import sys    
 import random
 import re
 from app import mongo
@@ -6,7 +7,7 @@ from app.util import serialize_doc
 import datetime
 import dateutil.parser
 from bson.objectid import ObjectId
-from app.mail_util import send_email,validate_smtp_counts
+from app.mail_util import send_email,validate_smtp_counts,validate_smtp
 from app.slack_util import slack_message
 from flask import current_app as app
 from dotenv import load_dotenv
@@ -20,172 +21,186 @@ def campaign_mail():
     campaigns = mongo.db.campaigns.find({"status":"Running"})
     campaigns = [serialize_doc(doc) for doc in campaigns]
     for campaign in campaigns:
-        if campaign is not None:
-            message_subject_details = []
-            if campaign['message'] != "":
-                if campaign['message_subject'] != "":
-                    message_subject_details.append({"message":campaign['message'],"message_subject":campaign["message_subject"]})
-            if 'Template' in campaign:
-                template_data = random.choice(campaign['Template'])
-                Template_details = mongo.db.mail_template.find_one({"_id":ObjectId(campaign['_id'])})
-                message_subject_details.append({"message": Template_details['message'],"message_subject": Template_details["message_subject"]})
-            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"blocked":False})
-            campaign_users = [serialize_doc(doc) for doc in campaign_users]
-            for user in campaign_users:
-                if user is not None:
-                    count_failed = False
-                    try:
-                        validate = validate_smtp_counts(campaign['smtps'])
-                    except Exception as error:
-                        mail_failed = mongo.db.smtp_issue.insert_one{
-                            "issue_time": datetime.datetime.utcnow()
-                            "Reason": "Assigned smtp's daily counts exhausted",
-                            "campaign": campaign['_id'],
-                            "campaign_name": campaign['name'], 
-                        }
-                        campaign_count_update = mongo.db.campaigns.find_one({"_id":campaign['_id']},{
-                            "$set":{
-                                "status":"Count error"
-                            }
-                        })
+        try:
+            validate = validate_smtp_counts(campaign['smtps'])
+        except Exception as error:
+            error = mongo.db.error_reporting.insert_one({
+                "error_message" : repr(error),
+                "error_time": datetime.datetime.now(),
+                "line_number_of_issue": sys.exc_info()[-1].tb_lineno
+            })
+        else:
+            for val in validate:
+            mail_port = None
+            mail_server = None
+            mail_username = None
+            mail_password = None
+            count_details = None
+                mail_server = val['mail_server']
+                mail_port = val['mail_port']
+                mail_username = val['mail_username']
+                mail_password = val['mail_password']
+                count_details = val['count_details']
+            try:
+                validate_smtp(username=mail_username,password=mail_password,port=mail_port,smtp=mail_server)
+            except Exception as error:
+                error = mongo.db.error_reporting.insert_one({
+                "error_message" : repr(error),
+                "error_time": datetime.datetime.now(),
+                "line_number_of_issue": sys.exc_info()[-1].tb_lineno
+            })
+            else:
+                try:    
+                    if campaign is not None:
+                        message_subject_details = []
+                        if campaign['message'] != "":
+                            if campaign['message_subject'] != "":
+                                message_subject_details.append({"message":campaign['message'],"message_subject":campaign["message_subject"]})
+                        if 'Template' in campaign:
+                            template_data = random.choice(campaign['Template'])
+                            Template_details = mongo.db.mail_template.find_one({"_id":ObjectId(campaign['_id'])})
+                            message_subject_details.append({"message": Template_details['message'],"message_subject": Template_details["message_subject"]})
+                        campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"blocked":False})
+                        campaign_users = [serialize_doc(doc) for doc in campaign_users]
+                        for user in campaign_users:
+                            if user is not None:    
+                                final_message = random.choice(message_subject_details)
+                                mail = user['email']
+                                if os.getenv('ENVIRONMENT') == "development":
+                                    mail = os.getenv('to')
+                                unique = str(user['_id'])
+                                system_variable = mongo.db.mail_variables.find({})
+                                system_variable = [serialize_doc(doc) for doc in system_variable]
+                                subject = final_message['message_subject']
+                                message_variables = []
+                                message = final_message['message'].split('#')
+                                del message[0]
+                                rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+                                for elem in message:
+                                    varb = re.split(rex, elem)
+                                    message_variables.append(varb[0])
+                                message_str = final_message['message']
+                                for detail in message_variables:
+                                    if detail in ret:
+                                        rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                                        message_str = re.sub(rexWithString, ret[detail], message_str)
+                                    else:
+                                        for element in system_variable:
+                                            if "#" + detail == element['name'] and element['value'] is not None:
+                                                rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                                                message_str = re.sub(rexWithSystem, element['value'], message_str)  
 
-
-                    mail_server = None
-                    mail_port = None
-                    mail_username = None
-                    mail_password = None
-                    count_details = None
-                    for val in validate:
-                        mail_server = val['mail_server']
-                        mail_port = val['mail_port']
-                        mail_username = val['mail_username']
-                        mail_password = val['mail_password']
-                        count_details = val['count_details']
+                                subject_variables = []
+                                message_sub = subject.split('#')
+                                del message_sub[0]
+                                regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+                                for elem in message_sub:
+                                    sub_varb = re.split(regex, elem)
+                                    subject_variables.append(sub_varb[0])
+                                message_subject = subject
+                                for detail in subject_variables:
+                                    if detail in ret:
+                                        rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                                        message_subject = re.sub(rexWithString, ret[detail], message_subject)
+                                    else:
+                                        for element in system_variable:
+                                            if "#" + detail == element['name'] and element['value'] is not None:
+                                                rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                                                message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
                         
-                    final_message = random.choice(message_subject_details)
-                    mail = user['email']
-                    if os.getenv('ENVIRONMENT') == "development":
-                        mail = os.getenv('to')
-                    unique = str(user['_id'])
-                    system_variable = mongo.db.mail_variables.find({})
-                    system_variable = [serialize_doc(doc) for doc in system_variable]
-                    subject = final_message['message_subject']
-                    message_variables = []
-                    message = final_message['message'].split('#')
-                    del message[0]
-                    rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
-                    for elem in message:
-                        varb = re.split(rex, elem)
-                        message_variables.append(varb[0])
-                    message_str = final_message['message']
-                    for detail in message_variables:
-                        if detail in ret:
-                            rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                            message_str = re.sub(rexWithString, ret[detail], message_str)
-                        else:
-                            for element in system_variable:
-                                if "#" + detail == element['name'] and element['value'] is not None:
-                                    rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                                    message_str = re.sub(rexWithSystem, element['value'], message_str)  
 
-                    subject_variables = []
-                    message_sub = subject.split('#')
-                    del message_sub[0]
-                    regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
-                    for elem in message_sub:
-                        sub_varb = re.split(regex, elem)
-                        subject_variables.append(sub_varb[0])
-                    message_subject = subject
-                    for detail in subject_variables:
-                        if detail in ret:
-                            rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                            message_subject = re.sub(rexWithString, ret[detail], message_subject)
-                        else:
-                            for element in system_variable:
-                                if "#" + detail == element['name'] and element['value'] is not None:
-                                    rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                                    message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
+                                digit = str(uuid.uuid4())
+                                to = []
+                                to.append(mail)
+                                working_status = True
+                                try:        
+                                    send_email(message=message_str,
+                                    recipients=to,
+                                    subject=message_subject,
+                                    user=unique,
+                                    sending_mail= mail_username,
+                                    sending_password= mail_password,
+                                    sending_server= mail_server,
+                                    digit=digit,
+                                    sending_port= mail_port)
+                                except Exception as error:
+                                    error = mongo.db.error_reporting.insert_one({
+                                            "error_message" : repr(error),
+                                            "error_time": datetime.datetime.now(),
+                                            "line_number_of_issue": sys.exc_info()[-1].tb_lineno
+                                    })
+                                    working_status = False
+                                    
+                                mail_data = mongo.db.mail_status.insert_one({
+                                    "user_mail": user['email'],
+                                    "user_id": str(user['_id']),
+                                    "sending_time": datetime.datetime.now(),
+                                    "message": message_str,
+                                    "mail_sended_status": working_status,
+                                    "subject":message_subject,
+                                    "recipients": to,
+                                    "digit": digit,
+                                    "campaign": str(campaign['_id']),
+                                    "sending_mail": mail_username,
+                                    "sending_password":mail_password,
+                                    "sending_server":mail_server,
+                                    "seen": False,
+                                    "sending_port":mail_port,
+                                    "clicked": False
 
+                                }).inserted_id
+                                smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(count_details)},{
+                                    "$inc": {
+                                        "count": 1
+                                        }
+                                })
 
-                    digit = str(uuid.uuid4())
-                    to = []
-                    to.append(mail)
-                    working_status = True
-                    try:        
-                        send_email(message=message_str,
-                        recipients=to,
-                        subject=message_subject,
-                        user=unique,
-                        sending_mail= mail_username,
-                        sending_password= mail_password,
-                        sending_server= mail_server,
-                        digit=digit,
-                        sending_port= mail_port)
-                    except Exception:
-                        working_status = False
-                    mail_data = mongo.db.mail_status.insert_one({
-                        "user_mail": user['email'],
-                        "user_id": str(user['_id']),
-                        "sending_time": datetime.datetime.now(),
-                        "message": message_str,
-                        "mail_sended_status": working_status,
-                        "subject":message_subject,
-                        "recipients": to,
-                        "digit": digit,
-                        "campaign": str(campaign['_id']),
-                        "sending_mail": mail_username,
-                        "sending_password":mail_password,
-                        "sending_server":mail_server,
-                        "seen": False,
-                        "sending_port":mail_port,
-                        "clicked": False
-
-                    }).inserted_id
-                    smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(count_details)},{
-                        "$inc": {
-                            "count": 1
-                            }
-                    })
-
-                    user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
-                        {
-                            "$set": {
-                                    "send_status": True,
-                                    "mail_cron": True,
-                                    "successful":  working_status,
-                                    "sended_date": datetime.datetime.now(),
-                            },
-                                "$push": {
-                                    "mail_message": {
-                                    "sended_message_details": digit,
-                                    "campaign": str(campaign['_id'])
-                                }
-                            }
-                        })
-                    # finding if campaign have no user left which mail is needed to be send mark it as completed
-                    user_available = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
-                    user_available = [serialize_doc(doc) for doc in user_available]
-
-                    user_completed = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id'],"send_status":True}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
-                    user_completed = [serialize_doc(doc) for doc in user_completed]
-
-                    for data in user_available:
-                        for elemetn in user_completed:
-                            if data['count'] == element['count']:
-                                campaign = mongo.db.campaigns.update({"_id":ObjectId(campaign['_id'])},
+                                user_status = mongo.db.campaign_users.update({"_id":ObjectId(ret['_id'])},
                                     {
                                         "$set": {
-                                                "status": "Completed"
+                                                "send_status": True,
+                                                "mail_cron": True,
+                                                "successful":  working_status,
+                                                "sended_date": datetime.datetime.now(),
+                                        },
+                                            "$push": {
+                                                "mail_message": {
+                                                "sended_message_details": digit,
+                                                "campaign": str(campaign['_id'])
                                             }
+                                        }
                                     })
+                                
+                                # finding if campaign have no user left which mail is needed to be send mark it as completed
+                                user_available = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+                                user_available = [serialize_doc(doc) for doc in user_available]
+
+                                user_completed = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id'],"send_status":True,"send_status":True}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+                                user_completed = [serialize_doc(doc) for doc in user_completed]
+
+                                for data in user_available:
+                                    for elemetn in user_completed:
+                                        if data['count'] == element['count']:
+                                            campaign = mongo.db.campaigns.update({"_id":ObjectId(campaign['_id'])},
+                                                {
+                                                    "$set": {
+                                                            "status": "Completed"
+                                                        }
+                                                })
+                                        else:
+                                            pass
+                                time.sleep(campaign['delay'])
                             else:
                                 pass
-                    time.sleep(campaign['delay'])
-                else:
-                    pass
-        else:
-            pass
-                
+                    else:
+                        pass
+                except Exception as error:
+                     error = mongo.db.error_reporting.insert_one({
+                        "error_message" : repr(error),
+                        "error_time": datetime.datetime.now(),
+                        "line_number_of_issue": sys.exc_info()[-1].tb_lineno
+                    })
+
 def reject_mail():
     ret = mongo.db.rejection_handling.find_one({"send_status":False})
     if ret is not None:
