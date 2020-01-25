@@ -92,11 +92,11 @@ def create_app(test_config=None):
     app.cli.add_command(seed_recruit)
 
     bounced_mail_scheduler = BackgroundScheduler()
-    bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=18,minute=23)
+    bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=16,minute=36)
     bounced_mail_scheduler.start()
 
     mail_reminder_scheduler = BackgroundScheduler()
-    mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=18,minute=34)
+    mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=16,minute=7)
     mail_reminder_scheduler.start()
 
 
