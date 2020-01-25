@@ -25,6 +25,8 @@ def campaign_mail():
             validate = validate_smtp_counts(campaign['smtps'])
         except Exception as error:
             error = mongo.db.error_reporting.insert_one({
+                "campaign_name": campaign['Campaign_name'],
+                "campaign_id": campaign['_id'],
                 "error_message" : repr(error),
                 "error_time": datetime.datetime.now(),
                 "line_number_of_issue": sys.exc_info()[-1].tb_lineno
@@ -46,6 +48,8 @@ def campaign_mail():
                 validate_smtp(username=mail_username,password=mail_password,port=mail_port,smtp=mail_server)
             except Exception as error:
                 error = mongo.db.error_reporting.insert_one({
+                "campaign_name": campaign['Campaign_name'],
+                "campaign_id": campaign['_id'],
                 "error_message" : repr(error),
                 "error_time": datetime.datetime.now(),
                 "line_number_of_issue": sys.exc_info()[-1].tb_lineno})
@@ -132,6 +136,8 @@ def campaign_mail():
                                     sending_port= mail_port)
                                 except Exception as error:
                                     error = mongo.db.error_reporting.insert_one({
+                                            "campaign_name": campaign['Campaign_name'],
+                                            "campaign_id": campaign['_id'],
                                             "error_message" : repr(error),
                                             "error_time": datetime.datetime.now(),
                                             "line_number_of_issue": sys.exc_info()[-1].tb_lineno
@@ -203,6 +209,8 @@ def campaign_mail():
                         pass
                 except Exception as error:
                     error = mongo.db.error_reporting.insert_one({
+                        "campaign_name": campaign['Campaign_name'],
+                        "campaign_id": campaign['_id'],
                         "error_message" : repr(error),
                         "error_time": datetime.datetime.now(),
                         "line_number_of_issue": sys.exc_info()[-1].tb_lineno
