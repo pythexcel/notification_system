@@ -77,7 +77,6 @@ def list_campaign():
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
 
-
 @bp.route('/update_campaign/<string:Id>', methods=["PUT"])
 # @token.admin_required
 def update_campaign(Id):
@@ -97,23 +96,23 @@ def update_campaign(Id):
     })
     return jsonify({"message":"Campaign Updated"}),200
 
-@bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["PUT","DELETE"])
-def assign_template(campaign_id,template_id):
+@bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["DELETE"])
+@bp.route('/assign_template/<string:campaign_id>', methods=["PUT"])
+def assign_template(campaign_id,template_id=None):
     if request.method == "PUT":
-        vac = mongo.db.campaigns.aggregate([
-            { "$match": { "_id": ObjectId(campaign_id)}},
-            { "$project": {"status":{"$cond":{"if":{"$ifNull": ["$Template",False]},"then":{"state": {"$in":[template_id,"$Template"]}},"else":{"state":False }}}}},
-        ])
-        for data in vac:
-            if data['status'] is not None and data['status']['state'] is False:
-                ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
-                    "$push": {
-                        "Template": template_id  
-                    }
-                })
-                return jsonify({"message":"Template added to campaign"}), 200
-            else:
-                return jsonify({"message":"Template exist in campaign"}), 200
+        for template_id in request.json['templates']:
+            vac = mongo.db.campaigns.aggregate([
+                { "$match": { "_id": ObjectId(campaign_id)}},
+                { "$project": {"status":{"$cond":{"if":{"$ifNull": ["$Template",False]},"then":{"state": {"$in":[template_id,"$Template"]}},"else":{"state":False }}}}},
+            ])
+            for data in vac:
+                if data['status'] is not None and data['status']['state'] is False:
+                    ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
+                        "$push": {
+                            "Template": template_id  
+                        }
+                    })
+        return jsonify({"message":"Template added to campaign"}), 200
     if request.method == "DELETE":
         vac = mongo.db.campaigns.aggregate([
             { "$match": { "_id": ObjectId(campaign_id)}},
