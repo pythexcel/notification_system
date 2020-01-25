@@ -30,17 +30,17 @@ def campaign_mail():
                 "line_number_of_issue": sys.exc_info()[-1].tb_lineno
             })
         else:
-            for val in validate:
             mail_port = None
             mail_server = None
             mail_username = None
             mail_password = None
             count_details = None
-                mail_server = val['mail_server']
-                mail_port = val['mail_port']
-                mail_username = val['mail_username']
-                mail_password = val['mail_password']
-                count_details = val['count_details']
+            for val in validate:
+                    mail_server = val['mail_server']
+                    mail_port = val['mail_port']
+                    mail_username = val['mail_username']
+                    mail_password = val['mail_password']
+                    count_details = val['count_details']
             try:
                 validate_smtp(username=mail_username,password=mail_password,port=mail_port,smtp=mail_server)
             except Exception as error:
