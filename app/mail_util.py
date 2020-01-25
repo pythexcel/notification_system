@@ -12,6 +12,7 @@ import mimetypes
 from app.config import smtp_counts,base_url
 import uuid
 from bs4 import BeautifulSoup
+from bson import ObjectId
 
 
 def serialize_doc(doc):
@@ -43,7 +44,10 @@ def validate_smtp(username,password,port,smtp):
         
 
 def validate_smtp_counts(ids):
-    smtp_mail = mongo.db.mail_settings.find({"origin": "CAMPAIGN","_id": {"$in":ids}})
+    final_ids = []
+    for id in ids:
+        final_ids.append(ObjectId(id))
+    smtp_mail = mongo.db.mail_settings.find({"origin": "CAMPAIGN","_id": {"$in":final_ids}})
     smtp_mail = [serialize_doc(doc) for doc in smtp_mail]
     valid_smtp = dict()
     if smtp_mail:
@@ -69,8 +73,8 @@ def validate_smtp_counts(ids):
                         raise Exception("SMTP OVER") 
                 else:
                     smtp_validate_insert = mongo.db.smtp_count_validate.insert_one({
-                        "smtp":mail_smtp,
-                        "email":mail_username,
+                        "smtp":mail['mail_server'],
+                        "email":mail['mail_username'],
                         "created_at": today,
                         "count": 0
                     }).inserted_id
@@ -150,14 +154,13 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
     else:
         pass
 
-    if template_id is not None:
-        if user is not None:
-            url = "<img src= '{}template_hit_rate/{}/{}?hit_rate=1'>".format(base_url,digit,user)
-            soup = BeautifulSoup(message)
-            for data in soup.find_all('a', href=True):
-                required_url = data['href'].split("/?")
-                message = message.split(required_url,base_url+'campaign_redirect/'+ '{}'.format(digit))
-            message = message + url 
+    if user is not None:
+        url = "<img src= '{}template_hit_rate/{}/{}?hit_rate=1'>".format(base_url,digit,user)
+        soup = BeautifulSoup(message)
+        for data in soup.find_all('a', href=True):
+            required_url = data['href'].split("/?")
+            message = message.split(required_url,base_url+'campaign_redirect/'+ '{}'.format(digit))
+        message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 
