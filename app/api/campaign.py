@@ -273,7 +273,7 @@ def edit_template(template_id):
         "status": True}), 200
 
 
-@bp.route('campaig_errors',methods=["GET"])
+@bp.route('campaing_errors',methods=["GET"])
 def campaign_errors():
     ret = mongo.db.error_reporting.find({}).sort("error_time", -1)
     ret = [serialize_doc(doc) for doc in ret]
