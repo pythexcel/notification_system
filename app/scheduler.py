@@ -57,7 +57,6 @@ def campaign_mail():
                     })
                 return None
 
-            })
             else:
                 try:    
                     if campaign is not None:
