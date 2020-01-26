@@ -1,6 +1,7 @@
 import imapclient
 import pyzmail
 import email
+import re
 from app import mongo
 from app.util import serialize_doc
 import datetime
@@ -12,24 +13,24 @@ from app.config import bounced_mail_since,remind_mail_since
 
 #cron for remind candidates if candidates not replied msg
 def mail_reminder():
-    all_origin = ["test_gmail","test_outlook","test_yahoo"]
-    for origin in all_origin:
-        mail_setting = mongo.db.mail_settings.find_one({"origin":origin,"active":True})
+    mail_settings = mongo.db.imap_settings.find({"active":True})
+    mail_settings = [serialize_doc(doc) for doc in mail_settings]
+    for mail_setting in mail_settings:
         try:
             mail_username = mail_setting['mail_username']
             mail_password = mail_setting['mail_password']
             mail_server = mail_setting['mail_server']
-            imapObj = imapclient.IMAPClient(mail_server, ssl=True)
+            ssl = mail_setting['mail_use_ssl']
+            folder = mail_setting['folder_name']
+            imapObj = imapclient.IMAPClient(mail_server, ssl=ssl)
             imapObj.login(mail_username,mail_password)
         except Exception:
             imapObj = None
         if imapObj is not None:
             all_mails_should_remind = []
-            if origin == "test_gmail":
-                imapObj.select_folder('[Gmail]/Sent Mail')   #fetching all UNANSWERED mails from a date we can set a date since we need all unanswered mail
-            else:
-                imapObj.select_folder(b'Sent')
+            imapObj.select_folder(folder)   #fetching all UNANSWERED mails from a date we can set a date since we need all unanswered mail
             ununswered_mails=imapObj.search(['SINCE',remind_mail_since,'UNANSWERED'])
+            print(ununswered_mails)
             reminder_mails = mongo.db.recruit_mail.find({"is_reminder":True},{"_id":0,"to":1}) # fetching mails from db which should be remind that input we took at the time mail_send remind true or false
             reminder_mails = [doc for doc in reminder_mails]
             for reminder_mail in reminder_mails:
@@ -65,28 +66,61 @@ def mail_reminder():
                     pass
         else:
             pass
-    
+
 
 #cron for find gmail bounced mails info
 def bounced_mail():
-    all_origin = ["test_gmail","test_outlook","test_yahoo"]
-    for origin in all_origin:
-        mail_setting = mongo.db.mail_settings.find_one({"origin":origin,"active":True})
+    mail_settings = mongo.db.imap_settings.find({"active":True})
+    mail_settings = [serialize_doc(doc) for doc in mail_settings]
+    for mail_setting in mail_settings:
         try:
             mail_username = mail_setting['mail_username']
             mail_password = mail_setting['mail_password']
             mail_server = mail_setting['mail_server']
-            imapObj = imapclient.IMAPClient(mail_server, ssl=True)
+            ssl = mail_setting['mail_use_ssl']
+            folder = mail_setting['folder_name']
+            daemon_mail = mail_setting['daemon_mail']
+            imapObj = imapclient.IMAPClient(mail_server, ssl=ssl)
             imapObj.login(mail_username,mail_password)
         except Exception:
             imapObj = None
         if imapObj is not None:
-            if origin == "test_gmail":
-                gmail_bounced_mail(imapObj)
-            if origin == "test_outlook":
-                outlook_bounced_mail(imapObj)
-            if origin == "test_yahoo":
-                yahoo_bounced_mail(imapObj)
+            imapObj.select_folder('INBOX')
+            search_bounce_mails=imapObj.search(['SINCE',bounced_mail_since,'FROM',daemon_mail]) #searching bounced mails from a date
+            soft_bounce_codes = ["421","450","451","452","520","521","522","531","545","553"] #these are soft bounce status codes
+            hard_bounce_status = ["5.0.0","5.1.0","5.1.1","5.1.2","5.1.3","5.1.4","5.1.5","5.1.6","5.1.7","5.1.8","5.2.3","5.2.4","5.3.0","5.3.2","5.3.3","5.3.2","5.3.3","5.3.4","5.4.0","5.4.1","5.4.2","5.4.3","5.4.4","5.4.6","5.4.7","5.5.0","5.5.1","5.5.2","5.5.4","5.5.5","5.6.0","5.6.1","5.6.2","5.6.3","5.6.4","5.6.5","5.7.0","5.7.1","5.7.2","5.7.3","5.7.4","5.7.5","5.7.6","5.7.7"]
+            soft_bounce_status = ["5.2.0","5.2.1","5.2.2","5.3.1","5.4.5","5.5.3"]
+            for search_bounce_mail in search_bounce_mails:  #fetching bounced mail info from msg body
+                rawMessages = imapObj.fetch(search_bounce_mail,['BODY[]'])
+                message_body = pyzmail.PyzMessage.factory(rawMessages[search_bounce_mail][b'BODY[]'])
+                mail_subject = message_body.get_subject()
+                mail_from =message_body.get_addresses('from')
+                mail_to =message_body.get_addresses('to')
+                
+                if message_body.text_part != None: #checking if msg body have text part
+                    mail_text = message_body.text_part.get_payload().decode(message_body.text_part.charset)
+                    match = re.search(r'[\w\.-]+@[\w\.-]+', mail_text)
+                    bounced_mail = match.group(0)
+                    regex = "xyz"
+                    if regex in hard_bounce_status:
+                        bounce_status = regex
+                        bounce_type = "hard"
+                    elif regex in soft_bounce_status:
+                        bounce_status = regex
+                        bounce_type = "soft"
+                    else:
+                        bounce_status = regex
+                        bounce_type = None
+                    ret = mongo.db.bounce_emails.update({ 
+                            "bounced_mail": bounced_mail
+                        }, {
+                            "$set": {
+                                "bounced_mail": bounced_mail,
+                                "bounce_status":bounce_status,
+                                "bounce_type":bounce_type
+                            }},upsert=True)
+                else:
+                    pass
         else:
             pass
 
