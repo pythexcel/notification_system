@@ -38,6 +38,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         mail_server = mail_details['mail_server']
     else:
         mail_server = sending_server  
+    print(username,password)
+
     context = ssl.create_default_context() 
     if port == 587:       
         mail = smtplib.SMTP(str(mail_server), port)

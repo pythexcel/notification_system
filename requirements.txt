@@ -78,3 +78,6 @@ Werkzeug==0.15.3
 wkhtmltopdf==0.2
 xhtml2pdf==0.2.3
 yapf==0.28.0
+IMAPClient==2.1.0
+pyzmail36==1.0.4
+six==1.14.0
