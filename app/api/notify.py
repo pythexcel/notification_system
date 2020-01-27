@@ -335,5 +335,13 @@ def mail_test():
     try:
         send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
         return jsonify({"status":True,"Message": "Smtp working"}), 200
+    except smtplib.SMTPServerDisconnected:
+        return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
+    except smtplib.SMTPConnectError:
+        return jsonify({"status":False,"Message": "Smtp is unable to established"}), 400    
+    except smtplib.SMTPAuthenticationError:
+        return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
+    except smtplib.SMTPDataError:
+        return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
     except Exception:
-        return jsonify({"status":False,"Message": "Smtp invalid or not working"}), 400                
+        return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
