@@ -60,8 +60,9 @@ def mail_setings(origin,id=None):
         if not request.json:
             abort(500)
         if origin == "HR":    
-            mail_server = request.json.get("mail_server", None)
-            mail_port = request.json.get("mail_port", 0)
+            #checking origin of api hit so if it is HR one smtp conf can be created or updated only
+            mail_server = request.json.get("mail_server", "smtp.gmail.com")
+            mail_port = request.json.get("mail_port", 465)
             mail_use_tls = request.json.get("mail_use_tls", True)
             mail_username = request.json.get("mail_username", None)
             mail_password = request.json.get("mail_password", None)

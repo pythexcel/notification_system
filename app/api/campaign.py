@@ -210,7 +210,7 @@ def campaign_start_mail(campaign):
             try:
                 validate = validate_smtp(username=smtp_values['mail_username'],password=smtp_values['mail_password'],port=smtp_values['mail_port'],smtp=smtp_values['mail_server'])
             except Exception as e:
-                return jsonify ({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"issue":repr(e)})
+                return jsonify ({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"issue":repr(e)}), 400
             else:
                 for data in ids:
                     final_ids.append(ObjectId(data))
@@ -228,7 +228,7 @@ def campaign_start_mail(campaign):
                 })
                 return jsonify({"Message":"Mails sended"}),200
     else:
-        return jsonify({"Message":"Please select smtps"}),200
+        return jsonify({"Message":"Please select smtps"}),400
 
 @bp.route("/mails_status",methods=["GET"])
 def mails_status():
@@ -276,10 +276,3 @@ def edit_template(template_id):
     return jsonify({
         "Message": "Template Updated",
         "status": True}), 200
-
-
-@bp.route('/campaing_errors',methods=["GET"])
-def campaign_errors():
-    ret = mongo.db.error_reporting.find({}).sort("error_time", -1)
-    ret = [serialize_doc(doc) for doc in ret]
-    return jsonify(ret)
