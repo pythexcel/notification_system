@@ -116,8 +116,6 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         mail_server = mail_details['mail_server']
     else:
         mail_server = sending_server  
-    print(username,password)
-
     context = ssl.create_default_context() 
     if port == 587:       
         mail = smtplib.SMTP(str(mail_server), port)
@@ -161,7 +159,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         soup = BeautifulSoup(message)
         for data in soup.find_all('a', href=True):
             required_url = data['href'].split("/?")
-            message = message.split(required_url,base_url+'campaign_redirect/'+ '{}'.format(digit))
+            for elem in required_url:
+                message = message.replace(elem,base_url+'campaign_redirect/'+ '{}'.format(digit))
         message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)
