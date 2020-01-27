@@ -1,7 +1,7 @@
 from app import mongo
 from app import token
 from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory,redirect)
-from app.util import serialize_doc,Template_details,campaign_details,user_data
+from app.util import serialize_doc,Template_details,campaign_details,user_data,allowed_file
 import datetime
 import dateutil.parser
 from flask import current_app as app
@@ -41,6 +41,25 @@ def create_campaign():
                 "status":status
         }).inserted_id
         return jsonify(str(ret)),200
+
+@bp.route('/attached_file/<string:Id>', methods=["POST"])
+def attache_campaign(Id):
+    file = request.files['attachment_file']
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+        attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        attachment_file_name = filename     
+        ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
+            "$set":{
+                "attachment_file_name": attachment_file_name,
+                "attachment_file": attachment_file
+            }
+        })
+        return jsonify({"message": "File attached to campaign"}), 200
+    else:
+        return jsonify({"message": "Please select a file"}), 400
+
 
 @bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
 def pause_campaign(Id,status):
