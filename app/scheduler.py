@@ -13,6 +13,10 @@ from flask import current_app as app
 from dotenv import load_dotenv
 import uuid
 import time
+import imapclient
+import pyzmail
+import email
+
 
 def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -233,4 +237,4 @@ def cron_messages():
             pass    
     else:
         pass 
-        
+
