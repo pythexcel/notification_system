@@ -183,7 +183,7 @@ def campaign_smtp_test():
                 sending_password=data['mail_password'],
                 sending_server=data['mail_server'],
                 sending_port=data['mail_port']
-                ),
+                )
             sending_for.append(data['mail_server'])
             mongo.db.mail_settings.update({"_id":ObjectId(data)},{
                 "$set":{
@@ -206,7 +206,7 @@ def campaign_start_mail(campaign):
     final_ids = []
     if smtps:
         for smtp in smtps:
-            smtp_values = mongo.db.mail_settings.find_one({"_id":ObjectId(smtp)}
+            smtp_values = mongo.db.mail_settings.find_one({"_id":ObjectId(smtp)})
             try:
                 validate = validate_smtp(username=smtp_values['mail_username'],password=smtp_values['mail_password'],port=smtp_values['mail_port'],smtp=smtp_values['mail_server'])
             except Exception as e:

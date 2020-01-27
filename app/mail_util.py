@@ -33,15 +33,15 @@ def validate_smtp(username,password,port,smtp):
             mail.login(username,password)
         mail.quit()
 
-    except Exception as e:
-        raise Exception (repr(e))
-            
-    except smtplib.SMTPDataError:
-        raise Exception("Account is not activated")
-                
+
     except smtplib.SMTPAuthenticationError:
         raise Exception("Username and password is incorrect")
         
+    except smtplib.SMTPDataError:
+        raise Exception("Account is not activated")
+                
+    except Exception as e:
+        raise Exception (repr(e))
 
 def validate_smtp_counts(ids):
     final_ids = []
