@@ -53,6 +53,7 @@ def mail_setings(origin,id=None):
             mail_use_tls = request.json.get("mail_use_tls", True)
             mail_username = request.json.get("mail_username", None)
             mail_password = request.json.get("mail_password", None)
+            mail_from  = request.json.get("mail_from", None)
             
             
             if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
@@ -65,7 +66,8 @@ def mail_setings(origin,id=None):
                     "origin": origin,
                     "mail_use_tls": mail_use_tls,
                     "mail_username":mail_username,
-                    "mail_password":mail_password
+                    "mail_password":mail_password,
+                    "mail_from": mail_from
                 }
             },upsert=True)
             return jsonify({"MSG":"upsert"}),200

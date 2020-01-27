@@ -10,7 +10,7 @@ import mimetypes
 from flask import current_app as app
 from dotenv import load_dotenv
 
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,mail_from=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
@@ -38,7 +38,6 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         mail_server = mail_details['mail_server']
     else:
         mail_server = sending_server  
-    print(username,password)
 
     context = ssl.create_default_context() 
     if port == 587:       
@@ -64,6 +63,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         cc =  ','.join(cc)
     else:
         cc = None
+    if 'mail_from'in mail_details and mail_details['mail_from'] is not None:
+        username = mail_details['mail_from']
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = username
