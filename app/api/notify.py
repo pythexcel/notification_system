@@ -24,6 +24,7 @@ import base64
 import bson
 import dateutil.parser
 import datetime
+import smtplib
 
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
