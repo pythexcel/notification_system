@@ -29,14 +29,14 @@ def campaign_mail():
                     message_subject_details.append({"message":campaign['message'],"message_subject":campaign["message_subject"]})
             if 'Template' in campaign:
                 template_data = random.choice(campaign['Template'])
-                Template_details = mongo.db.mail_template.find_one({"_id":ObjectId(campaign['_id'])})
+                Template_details = mongo.db.mail_template.find_one({"_id":ObjectId(template_data)})
                 message_subject_details.append({"message": Template_details['message'],"message_subject": Template_details["message_subject"]})
             
             campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"block":False,"mail_cron":False})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
             
             for user in campaign_users:
-                if user is not None:   
+                if user is not None:  
                     try:
                         validate = validate_smtp_counts(campaign['smtps'])
                     except Exception as error:
@@ -78,7 +78,7 @@ def campaign_mail():
                             message_variables.append(varb[0])
                         message_str = final_message['message']
                         for detail in message_variables:
-                            if detail in ret:
+                            if detail in campaign:
                                 rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
                                 message_str = re.sub(rexWithString, ret[detail], message_str)
                             else:
@@ -96,7 +96,7 @@ def campaign_mail():
                             subject_variables.append(sub_varb[0])
                         message_subject = subject
                         for detail in subject_variables:
-                            if detail in ret:
+                            if detail in campaign:
                                 rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
                                 message_subject = re.sub(rexWithString, ret[detail], message_subject)
                             else:
@@ -170,7 +170,7 @@ def campaign_mail():
                                 })
                             
                             # finding if campaign have no user left which mail is needed to be send mark it as completed
-                            user_available = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id'],"send_status":True}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+                            user_available = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
                             user_available = [serialize_doc(doc) for doc in user_available]
 
                             user_completed = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id'],"send_status":True,"mail_cron":True}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
@@ -178,9 +178,7 @@ def campaign_mail():
                             
                             for data in user_available:
                                 for element in user_completed:
-                                    print(data['count'],element['count'])
                                     if data['count'] == element['count']:
-                                        print("ISME H")
                                         campaign_status = mongo.db.campaigns.update({"_id":ObjectId(campaign['_id'])},
                                             {
                                                 "$set": {
