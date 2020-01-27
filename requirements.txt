@@ -34,6 +34,7 @@ idna==2.8
 isodate==0.6.0
 isort==4.3.20
 itsdangerous==1.1.0
+Jinja2==2.10.1
 jsonschema==3.0.1
 kiwisolver==1.1.0
 lazy-object-proxy==1.4.1
@@ -48,6 +49,7 @@ pdfrw==0.4
 Pillow==6.2.0
 protobuf==3.7.1
 pycparser==2.19
+pyfcm==1.4.7
 PyJWT==1.7.1
 pymongo==3.8.0
 pyparsing==2.4.0
@@ -76,3 +78,6 @@ Werkzeug==0.15.3
 wkhtmltopdf==0.2
 xhtml2pdf==0.2.3
 yapf==0.28.0
+IMAPClient==2.1.0
+pyzmail36==1.0.4
+six==1.14.0

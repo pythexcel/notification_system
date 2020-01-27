@@ -2,13 +2,13 @@ from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.slack_util import slack_message,slack_load_token,slack_id,slack_profile
 from slackclient import SlackClient
-
+from app import token
 bp = Blueprint('slack_channels', __name__, url_prefix='/')
 
 
 @bp.route('/ping', methods=["GET"])
 def ping():
-    return jsonify ("PONG and working too :)")
+    return jsonify ("PONG and working too :)"),200
 
 
 @bp.route('/slackchannels', methods=["GET","POST"])
@@ -85,7 +85,7 @@ def slack():
                     notSame =False
             if (notSame):
                 result.append(elem)
-        return jsonify(result)
+        return jsonify(result),200
 
 
 @bp.route('/slack_profile', methods=["POST"])
@@ -93,6 +93,7 @@ def sl_profile():
     if not request.json:
             abort(500)
     email = request.json.get("email", None)
+    print(email)
     slack = slack_profile(email)
     return jsonify(slack),200
 
@@ -104,7 +105,7 @@ def getslackid():
     sl_channel = sc.api_call(
             "im.list"
         )
-    return jsonify (sl_channel)    
+    return jsonify (sl_channel),200    
 
 
 @bp.route('/slack_users_list', methods=["GET"])
@@ -114,4 +115,4 @@ def getslackusers():
     sl_list = sc.api_call(
             "users.list"
         )
-    return jsonify (sl_list)    
+    return jsonify (sl_list),200    
