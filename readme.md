@@ -98,3 +98,5 @@ gunicorn error.log files can be big so in
   missingok
   notifempty
 }
+
+> inside config.py file write the base url of app

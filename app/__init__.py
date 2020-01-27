@@ -64,9 +64,9 @@ def create_app(test_config=None):
     def not_found(error):
         return make_response(jsonify(error='Not found'), 400)
     
-    @app.route('/pdf/<path:path>')
+    @app.route('/images/<path:path>')
     def send_file(path):
-        return send_from_directory('pdf', path)
+        return send_from_directory(app.config['UPLOAD_FOLDER'], path)
 
     @app.errorhandler(500)
     def error_500(error):
@@ -92,7 +92,10 @@ def create_app(test_config=None):
     app.cli.add_command(seed_recruit)
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8b0d15b30a77410d508bc9edcbe92de58d72b9f8
     if app.config['origin'] == "hr":
         
         schduled_messages_scheduler = BackgroundScheduler()
@@ -110,7 +113,7 @@ def create_app(test_config=None):
         reject_mail_scheduler.start()
 
         campaign_mail_scheduler = BackgroundScheduler()
-        campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=1)
+        campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
         campaign_mail_scheduler.start()
 
         bounced_mail_scheduler = BackgroundScheduler()
@@ -128,6 +131,8 @@ def create_app(test_config=None):
         except:
             reject_mail_scheduler.shutdown()
             campaign_mail_scheduler.shutdown()
+            bounced_mail_scheduler.shutdown()
+            mail_reminder_scheduler.shutdown()
             
     
 @click.command("seed_hr")
