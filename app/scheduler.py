@@ -7,6 +7,10 @@ from bson.objectid import ObjectId
 from app.mail_util import send_email
 from app.slack_util import slack_message
 from flask import current_app as app
+import imapclient
+import pyzmail
+import email
+
 
 def campaign_mail():
     ret = mongo.db.campaign_users.find_one({"send_status":False})
@@ -139,4 +143,4 @@ def cron_messages():
             pass    
     else:
         pass 
-        
+
