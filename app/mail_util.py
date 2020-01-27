@@ -33,8 +33,8 @@ def validate_smtp(username,password,port,smtp):
             mail.login(username,password)
         mail.quit()
 
-    except Exception:
-        raise Exception("Something went wrong with smtp")
+    except Exception as e:
+        raise Exception (repr(e))
             
     except smtplib.SMTPDataError:
         raise Exception("Account is not activated")

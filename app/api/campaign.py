@@ -11,7 +11,7 @@ from flask_jwt_extended import (
     get_jwt_identity, get_current_user, jwt_refresh_token_required,
     verify_jwt_in_request
 )
-from app.mail_util import send_email,validate_smtp_counts
+from app.mail_util import send_email,validate_smtp_counts,validate_smtp
 import smtplib
 
 
@@ -140,7 +140,6 @@ def add_user_campaign():
     if request.method == "POST":
         users = request.json.get("users")
         campaign = request.json.get("campaign")
-        
         for data in users:
             data['send_status'] = False
             data['campaign'] = campaign
@@ -206,21 +205,28 @@ def campaign_start_mail(campaign):
     ids = request.json.get("ids",[])
     final_ids = []
     if smtps:
-        for data in ids:
-            final_ids.append(ObjectId(data))
-        ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
-            "$set":{
-                "mail_cron":False
-            }
-        },multi=True)
-        campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
-            "$set": {
-                "status": "Running",
-                "delay": delay,
-                "smtps": smtps
-            }
-        })
-        return jsonify({"Message":"Mails sended"}),200
+        for smtp in smtps:
+            smtp_values = mongo.db.mail_settings.find_one({"_id":ObjectId(smtp)}
+            try:
+                validate = validate_smtp(username=smtp_values['mail_username'],password=smtp_values['mail_password'],port=smtp_values['mail_port'],smtp=smtp_values['mail_server'])
+            except Exception as e:
+                return jsonify ({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"issue":repr(e)})
+            else:
+                for data in ids:
+                    final_ids.append(ObjectId(data))
+                ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
+                    "$set":{
+                        "mail_cron":False
+                    }
+                },multi=True)
+                campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
+                    "$set": {
+                        "status": "Running",
+                        "delay": delay,
+                        "smtps": smtps
+                    }
+                })
+                return jsonify({"Message":"Mails sended"}),200
     else:
         return jsonify({"Message":"Please select smtps"}),200
 
