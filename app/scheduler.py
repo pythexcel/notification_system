@@ -25,7 +25,6 @@ def campaign_mail():
     campaigns = mongo.db.campaigns.find({"status":"Running"})
     campaigns = [serialize_doc(doc) for doc in campaigns]
     for campaign in campaigns:
-        print(1)
         if campaign is not None:
 
             message_subject_details = []
@@ -44,7 +43,7 @@ def campaign_mail():
             for user in campaign_users:
                 if campaign['status'] == "Running":
                     if user is not None: 
-                        print(2) 
+                      
                         try:
                             validate = validate_smtp_counts(campaign['smtps'])
                         except Exception as error:
@@ -56,7 +55,7 @@ def campaign_mail():
                                     })
                             return None
                         else:
-                            print(3)
+                        
                             mail_server = validate['mail_server']
                             mail_port = validate['mail_port']
                             mail_username = validate['mail_username']
@@ -146,7 +145,7 @@ def campaign_mail():
 
                                 working_status = False   
                             else:  
-                                print(4)  
+                               
                                 mail_data = mongo.db.mail_status.insert_one({
                                     "user_mail": user['email'],
                                     "user_id": str(user['_id']),
@@ -205,7 +204,6 @@ def campaign_mail():
                                                 })
                                         else:
                                             pass
-                                print("Sleeping")
                                 time.sleep(campaign['delay'])
                     else:
                         pass
