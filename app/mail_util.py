@@ -63,8 +63,11 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from=None,fileli
         cc =  ','.join(cc)
     else:
         cc = None
-    if 'mail_from'in mail_details and mail_details['mail_from'] is not None:
-        username = mail_details['mail_from']
+    if mail_from is not None:
+        username = mail_from
+    if mail_details is not None:
+        if 'mail_from'in mail_details and mail_details['mail_from'] is not None:
+            username = mail_details['mail_from']
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = username
