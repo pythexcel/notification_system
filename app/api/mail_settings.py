@@ -57,7 +57,11 @@ def mail_setings(origin,id=None):
         
         if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
             return jsonify({"message": "Invalid Request"}), 400    
-        email = username
+        email = None
+        if mail_from is None:
+            email = mail_username
+        else:
+            email = mail_from
         try:
             send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
         except smtplib.SMTPServerDisconnected:
