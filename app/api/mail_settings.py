@@ -71,6 +71,7 @@ def mail_setings(origin,id=None):
             except smtplib.SMTPDataError:
                 return jsonify({"message": "Smtp account is not activated"}), 400 
             except Exception as e:
+
                 mongo.db.error_repr.insert_one({"issue": str(repr(e))})
                 print(repr(e),"EXCEPTION")
                 
