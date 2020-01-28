@@ -29,6 +29,7 @@ def get_emails():
             except Exception:
                 return jsonify({"error":"IMAP credentials are not valid"}),400
             else:
+                print("login successfully")
                 imapObj.select_folder('INBOX')
                 search_bounce_mails=imapObj.search(['SINCE','1-Jan-2020'])
                 emails = []
@@ -66,6 +67,7 @@ def get_chats():
             except Exception:
                 return jsonify({"error":"IMAP credentials are not valid"}),400
             else:
+                print("login successfully")
                 imapObj.select_folder('INBOX')
                 sended_ma=imapObj.search(['FROM',mail_username,'TO',chat_email])
                 recieved_mails = imapObj.search(['FROM',chat_email,'TO',mail_username])
