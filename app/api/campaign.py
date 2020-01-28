@@ -245,9 +245,9 @@ def campaign_start_mail(campaign):
                         "smtps": smtps
                     }
                 })
-                return jsonify({"Message":"Mails sended"}),200
+                return jsonify({"message":"Mails sended"}),200
     else:
-        return jsonify({"Message":"Please select smtps"}),400
+        return jsonify({"message":"Please select smtps"}),400
 
 @bp.route("/mails_status",methods=["GET"])
 def mails_status():
@@ -293,5 +293,5 @@ def edit_template(template_id):
     "$set": request.json
     })
     return jsonify({
-        "Message": "Template Updated",
+        "message": "Template Updated",
         "status": True}), 200
