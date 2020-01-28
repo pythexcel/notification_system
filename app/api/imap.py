@@ -59,7 +59,6 @@ def get_chats():
         mail_username = request.json.get("mail_username",None)
         mail_password = request.json.get("mail_password",None)
         chat_email = request.json.get("chat_email",None)
-        #since = request.json.get("since",None)
         if imap_server and mail_username and mail_password and chat_email is not None:
             try:
                 imapObj = imapclient.IMAPClient(imap_server, ssl=True)
@@ -68,7 +67,9 @@ def get_chats():
                 return jsonify({"error":"IMAP credentials are not valid"}),400
             else:
                 imapObj.select_folder('INBOX')
-                sended_mails=imapObj.search(['FROM',mail_username,'TO',chat_email])
+                sended_ma=imapObj.search(['FROM',mail_username,'TO',chat_email])
+                recieved_mails = imapObj.search(['FROM',chat_email,'TO',mail_username])
+                sended_mails = sended_ma + recieved_mails
                 emails = []
                 if sended_mails:
                     for sended_mail in sended_mails:
@@ -78,11 +79,8 @@ def get_chats():
                         mail_from =message_body.get_address('from')[1]
                         mail_to =message_body.get_address('to')[1]
                         date =message_body.get_decoded_header('date')
-                        if message_body.text_part != None: #checking if msg body have text part
-                            print(message_body)
+                        if message_body.text_part.charset != None: #checking if msg body have text part
                             mail_text = message_body.text_part.get_payload().decode(message_body.text_part.charset)
-                            #print(mail_text)
-                            print("<==================================================>")
                         emails.append({"mail_subject":mail_subject,"mail_from":mail_from,"mail_to":mail_to,"datetime":date,"message":mail_text})
                     return jsonify(emails),200
                 else:
@@ -95,24 +93,3 @@ def get_chats():
 
 
 
-
-    '''       
-    mail_settings = mongo.db.mail_settings.find_one({"origin":"RECRUIT"},{"active":True})
-    
-    return jsonify (mail)
-    if request.method == "DELETE":
-        prior = mongo.db.mail_settings.find_one({"origin":origin,"_id": ObjectId(str(id))})
-        if origin == "CAMPAIGN":
-            priority = prior['priority']
-        else:
-            pass     
-        mail = mongo.db.mail_settings.remove({"origin":origin,"_id": ObjectId(str(id))})
-        if origin == "CAMPAIGN":
-            campaign_smtp = mongo.db.mail_settings.update({"priority":{ "$gt": priority } },{
-                        "$inc" :{
-                            "priority": -1
-                        }
-
-                    },multi=True)
-        return jsonify ({"Message": "Smtp conf deleted"}), 200
-    '''
