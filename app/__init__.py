@@ -93,15 +93,7 @@ def create_app(test_config=None):
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
 
-    bounced_mail_scheduler = BackgroundScheduler()
-    bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=13,minute=00)
-    bounced_mail_scheduler.start()
-
-    mail_reminder_scheduler = BackgroundScheduler()
-    mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=18,minute=12)
-    mail_reminder_scheduler.start()
-
-    '''
+    
     if app.config['origin'] == "hr":
         
         schduled_messages_scheduler = BackgroundScheduler()
@@ -122,6 +114,14 @@ def create_app(test_config=None):
         campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
         campaign_mail_scheduler.start()
         
+        bounced_mail_scheduler = BackgroundScheduler()
+        bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=13,minute=00)
+        bounced_mail_scheduler.start()
+
+        mail_reminder_scheduler = BackgroundScheduler()
+        mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=18,minute=12)
+        mail_reminder_scheduler.start()
+
         try:
             print("create app..")
             return app
@@ -130,8 +130,6 @@ def create_app(test_config=None):
             campaign_mail_scheduler.shutdown()
             bounced_mail_scheduler.shutdown()
             mail_reminder_scheduler.shutdown()
-    '''    
-    return app
     
 @click.command("seed_hr")
 @with_appcontext
