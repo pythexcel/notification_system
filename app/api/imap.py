@@ -24,11 +24,12 @@ def get_emails():
         #since = request.json.get("since",None)
         if imap_server and mail_username and mail_password is not None:
             try:
-                imapObj = imapclient.IMAPClient(imap_server, ssl=False)
+                imapObj = imapclient.IMAPClient(imap_server, ssl=True)
                 imapObj.login(mail_username,mail_password)
             except Exception:
                 return jsonify({"error":"IMAP credentials are not valid"}),400
             else:
+                print("login successfully")
                 imapObj.select_folder('INBOX')
                 search_bounce_mails=imapObj.search(['SINCE','1-Jan-2020'])
                 emails = []
@@ -61,11 +62,12 @@ def get_chats():
         chat_email = request.json.get("chat_email",None)
         if imap_server and mail_username and mail_password and chat_email is not None:
             try:
-                imapObj = imapclient.IMAPClient(imap_server, ssl=False)
+                imapObj = imapclient.IMAPClient(imap_server, ssl=True)
                 imapObj.login(mail_username,mail_password)
             except Exception:
                 return jsonify({"error":"IMAP credentials are not valid"}),400
             else:
+                print("login successfully")
                 imapObj.select_folder('INBOX')
                 sended_ma=imapObj.search(['FROM',mail_username,'TO',chat_email])
                 recieved_mails = imapObj.search(['FROM',chat_email,'TO',mail_username])
