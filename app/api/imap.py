@@ -25,7 +25,7 @@ def get_emails():
         if imap_server and mail_username and mail_password is not None:
             try:
                 print("trying login")
-                imapObj = imapclient.IMAPClient(imap_server, ssl=False)
+                imapObj = imapclient.IMAPClient(imap_server, ssl=True)
                 imapObj.login(mail_username,mail_password)
             except Exception:
                 return jsonify({"error":"IMAP credentials are not valid"}),400
@@ -64,7 +64,7 @@ def get_chats():
         if imap_server and mail_username and mail_password and chat_email is not None:
             try:
                 print("trying login")
-                imapObj = imapclient.IMAPClient(imap_server, ssl=False)
+                imapObj = imapclient.IMAPClient(imap_server, ssl=True)
                 imapObj.login(mail_username,mail_password)
             except Exception:
                 return jsonify({"error":"IMAP credentials are not valid"}),400
