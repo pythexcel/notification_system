@@ -72,7 +72,7 @@ def mail_setings(origin,id=None):
                 return jsonify({"message": "Smtp account is not activated"}), 400 
             except Exception as e:
                 print(repr(e),"EXCEPTION")
-                return jsonify({"message": "Something went wrong with smtp"}), 400
+                return jsonify({"message": repr(e)}), 400
             else:       
                 ret = mongo.db.mail_settings.update({}, {
                     "$set": {
