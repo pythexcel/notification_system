@@ -7,5 +7,5 @@ def init_db():
 
 
 def get_db(app, mongo):
-    app.config["MONGO_URI"] = "mongodb://hrstagingnotify:hrstagingnotify@127.0.0.1:27017/hrstagingnotify?retryWrites=true"
+    app.config["MONGO_URI"] = "mongodb+srv://xmage:xmage@cluster0-xooqb.mongodb.net/slack_setting_test?retryWrites=true"
     mongo.init_app(app)
