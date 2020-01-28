@@ -87,7 +87,7 @@ def validate_smtp_counts(ids):
     else:
         raise Exception("Smtp is not available")
 
-def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
@@ -139,8 +139,14 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         cc =  ','.join(cc)
     else:
         cc = None
-    if 'mail_from'in mail_details and mail_details['mail_from'] is not None:
-        username = mail_details['mail_from']
+        
+    if mail_details is not None:
+        if 'mail_from'in mail_details: 
+            if mail_details['mail_from'] is not None:
+                username = mail_details['mail_from']
+    if mail_from is not None:
+        username = mail_from
+
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = username
