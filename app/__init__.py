@@ -80,6 +80,7 @@ def create_app(test_config=None):
     from app.api import mail_settings
     from app.api import message_create
     from app.api import campaign
+    from app.api import imap
     
     app.register_blueprint(notify.bp)
     app.register_blueprint(slack_channel.bp)
@@ -87,7 +88,8 @@ def create_app(test_config=None):
     app.register_blueprint(mail_settings.bp)
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)
-    
+    app.register_blueprint(imap.bp)
+
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
 
