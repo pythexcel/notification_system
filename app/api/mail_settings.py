@@ -33,7 +33,7 @@ def mail_setings(origin,id=None):
             pass     
         mail = mongo.db.mail_settings.remove({"origin":origin,"_id": ObjectId(str(id))})
         if origin == "CAMPAIGN":
-            campaign_smtp = mongo.db.mail_settings.update({"priority":{ "$gt": priority } },{
+            campaign_smtp = mongo.db.mail_settings.update({"origin":origin,"priority":{ "$gt": priority } },{
                         "$inc" :{
                             "priority": -1
                         }
@@ -74,7 +74,7 @@ def mail_setings(origin,id=None):
         email = app.config['to']  
         if origin == "HR": 
             try:
-                send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
+                send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
             except smtplib.SMTPServerDisconnected:
                 return jsonify({"message": "Smtp server is disconnected"}), 400                
             except smtplib.SMTPConnectError:
@@ -102,7 +102,7 @@ def mail_setings(origin,id=None):
         elif origin == "RECRUIT":
             email = app.config['to']
             try:
-                send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
+                send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
             except smtplib.SMTPServerDisconnected:
                 return jsonify({"message": "Smtp server is disconnected"}), 400                
             except smtplib.SMTPConnectError:
@@ -139,7 +139,7 @@ def mail_setings(origin,id=None):
 
         elif origin == "CAMPAIGN":  
             try:
-                send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
+                send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
             except smtplib.SMTPServerDisconnected:
                 return jsonify({"message": "Smtp server is disconnected"}), 400                
             except smtplib.SMTPConnectError:

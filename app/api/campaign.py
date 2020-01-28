@@ -1,3 +1,4 @@
+import os
 from app import mongo
 from app import token
 from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory,redirect)
@@ -13,6 +14,7 @@ from flask_jwt_extended import (
 )
 from app.mail_util import send_email,validate_smtp_counts,validate_smtp
 import smtplib
+from werkzeug import secure_filename
 
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
