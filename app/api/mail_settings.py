@@ -59,6 +59,7 @@ def mail_setings(origin,id=None):
             return jsonify({"message": "Invalid Request"}), 400    
         email = app.config['to']
         if origin == "HR": 
+            print("HR")
             try:
                 send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
             except smtplib.SMTPServerDisconnected:
@@ -69,7 +70,10 @@ def mail_setings(origin,id=None):
                 return jsonify({"message": "Smtp login and password is wrong"}), 400                           
             except smtplib.SMTPDataError:
                 return jsonify({"message": "Smtp account is not activated"}), 400 
-            except Exception:
+            except Exception as e:
+                mongo.db.error_repr.insert_one({"issue": str(repr(e))})
+                print(repr(e),"EXCEPTION")
+                
                 return jsonify({"message": "Something went wrong with smtp"}), 400
             else:       
                 ret = mongo.db.mail_settings.update({}, {
@@ -96,6 +100,9 @@ def mail_setings(origin,id=None):
             except smtplib.SMTPDataError:
                 return jsonify({"message": "Smtp account is not activated"}), 400 
             except Exception:
+                mongo.db.error_repr.insert_one({"issue": str(repr(e))})
+
+
                 return jsonify({"message": "Something went wrong with smtp"}), 400  
             else:           
                 vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
