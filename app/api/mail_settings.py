@@ -57,23 +57,22 @@ def mail_setings(origin,id=None):
         
         if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
             return jsonify({"message": "Invalid Request"}), 400    
-        email = app.config['to']
-        if origin == "HR": 
-            print("HR")
-            try:
-                send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
-            except smtplib.SMTPServerDisconnected:
-                return jsonify({"message": "Smtp server is disconnected"}), 400                
-            except smtplib.SMTPConnectError:
-                return jsonify({"message": "Smtp is unable to established"}), 400    
-            except smtplib.SMTPAuthenticationError:
-                return jsonify({"message": "Smtp login and password is wrong"}), 400                           
-            except smtplib.SMTPDataError:
-                return jsonify({"message": "Smtp account is not activated"}), 400 
-            except Exception as e:
-                print(repr(e),"EXCEPTION")
-                return jsonify({"message": repr(e)}), 400
-            else:       
+        email = username
+        try:
+            send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
+        except smtplib.SMTPServerDisconnected:
+            return jsonify({"message": "Smtp server is disconnected"}), 400                
+        except smtplib.SMTPConnectError:
+            return jsonify({"message": "Smtp is unable to established"}), 400    
+        except smtplib.SMTPAuthenticationError:
+            return jsonify({"message": "Smtp login and password is wrong"}), 400                           
+        except smtplib.SMTPDataError:
+            return jsonify({"message": "Smtp account is not activated"}), 400 
+        except Exception as e:
+            print(repr(e),"EXCEPTION")
+            return jsonify({"message": repr(e)}), 400 
+        else:       
+            if origin == "HR":
                 ret = mongo.db.mail_settings.update({}, {
                     "$set": {
                         "mail_server": mail_server,
@@ -86,20 +85,7 @@ def mail_setings(origin,id=None):
                     }
                 },upsert=True)
                 return jsonify({"message":"upsert"}),200
-        elif origin == "RECRUIT":
-            try:
-                send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
-            except smtplib.SMTPServerDisconnected:
-                return jsonify({"message": "Smtp server is disconnected"}), 400                
-            except smtplib.SMTPConnectError:
-                return jsonify({"message": "Smtp is unable to established"}), 400    
-            except smtplib.SMTPAuthenticationError:
-                return jsonify({"message": "Smtp login and password is wrong"}), 400                           
-            except smtplib.SMTPDataError:
-                return jsonify({"message": "Smtp account is not activated"}), 400 
-            except Exception:
-                return jsonify({"message": "Something went wrong with smtp"}), 400  
-            else:           
+            elif origin == "RECRUIT":  
                 vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
                         "mail_password":mail_password,"origin":origin})
                 if vet is None:
