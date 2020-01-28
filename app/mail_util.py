@@ -33,7 +33,6 @@ def validate_smtp(username,password,port,smtp):
             mail.login(username,password)
         mail.quit()
 
-
     except smtplib.SMTPAuthenticationError:
         raise Exception("Username and password is incorrect")
         
@@ -140,6 +139,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None,filelink=None,filenam
         cc =  ','.join(cc)
     else:
         cc = None
+    if 'mail_from'in mail_details and mail_details['mail_from'] is not None:
+        username = mail_details['mail_from']
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = username

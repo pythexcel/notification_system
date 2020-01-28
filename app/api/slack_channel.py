@@ -94,8 +94,11 @@ def sl_profile():
             abort(500)
     email = request.json.get("email", None)
     print(email)
-    slack = slack_profile(email)
-    return jsonify(slack),200
+    try:
+        slack = slack_profile(email)
+        return jsonify (slack), 200
+    except Exception:
+        return jsonify(email),200
 
 
 @bp.route('/slack_channel_ids', methods=["GET"])
