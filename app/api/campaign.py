@@ -228,8 +228,18 @@ def campaign_start_mail(campaign):
             smtp_values = mongo.db.mail_settings.find_one({"_id":ObjectId(smtp)})
             try:
                 validate = validate_smtp(username=smtp_values['mail_username'],password=smtp_values['mail_password'],port=smtp_values['mail_port'],smtp=smtp_values['mail_server'])
-            except Exception as e:
-                return jsonify ({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"issue":repr(e)}), 400
+            
+            except smtplib.SMTPServerDisconnected:
+                return jsonify({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"message": "Smtp server is disconnected"}), 400                
+            except smtplib.SMTPConnectError:
+                return jsonify({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"message": "Smtp is unable to established"}), 400    
+            except smtplib.SMTPAuthenticationError:
+                return jsonify({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"message": "Smtp login and password is wrong"}), 400                           
+            except smtplib.SMTPDataError:
+                return jsonify({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"message": "Smtp account is not activated"}), 400 
+            except Exception:
+                return jsonify({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"message": "Something went wrong with smtp"}), 400
+        
             else:
                 for data in ids:
                     final_ids.append(ObjectId(data))

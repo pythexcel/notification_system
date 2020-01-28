@@ -42,6 +42,7 @@ def campaign_mail():
             total_users = 0
             for user in campaign_users:
                 if campaign['status'] == "Running":
+                    print("YHA LIKHI H CONDITION")
                     if user is not None: 
                       
                         try:
