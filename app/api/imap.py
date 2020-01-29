@@ -35,7 +35,7 @@ def get_emails():
                 else:
                     print("login successfully")
                     imapObj.select_folder(folder)
-                    date = datetime.datetime.now()-datetime.timedelta(days=14)
+                    date = datetime.datetime.now()-datetime.timedelta(days=7)
                     mail_frm=date.strftime("%d-%b-%Y")
                     recieved_mails=imapObj.search(['SINCE',mail_frm])
                     search_bounce_mails =  recieved_mails 
@@ -69,7 +69,7 @@ def get_chats():
         mail_username = request.json.get("mail_username",None)
         chat_email = request.json.get("chat_email",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
-        if smtp_values is None:
+        if smtp_values is not None:
             mail_password = smtp_values['mail_password']
             if imap_server and mail_username and chat_email is not None:
                 try:
