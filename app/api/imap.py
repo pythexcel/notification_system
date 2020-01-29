@@ -21,7 +21,6 @@ def get_emails():
     if request.method == "POST":
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
-        #folder = request.json.get("folder_name",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
         if smtp_values is not None:
             mail_password = smtp_values['mail_password']
@@ -49,7 +48,7 @@ def get_emails():
                             mail_to =message_body.get_address('to')[1]
                             date =message_body.get_decoded_header('date')
                             if {"mail_from":mail_to} not in emails:
-                                emails.append({"mail_from":mail_to})
+                                emails.append({"mail_from":mail_from})
                         return jsonify(emails),200
                     else:
                         return jsonify({"error":"No mails available from this date"}),400
@@ -68,7 +67,6 @@ def get_chats():
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
         chat_email = request.json.get("chat_email",None)
-        #folder = request.json.get("folder_name",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
         if smtp_values is not None:
             mail_password = smtp_values['mail_password']
