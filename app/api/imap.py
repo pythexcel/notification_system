@@ -47,9 +47,9 @@ def get_emails():
                             mail_from =message_body.get_address('from')[1]
                             mail_to =message_body.get_address('to')[1]
                             date =message_body.get_decoded_header('date')
-                            print(mail_from)
-                            if {"mail_from":mail_from} not in emails:
-                                emails.append({"mail_from":mail_from})
+                            if mail_from != "":
+                                if {"mail_from":mail_from} not in emails:
+                                    emails.append({"mail_from":mail_from})
                         print(emails)
                         return jsonify(emails),200
                     else:
