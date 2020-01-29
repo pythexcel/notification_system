@@ -202,7 +202,7 @@ def campaign_detail(Id):
 def campaign_smtp_test():
     mail = mongo.db.mail_settings.find({"origin":"CAMPAIGN"})
     mail = [serialize_doc(doc) for doc in mail]
-    not_working = []
+    working = []
     for data in mail:
         try:
             send_email(
@@ -214,18 +214,17 @@ def campaign_smtp_test():
                 sending_server=data['mail_server'],
                 sending_port=data['mail_port']
                 )
-            sending_for.append(data['mail_server'])
-            mongo.db.mail_settings.update({"_id":ObjectId(data)},{
-                "$set":{
-                "current_working_status" : True
-            }})
-        except Exception:
-            not_working.append({"server":data['mail_server'],"reason": "something went wrong"})
-        except smtplib.SMTPDataError:
-            not_working.append({"server":data['mail_server'],"reason": "account not activated"})
+        except smtplib.SMTPServerDisconnected:
+            return jsonify({"smtp": data['mail_server'],"mail":data['mail_username'],"message": "Smtp server is disconnected"}), 400                
+        except smtplib.SMTPConnectError:
+            return jsonify({"smtp": data['mail_server'],"mail":data['mail_username'],"message": "Smtp is unable to established"}), 400    
         except smtplib.SMTPAuthenticationError:
-            not_working.append({"server":data['mail_server'],"reason": "username and password is wrong"})
-
+            return jsonify({"smtp": data['mail_server'],"mail": data['mail_username'],"message": "Smtp login and password is wrong"}), 400                           
+        except smtplib.SMTPDataError:
+            return jsonify({"smtp": data['mail_server'],"mail":data['mail_username'],"message": "Smtp account is not activated"}), 400 
+        except Exception:
+            return jsonify({"smtp": data['mail_server'],"mail": data['mail_username'],"message": "Something went wrong with smtp"}), 400
+        
     return jsonify({"message": "sended"}),200
 
 @bp.route("/campaign_mails/<string:campaign>", methods=["POST"])
