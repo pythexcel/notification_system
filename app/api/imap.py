@@ -36,9 +36,9 @@ def get_emails():
                 else:
                     print("login successfully")
                     imapObj.select_folder(folder)
-                    #since_frm = parse(since)
-                    #mail_frm=since_frm.strftime("%d-%b-%Y")
-                    recieved_mails=imapObj.search(['SINCE','24-Jan-2020'])
+                    date = datetime.datetime.now()-datetime.timedelta(days=7)
+                    mail_frm=date.strftime("%d-%b-%Y")
+                    recieved_mails=imapObj.search(['SINCE',mail_frm])
                     search_bounce_mails =  recieved_mails 
                     emails = []
                     if search_bounce_mails:
@@ -49,8 +49,8 @@ def get_emails():
                             mail_from =message_body.get_address('from')[1]
                             mail_to =message_body.get_address('to')[1]
                             date =message_body.get_decoded_header('date')
-                            if {"mail_from":mail_from} not in emails:
-                                emails.append({"mail_from":mail_from})
+                            if {"mail_from":mail_to} not in emails:
+                                emails.append({"mail_from":mail_to})
                         return jsonify(emails),200
                     else:
                         return jsonify({"error":"No mails available from this date"}),400
