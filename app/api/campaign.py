@@ -192,9 +192,6 @@ def add_user_campaign():
         except pymongo.errors.BulkWriteError as bwe:
             return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200
           
-
-
-
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
 def campaign_detail(Id):
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
@@ -293,7 +290,7 @@ def hit_rate(variable,user):
                 "hit_rate":hit
                 },
             "$set":{
-                "seen_date": datetime.datetime.now(),
+                "seen_date": datetime.datetime.utcnow(),
                 "seen": True
             }
         })   
