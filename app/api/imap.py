@@ -102,7 +102,7 @@ def get_chats():
                         sortedArray = sorted(emails,key=lambda x: datetime.datetime.strptime(x['datetime'],"%b %d %Y %H:%M:%S"), reverse=True)
                         return jsonify(sortedArray),200
                     else:
-                        return jsonify({"error":"No mails available from this date"}),400
+                        return jsonify(emails),200
             else:
                 return jsonify({"error":"Payload are not valid somthing missing"}),400
         else:
