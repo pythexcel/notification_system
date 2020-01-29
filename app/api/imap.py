@@ -22,10 +22,11 @@ def get_emails():
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
         since = request.json.get("since",None)
+        folder = request.json.get("folder_name",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
         if smtp_values is not None:
             mail_password = smtp_values['mail_password']
-            if imap_server and mail_username is not None:
+            if imap_server and mail_username and folder is not None:
                 try:
                     print("trying login")
                     imapObj = imapclient.IMAPClient(imap_server, ssl=True)
@@ -34,8 +35,9 @@ def get_emails():
                     return jsonify({"error":e}),400
                 else:
                     print("login successfully")
-                    imapObj.select_folder('INBOX')
-                    search_bounce_mails=imapObj.search(['SINCE',since])
+                    imapObj.select_folder(folder)
+                    recieved_mails=imapObj.search(['SINCE',since])
+                    search_bounce_mails =  recieved_mails 
                     emails = []
                     if search_bounce_mails:
                         for search_bounce_mail in search_bounce_mails:
@@ -66,8 +68,8 @@ def get_chats():
         mail_username = request.json.get("mail_username",None)
         chat_email = request.json.get("chat_email",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
-        if smtp_values is not None:
-            mail_password = smtp_values['mail_password']
+        if smtp_values is None:
+            mail_password = 'Rase@123'#smtp_values['mail_password']
             if imap_server and mail_username and chat_email is not None:
                 try:
                     print("trying login")
@@ -78,8 +80,8 @@ def get_chats():
                 else:
                     print("login successfully")
                     imapObj.select_folder('INBOX')
-                    sended_ma=imapObj.search(['FROM',mail_username,'TO',chat_email])
-                    recieved_mails = imapObj.search(['FROM',chat_email,'TO',mail_username])
+                    sended_ma=imapObj.search(['SINCE','29-Jan-2020','FROM',mail_username,'TO',chat_email])
+                    recieved_mails = imapObj.search(['SINCE','29-Jan-2020','FROM',chat_email,'TO',mail_username])
                     sended_mails = sended_ma + recieved_mails
                     emails = []
                     if sended_mails:
