@@ -163,11 +163,10 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
 
     if user is not None:
         url = "<img src= '{}template_hit_rate/{}/{}?hit_rate=1'>".format(base_url,digit,user)
-        soup = BeautifulSoup(message)
+        soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
             required_url = data['href'].split("/?")
-            for elem in required_url:
-                message = message.replace(elem,base_url+'campaign_redirect/'+ '{}'.format(digit))
+            message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}'.format(digit))
         message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)

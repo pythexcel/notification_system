@@ -71,49 +71,39 @@ def mail_setings(origin,id=None):
         
         if not mail_server and mail_password and mail_port and mail_use_tls and mail_username:
             return jsonify({"message": "Invalid Request"}), 400  
-        email = app.config['to']  
-        if origin == "HR": 
-            try:
-                send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
-            except smtplib.SMTPServerDisconnected:
-                return jsonify({"message": "Smtp server is disconnected"}), 400                
-            except smtplib.SMTPConnectError:
-                return jsonify({"message": "Smtp is unable to established"}), 400    
-            except smtplib.SMTPAuthenticationError:
-                return jsonify({"message": "Smtp login and password is wrong"}), 400                           
-            except smtplib.SMTPDataError:
-                return jsonify({"message": "Smtp account is not activated"}), 400 
-            except Exception:
-                return jsonify({"message": "Something went wrong with smtp"}), 400
-            else:   
-                ret = mongo.db.mail_settings.update({}, {
-                    "$set": {
-                        "mail_server": mail_server,
-                        "mail_port": mail_port,
-                        "origin": origin,
-                        "mail_use_tls": mail_use_tls,
-                        "mail_username":mail_username,
-                        "mail_password":mail_password,
-                        "mail_from": mail_from
-                    }
-                },upsert=True)
-                return jsonify({"message":"upsert"}),200
+        email = None
+        if mail_from is not None:
+            email = mail_from
+        else:
+            mail = mail_username  
+        try:
+            send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
+        except smtplib.SMTPServerDisconnected:
+            return jsonify({"message": "Smtp server is disconnected"}), 400                
+        except smtplib.SMTPConnectError:
+            return jsonify({"message": "Smtp is unable to established"}), 400    
+        except smtplib.SMTPAuthenticationError:
+            return jsonify({"message": "Smtp login and password is wrong"}), 400                           
+        except smtplib.SMTPDataError:
+            return jsonify({"message": "Smtp account is not activated"}), 400 
+        except Exception:
+            return jsonify({"message": "Something went wrong with smtp"}), 400
+        else:   
+            if origin == "HR": 
+                    ret = mongo.db.mail_settings.update({}, {
+                        "$set": {
+                            "mail_server": mail_server,
+                            "mail_port": mail_port,
+                            "origin": origin,
+                            "mail_use_tls": mail_use_tls,
+                            "mail_username":mail_username,
+                            "mail_password":mail_password,
+                            "mail_from": mail_from
+                        }
+                    },upsert=True)
+                    return jsonify({"message":"upsert"}),200
 
-        elif origin == "RECRUIT":
-            email = app.config['to']
-            try:
-                send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
-            except smtplib.SMTPServerDisconnected:
-                return jsonify({"message": "Smtp server is disconnected"}), 400                
-            except smtplib.SMTPConnectError:
-                return jsonify({"message": "Smtp is unable to established"}), 400    
-            except smtplib.SMTPAuthenticationError:
-                return jsonify({"message": "Smtp login and password is wrong"}), 400                           
-            except smtplib.SMTPDataError:
-                return jsonify({"message": "Smtp account is not activated"}), 400 
-            except Exception:
-                return jsonify({"message": "Something went wrong with smtp"}), 400  
-            else:           
+            elif origin == "RECRUIT":
                 vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
                         "mail_password":mail_password,"origin":origin})
                 if vet is None:
@@ -137,46 +127,33 @@ def mail_setings(origin,id=None):
                 else:
                     return jsonify({"message":"Smtp already exists"}),400
 
-        elif origin == "CAMPAIGN":  
-            try:
-                send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
-            except smtplib.SMTPServerDisconnected:
-                return jsonify({"message": "Smtp server is disconnected"}), 400                
-            except smtplib.SMTPConnectError:
-                return jsonify({"message": "Smtp is unable to established"}), 400    
-            except smtplib.SMTPAuthenticationError:
-                return jsonify({"message": "Smtp login and password is wrong"}), 400                           
-            except smtplib.SMTPDataError:
-                return jsonify({"message": "Smtp account is not activated"}), 400 
-            except Exception:
-                return jsonify({"message": "Something went wrong with smtp"}), 400
-            else:
-                vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
-                        "mail_password":mail_password,"origin":origin})
-                if vet is None:
-                    priority = 1
-                    previous =  mongo.db.mail_settings.find({"origin":"CAMPAIGN"}).sort("priority", -1).limit(1)
-                    prior_check = [serialize_doc(doc) for doc in previous]
-                    if prior_check:
-                        for data in prior_check:
-                            priority = data['priority'] + 1
-                    ret = mongo.db.mail_settings.insert_one({
-                            "mail_server": mail_server,
-                            "mail_port": mail_port,
-                            "origin": origin,
-                            "mail_use_tls": mail_use_tls,
-                            "mail_username":mail_username,
-                            "mail_password":mail_password,
-                            "active": active,
-                            "type": type_s,
-                            "priority": priority,
-                            "mail_from": mail_from,
-                            "created_at": datetime.datetime.today()
+            elif origin == "CAMPAIGN":  
+                    vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
+                            "mail_password":mail_password,"origin":origin})
+                    if vet is None:
+                        priority = 1
+                        previous =  mongo.db.mail_settings.find({"origin":"CAMPAIGN"}).sort("priority", -1).limit(1)
+                        prior_check = [serialize_doc(doc) for doc in previous]
+                        if prior_check:
+                            for data in prior_check:
+                                priority = data['priority'] + 1
+                        ret = mongo.db.mail_settings.insert_one({
+                                "mail_server": mail_server,
+                                "mail_port": mail_port,
+                                "origin": origin,
+                                "mail_use_tls": mail_use_tls,
+                                "mail_username":mail_username,
+                                "mail_password":mail_password,
+                                "active": active,
+                                "type": type_s,
+                                "priority": priority,
+                                "mail_from": mail_from,
+                                "created_at": datetime.datetime.today()
 
-                    })
-                    return jsonify({"message":"upsert"}),200
-                else:
-                    return jsonify({"message":"Smtp already exists"}),400
+                        })
+                        return jsonify({"message":"upsert"}),200
+                    else:
+                        return jsonify({"message":"Smtp already exists"}),400
 
 @bp.route('/smtp_priority/<string:Id>/<int:position>', methods=["POST"])
 def smtp_priority(Id,position):

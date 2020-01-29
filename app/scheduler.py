@@ -36,6 +36,13 @@ def campaign_mail():
                 Template_details = mongo.db.mail_template.find_one({"_id":ObjectId(template_data)})
                 message_subject_details.append({"message": Template_details['message'],"message_subject": Template_details["message_subject"]})
             
+            filelink = None
+            if 'attachment_file_name' in campaign:
+                filelink = campaign['attachment_file_name']
+            filename = None
+            if 'attachment_file' in campaign:
+                filename = campaign['attachment_file']
+
             campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id']})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
             total_users = 0
@@ -118,6 +125,8 @@ def campaign_mail():
                                 sending_password= mail_password,
                                 sending_server= mail_server,
                                 digit=digit,
+                                filelink=filelink,
+                                filename=filename,
                                 sending_port= mail_port)
                             except Exception as error:
                                 if total_users == 3:
