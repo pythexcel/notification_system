@@ -21,11 +21,11 @@ def get_emails():
     if request.method == "POST":
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
-        folder = request.json.get("folder_name",None)
+        #folder = request.json.get("folder_name",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
         if smtp_values is not None:
             mail_password = smtp_values['mail_password']
-            if imap_server and mail_username and folder is not None:
+            if imap_server and mail_username is not None:
                 try:
                     print("trying login")
                     imapObj = imapclient.IMAPClient(imap_server, ssl=True)
@@ -34,8 +34,8 @@ def get_emails():
                     return jsonify({"error":e}),400
                 else:
                     print("login successfully")
-                    imapObj.select_folder(folder)
-                    date = datetime.datetime.now()-datetime.timedelta(days=7)
+                    imapObj.select_folder('INBOX')
+                    date = datetime.datetime.now()-datetime.timedelta(days=10)
                     mail_frm=date.strftime("%d-%b-%Y")
                     recieved_mails=imapObj.search(['SINCE',mail_frm])
                     search_bounce_mails =  recieved_mails 
@@ -68,7 +68,7 @@ def get_chats():
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
         chat_email = request.json.get("chat_email",None)
-        folder = request.json.get("folder_name",None)
+        #folder = request.json.get("folder_name",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
         if smtp_values is not None:
             mail_password = smtp_values['mail_password']
@@ -81,7 +81,7 @@ def get_chats():
                     return jsonify({"error":e}),400
                 else:
                     print("login successfully")
-                    imapObj.select_folder(folder)
+                    imapObj.select_folder('INBOX')
                     sended_ma=imapObj.search(['FROM',mail_username,'TO',chat_email])
                     recieved_mails = imapObj.search(['FROM',chat_email,'TO',mail_username])
                     sended_mails = sended_ma + recieved_mails
