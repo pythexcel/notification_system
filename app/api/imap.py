@@ -68,6 +68,7 @@ def get_chats():
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
         chat_email = request.json.get("chat_email",None)
+        folder = request.json.get("folder_name",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
         if smtp_values is not None:
             mail_password = smtp_values['mail_password']
@@ -80,7 +81,7 @@ def get_chats():
                     return jsonify({"error":e}),400
                 else:
                     print("login successfully")
-                    imapObj.select_folder('INBOX')
+                    imapObj.select_folder(folder)
                     sended_ma=imapObj.search(['FROM',mail_username,'TO',chat_email])
                     recieved_mails = imapObj.search(['FROM',chat_email,'TO',mail_username])
                     sended_mails = sended_ma + recieved_mails
