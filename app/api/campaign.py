@@ -4,6 +4,7 @@ from app import token
 from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory,redirect)
 from app.util import serialize_doc,Template_details,campaign_details,user_data,allowed_file
 import datetime
+import pymongo.errors
 import dateutil.parser
 from flask import current_app as app
 from bson.objectid import ObjectId
@@ -32,6 +33,7 @@ def create_campaign():
         status = request.json.get("status","Idle")
         message = request.json.get("message",None)
         message_subject = request.json.get("message_subject",None) 
+        generated = request.json.get("generated_from_recruit",False)
         if not name:
             return jsonify({"message": "Invalid Request"}), 400    
         ret = mongo.db.campaigns.insert_one({
@@ -40,7 +42,8 @@ def create_campaign():
                 "Campaign_description": description,
                 "message": message,
                 "message_subject": message_subject,
-                "status":status
+                "status":status,
+                "generated_from_recruit":generated
         }).inserted_id
         return jsonify(str(ret)),200
 
@@ -182,24 +185,13 @@ def add_user_campaign():
             data['send_status'] = False
             data['campaign'] = campaign
             data['block'] = False
-        final_user_data = []
-        for elem in users:
-            ret = mongo.db.campaign_users.find_one({"campaign":elem['campaign'],"email":elem['email']})
-            if ret is None:
-                if ret not in final_user_data:
-                    final_user_data.append(elem)
-                else:
-                    pass
-            else:
-                pass 
-        if final_user_data:
-            ret = mongo.db.campaign_users.insert_many(final_user_data)
-        else:
-            pass
-        return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200  
-
-
-
+        mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
+        try:
+            ret = mongo.db.campaign_users.insert_many(users)
+            return jsonify({"message":"Users added to campaign"}), 200
+        except pymongo.errors.BulkWriteError as bwe:
+            return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200
+          
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
 def campaign_detail(Id):
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
@@ -298,7 +290,7 @@ def hit_rate(variable,user):
                 "hit_rate":hit
                 },
             "$set":{
-                "seen_date": datetime.datetime.now(),
+                "seen_date": datetime.datetime.utcnow(),
                 "seen": True
             }
         })   

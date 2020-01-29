@@ -93,7 +93,6 @@ def create_app(test_config=None):
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
 
-    '''
     if app.config['origin'] == "hr":
         
         schduled_messages_scheduler = BackgroundScheduler()
@@ -130,9 +129,8 @@ def create_app(test_config=None):
             campaign_mail_scheduler.shutdown()
             bounced_mail_scheduler.shutdown()
             mail_reminder_scheduler.shutdown()
-    '''
-    return app
 
+    
 @click.command("seed_hr")
 @with_appcontext
 def seed_hr():

@@ -38,10 +38,10 @@ def campaign_mail():
             
             filelink = None
             if 'attachment_file_name' in campaign:
-                filelink = campaign['attachment_file_name']
+                filelink = campaign['attachment_file']
             filename = None
             if 'attachment_file' in campaign:
-                filename = campaign['attachment_file']
+                filename = campaign['attachment_file_name']
 
             campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id']})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
@@ -156,7 +156,7 @@ def campaign_mail():
                                 mail_data = mongo.db.mail_status.insert_one({
                                     "user_mail": user['email'],
                                     "user_id": str(user['_id']),
-                                    "sending_time": datetime.datetime.now(),
+                                    "sending_time": datetime.datetime.utcnow(),
                                     "message": message_str,
                                     "mail_sended_status": working_status,
                                     "subject":message_subject,
