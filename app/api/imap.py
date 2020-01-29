@@ -35,7 +35,7 @@ def get_emails():
                 else:
                     print("login successfully")
                     imapObj.select_folder('INBOX')
-                    date = datetime.datetime.now()-datetime.timedelta(days=10)
+                    date = datetime.datetime.now()-datetime.timedelta(days=7)
                     mail_frm=date.strftime("%d-%b-%Y")
                     recieved_mails=imapObj.search(['SINCE',mail_frm])
                     search_bounce_mails =  recieved_mails 
