@@ -20,9 +20,10 @@ def get_emails():
     if request.method == "POST":
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
-        mail_password = request.json.get("mail_password",None)
-        #since = request.json.get("since",None)
-        if imap_server and mail_username and mail_password is not None:
+        since = request.json.get("since",None)
+        smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
+        mail_password = smtp_values['mail_password']
+        if imap_server and mail_username is not None:
             try:
                 print("trying login")
                 imapObj = imapclient.IMAPClient(imap_server, ssl=True)
@@ -32,7 +33,7 @@ def get_emails():
             else:
                 print("login successfully")
                 imapObj.select_folder('INBOX')
-                search_bounce_mails=imapObj.search(['SINCE','1-Jan-2020'])
+                search_bounce_mails=imapObj.search(['SINCE',since])
                 emails = []
                 if search_bounce_mails:
                     for search_bounce_mail in search_bounce_mails:
@@ -59,9 +60,10 @@ def get_chats():
     if request.method == "POST":
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
-        mail_password = request.json.get("mail_password",None)
         chat_email = request.json.get("chat_email",None)
-        if imap_server and mail_username and mail_password and chat_email is not None:
+        smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
+        mail_password = smtp_values['mail_password']
+        if imap_server and mail_username and chat_email is not None:
             try:
                 print("trying login")
                 imapObj = imapclient.IMAPClient(imap_server, ssl=True)
