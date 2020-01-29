@@ -33,6 +33,7 @@ def create_campaign():
         status = request.json.get("status","Idle")
         message = request.json.get("message",None)
         message_subject = request.json.get("message_subject",None) 
+        generated = request.json.get("generated_from_recruit",False)
         if not name:
             return jsonify({"message": "Invalid Request"}), 400    
         ret = mongo.db.campaigns.insert_one({
@@ -41,7 +42,8 @@ def create_campaign():
                 "Campaign_description": description,
                 "message": message,
                 "message_subject": message_subject,
-                "status":status
+                "status":status,
+                "generated_from_recruit":generated
         }).inserted_id
         return jsonify(str(ret)),200
 
