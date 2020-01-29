@@ -44,23 +44,40 @@ def create_campaign():
         }).inserted_id
         return jsonify(str(ret)),200
 
-@bp.route('/attached_file/<string:Id>', methods=["POST"])
+@bp.route('/attached_file/<string:Id>', methods=["POST","DELETE"])
 def attache_campaign(Id):
-    file = request.files['attachment_file']
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-        attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        attachment_file_name = filename     
-        ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
-            "$set":{
-                "attachment_file_name": attachment_file_name,
-                "attachment_file": attachment_file
-            }
+    if request.method == "POST":
+        file = request.files['attachment_file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+            attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            attachment_file_name = filename     
+            ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
+                "$set":{
+                    "attachment_file_name": attachment_file_name,
+                    "attachment_file": attachment_file
+                }
+            })
+            return jsonify({"message": "File attached to campaign"}), 200
+        else:
+            return jsonify({"message": "Please select a file"}), 400
+    elif request.method == "DELETE":
+        ret = mongo.db.campaigns.find_one({
+            "_id":ObjectId(Id),
+            "attachment_file_name":{ "$exists": True},
+            "attachment_file":{ "$exists": True}
         })
-        return jsonify({"message": "File attached to campaign"}), 200
-    else:
-        return jsonify({"message": "Please select a file"}), 400
+        if ret is not None:
+            ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
+                "$unset":{
+                    "attachment_file_name": 1,
+                    "attachment_file": 1
+                }
+            })
+            return jsonify({"message": "File deleted from campaign"}), 200
+        else:
+            return jsonify({"message": "File not attached to campaign"}), 200
 
 
 @bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
