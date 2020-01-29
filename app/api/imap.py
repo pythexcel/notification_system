@@ -21,7 +21,7 @@ def get_emails():
     if request.method == "POST":
         imap_server = request.json.get("imap_server",None)
         mail_username = request.json.get("mail_username",None)
-        since = request.json.get("since",None)
+        #since = request.json.get("since",None)
         folder = request.json.get("folder_name",None)
         smtp_values = mongo.db.mail_settings.find_one({"mail_username":mail_username,"active":True})
         if smtp_values is not None:
@@ -36,7 +36,9 @@ def get_emails():
                 else:
                     print("login successfully")
                     imapObj.select_folder(folder)
-                    recieved_mails=imapObj.search(['SINCE',since])
+                    #since_frm = parse(since)
+                    #mail_frm=since_frm.strftime("%d-%b-%Y")
+                    recieved_mails=imapObj.search(['SINCE','24-Jan-2020'])
                     search_bounce_mails =  recieved_mails 
                     emails = []
                     if search_bounce_mails:
