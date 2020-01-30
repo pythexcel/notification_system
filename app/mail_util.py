@@ -20,28 +20,19 @@ def serialize_doc(doc):
     return doc
 
 def validate_smtp(username,password,port,smtp):
-    try:
-        if port == 587:   
-            context = ssl.create_default_context()     
-            mail = smtplib.SMTP(str(smtp), port)
-            mail.ehlo() 
-            mail.starttls(context=context) 
-            mail.ehlo() 
-            mail.login(username,password)
-        else:
-            mail = smtplib.SMTP_SSL(str(smtp), port)
-            mail.login(username,password)
-        mail.quit()
+    if port == 587:   
+        context = ssl.create_default_context()     
+        mail = smtplib.SMTP(str(smtp), port)
+        mail.ehlo() 
+        mail.starttls(context=context) 
+        mail.ehlo() 
+        mail.login(username,password)
+    else:
+        mail = smtplib.SMTP_SSL(str(smtp), port)
+        mail.login(username,password)
+    mail.quit()
 
-    except smtplib.SMTPAuthenticationError:
-        raise Exception("Username and password is incorrect")
-        
-    except smtplib.SMTPDataError:
-        raise Exception("Account is not activated")
-                
-    except Exception as e:
-        raise Exception (repr(e))
-
+    
 def validate_smtp_counts(ids):
     final_ids = []
     for id in ids:
