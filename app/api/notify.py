@@ -107,7 +107,6 @@ def send_mails():
         else:
             pass    
 
-        
         attachment_file = None
         attachment_file_name = None
         if 'attachment' in request.json:
@@ -127,16 +126,15 @@ def send_mails():
                 footer = var['footer_value']
         system_variable = mongo.db.mail_variables.find({})
         system_variable = [serialize_doc(doc) for doc in system_variable]
-
+    
         missing_payload = []
-        for k,v in request.json:
+        for k,v in request.json['data'].items():
             if v is None:
-                missing_payload.append(k)
-        
+                missing_payload.append({"key": k , "type": "date" if k in dates_converter else "text"})
         for missing in missing_payload:
-            if missing in request.json:
-                request.json(missing)
-
+            if missing['key'] in request.json['data']:
+                request.json['data'].pop(missing['key'])
+    
         message_variables = []
         message = message_detail['message'].split('#')
         del message[0]
@@ -161,7 +159,7 @@ def send_mails():
         missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
         for elem in missing:
             missing_data = re.split(missing_rex, elem)
-            missing_payload.append(missing_data[0])
+            missing_payload.append({"key": missing_data[0] , "type": "date" if missing_data[0] in dates_converter else "text"})
 
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
@@ -186,15 +184,15 @@ def send_mails():
         missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
         for elem in missing_subject:
             sub_varb_missing = re.split(missing_sub_rex, elem)
-            missing_payload.append(sub_varb_missing[0])
+            missing_payload.append({"key": sub_varb_missing[0] , "type": "date" if sub_varb_missing[0] in dates_converter else "text"})
 
-        if 'fromDate' in request.json['data']:
-            if 'toDate' in request.json['data']:
+        if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
+            if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
                 if request.json['data']['fromDate'] == request.json['data']['toDate']:
                     message_str = message_str.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
 
-        if 'fromDate' in request.json['data']:
-            if 'toDate' in request.json['data']:
+        if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
+            if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
                 if request.json['data']['fromDate'] == request.json['data']['toDate']:
                     message_subject = message_subject.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
 
