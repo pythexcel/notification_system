@@ -109,9 +109,9 @@ def mail_message(message_origin):
         for_detail = None
         if 'for_detail' in request.form:
             for_detail = request.form["for"]
-        subject = None
-        if 'subject' in request.form:
-            subject = request.form["subject"]
+        recruit_details = None
+        if 'recruit_details' in request.form:
+            recruit_details = request.form["recruit_details"]
         Doc_type = request.form["doc_type"]
         default = False
         if "default" in request.form:
@@ -155,7 +155,7 @@ def mail_message(message_origin):
                     "version": version,
                     "for": for_detail,
                     "default": default,
-                    "subject":subject,
+                    "recruit_details":recruit_details,
                     "Doc_type": Doc_type,
                     "attachment_file": attachment_file,
                     "attachment_file_name":attachment_file_name
@@ -187,7 +187,7 @@ def mail_message(message_origin):
                     "version": 1,
                     "default": False,
                     "for": for_detail,
-                    "subject":subject,
+                    "recruit_details":recruit_details,
                     "Doc_type": Doc_type,
                     "attachment_file": attachment_file,
                     "attachment_file_name":attachment_file_name 
@@ -241,3 +241,4 @@ def slack_channel_test():
     })
     slack_message(channel=[channel],message="Your slack account is integrated")
     return jsonify({"Message": "Sended","status":True}), 200
+

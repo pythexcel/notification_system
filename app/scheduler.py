@@ -220,7 +220,6 @@ def campaign_mail():
             pass
                 
             
-            
 def reject_mail():
     ret = mongo.db.rejection_handling.find_one({"send_status":False})
     if ret is not None:
