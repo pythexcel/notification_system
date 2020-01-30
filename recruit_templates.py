@@ -6,7 +6,7 @@ rec_templates = [
         "message_key": "first_round_for_javascript_developer",
         "message_origin": "RECRUIT",
         "message_subject": "#name!,your interview for First round of javascript developer is scheduled",
-        "subject": "First Round For Javascript Developer",
+        "recruit_details": "First Round For Javascript Developer",
         "version": 1,
         "default": True,
         "working": True
@@ -18,7 +18,7 @@ rec_templates = [
         "message_key": "second_round_for_php_developer",
         "message_origin": "RECRUIT",
         "message_subject": "#name!,your interview for Second round for Php developer is scheduled",
-        "subject": "Second Round For Php Developer",
+        "recruit_details": "Second Round For Php Developer",
         "version": 1,
         "default": True,
         "working": True
@@ -31,7 +31,7 @@ rec_templates = [
         "message_key": "interviewee_reject",
         "message_origin": "RECRUIT",
         "message_subject": "interviewee Rejection",
-        "subject": "Interviwee Reject",
+        "recruit_details": "Interviwee Reject",
         "version": 1,
         "default": True,
         "working": True
@@ -43,7 +43,7 @@ rec_templates = [
         "message_key": "interviewee_onhold",
         "message_origin": "RECRUIT",
         "message_subject": "interviewee put on hold",
-        "subject": "Interviewee On Hold",
+        "recruit_details": "Interviewee On Hold",
         "version": 1,
         "default": True,
         "working": True
@@ -55,7 +55,7 @@ rec_templates = [
         "message_key": "interviewee_selection",
         "message_origin": "RECRUIT",
         "message_subject": "interviewee selected",
-        "subject": "Interviewee Selection",
+        "recruit_details": "Interviewee Selection",
         "version": 1,
         "default": True,
         "working": True
@@ -67,7 +67,7 @@ rec_templates = [
         "message_key": "third_round_for_php_developer",
         "message_origin": "RECRUIT",
         "message_subject": "#name!,your interview for Third round for Php developer is scheduled ",
-        "subject": "Third Round For Php Developer",
+        "recruit_details": "Third Round For Php Developer",
         "version": 1,
         "default": True,
         "working": True
@@ -79,7 +79,7 @@ rec_templates = [
         "message_key": "first_round_for_php_developer",
         "message_origin": "RECRUIT",
         "message_subject": "#name!,your interview for First round for Php developer is scheduled",
-        "subject": "First Round For Php Developer",
+        "recruit_details": "First Round For Php Developer",
         "version": 1,
         "default": True,
         "working": True
@@ -91,7 +91,7 @@ rec_templates = [
         "message_key": "second_round_for_javascript_developer",
         "message_origin": "RECRUIT",
         "message_subject": "#name!,your interview for Second round for Javascript developer is scheduled",
-        "subject": "Second Round For Javascript Developer",
+        "recruit_details": "Second Round For Javascript Developer",
         "version": 1,
         "default": True,
         "working": True
@@ -103,7 +103,7 @@ rec_templates = [
         "message_key": "third_round_for_javascript_developer",
         "message_origin": "RECRUIT",
         "message_subject": "#name!,your interview for Third round for Javascript developer is scheduled",
-        "subject": "Thrid Round For Javascript Developer",
+        "recruit_details": "Thrid Round For Javascript Developer",
         "version": 1,
         "default": True,
         "working": True
@@ -115,7 +115,7 @@ rec_templates = [
         "message_key": "Password reset",
         "message_origin": "RECRUIT",
         "message_subject": "#name: your password is reset",
-        "subject": "Password reset",
+        "recruit_details": "Password reset",
         "version": 1,
         "default": True,
         "working": True
