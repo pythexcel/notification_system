@@ -106,6 +106,7 @@ def send_mails():
                 message_detail['message_subject'] = Subject
         else:
             pass    
+
         
         attachment_file = None
         attachment_file_name = None
@@ -128,6 +129,14 @@ def send_mails():
         system_variable = [serialize_doc(doc) for doc in system_variable]
 
         missing_payload = []
+        for k,v in request.json:
+            if v is None:
+                missing_payload.append(k)
+        
+        for missing in missing_payload:
+            if missing in request.json:
+                request.json(missing)
+
         message_variables = []
         message = message_detail['message'].split('#')
         del message[0]
