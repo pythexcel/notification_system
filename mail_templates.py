@@ -4,11 +4,11 @@ templates = [
         "attachment_file": None,
         "attachment_file_name": None,
         "for": "Offer letter",
-        "message": "<p><br></p><p><strong>Dear </strong><em><strong>#name:,&nbsp;</strong></em></p><p>With your application and subsequent interview, we are pleased to offer you an appointment for the position of #designation:<strong> </strong>at <strong>#company:</strong></p><p>There would be a <strong>training </strong>period of #training_month:, from your date of joining. During which you will be evaluated on the basis of your performance and other factor, after which your employment will be confirmed. You will be paid a sum of <strong>Rs. #lower_limit_salary: to #upper_limit_salary: </strong>as a stipend during your training period (depending upon your performance). Training period stipend is giving only after completion of #training_month:months training.CTC given to candidate is <strong>#CTC@ &nbsp;per annum</strong>.</p><p>The company follows a <strong>holding policy </strong>for freshers. Details of this are mentioned in Appendix and will be discussed with you on the date of your joining.</p><p>For increments you will be considered for increment every #increament_after_month: months after your employment confirmation.</p><p>The final Appointment Letter containing other Employment Terms would be provided to you in the first month of your joining.</p><p>This offer is subject to your medical fitness, verification of your educational certificates, credit checks and satisfactory references.</p><p><strong>Note:</strong></p><p>Notice Period: 4 weeks<br>Number of Working Hours: Min 9hrs per day<br>Working Days: 6 days a week - <strong>2 Saturday (Second and Fourth)</strong> open in a Month.<br>Let us know if you have any questions. Please feel free to discuss any other concerns that you might have.* This offer letter is valid for 7--</p><p><strong>Regards,</strong></p><p><strong>#hr_signature:</strong></p><p>#venue:</p><p>&nbsp;</p>",
+        "message": "<p><br></p><p><strong>Dear </strong><em><strong>#name:,&nbsp;</strong></em></p><p>With your application and subsequent interview, we are pleased to offer you an appointment for the position of #designation:<strong> </strong>at <strong>#company:</strong></p><p>There would be a <strong>training </strong>period of #training_month:, from your date of joining. During which you will be evaluated on the basis of your performance and other factor, after which your employment will be confirmed. You will be paid a sum of <strong>Rs. #lower_limit_salary: to #upper_limit_salary: </strong>as a stipend during your training period (depending upon your performance). Training period stipend is giving only after completion of #training_month:months training.CTC given to candidate is <strong>#CTC@ &nbsp;per annum</strong>.</p><p>The company follows a <strong>holding policy </strong>for freshers. Details of this are mentioned in Appendix and will be discussed with you on the date of your joining.</p><p>For increments you will be considered for increment every #increament_after_month: months after your employment confirmation.</p><p>The final Appointment Letter containing other Employment Terms would be provided to you in the first month of your joining.</p><p>This offer is recruit_details to your medical fitness, verification of your educational certificates, credit checks and satisfactory references.</p><p><strong>Note:</strong></p><p>Notice Period: 4 weeks<br>Number of Working Hours: Min 9hrs per day<br>Working Days: 6 days a week - <strong>2 Saturday (Second and Fourth)</strong> open in a Month.<br>Let us know if you have any questions. Please feel free to discuss any other concerns that you might have.* This offer letter is valid for 7--</p><p><strong>Regards,</strong></p><p><strong>#hr_signature:</strong></p><p>#venue:</p><p>&nbsp;</p>",
         "message_key": "OFFER LETTER",
         "message_origin": "HR",
         "message_subject": "Offer letter from #company:",
-        "subject": "Offer letter",
+        "recruit_details": "Offer letter",
         "version": 1,
         "default" : True,
         "working": True
@@ -22,7 +22,7 @@ templates = [
         "message_key": "RELIEVING CERTIFICATE",
         "message_origin": "HR",
         "message_subject": "Relieving certificate from #company:",
-        "subject": "RELIEVING CERTIFICATE",
+        "recruit_details": "RELIEVING CERTIFICATE",
         "version": 1,
         "default" : True,
         "working": True
@@ -36,7 +36,7 @@ templates = [
         "message_key": "New Employee Welcome Email",
         "message_origin": "HR",
         "message_subject": "Welcome #name: to #company:",
-        "subject": "New Employee Welcome Email",
+        "recruit_details": "New Employee Welcome Email",
         "version": 1,
         "default" : True,
         "working": True
@@ -50,7 +50,7 @@ templates = [
         "message_key": "Birthday Wish",
         "message_origin": "HR",
         "message_subject": "Birthday wish to #name: ",
-        "subject": "Birthday Wish",
+        "recruit_details": "Birthday Wish",
         "version": 1,
         "default" : True,
         "working": True
@@ -64,7 +64,7 @@ templates = [
         "message_key": "Offer Letter with company",
         "message_origin": "HR",
         "message_subject": "Offer Letter with #company:",
-        "subject": "Offer Letter with company",
+        "recruit_details": "Offer Letter with company",
         "version": 1,
         "default" : True,
         "working": True
@@ -78,7 +78,7 @@ templates = [
         "message_key": "Important HR guidelines and Company Policies",
         "message_origin": "HR",
         "message_subject": "Important Information - #company:",
-        "subject": "Important HR guidelines and Company Policies",
+        "recruit_details": "Important HR guidelines and Company Policies",
         "version": 1,
         "default" : True,
         "working": True
@@ -92,7 +92,7 @@ templates = [
         "message_key": "Offer Discussion",
         "message_origin": "HR",
         "message_subject": "Offer Discussion with #company:",
-        "subject": "Offer Discussion",
+        "recruit_details": "Offer Discussion",
         "version": 1,
         "default" : True,
         "working": True
@@ -106,7 +106,7 @@ templates = [
         "message_key": "Welcome employee",
         "message_origin": "HR",
         "message_subject": "Welcome #name: to #company:",
-        "subject": "Welcome employee",
+        "recruit_details": "Welcome employee",
         "version": 1,
         "default" : True,
         "working": True
@@ -120,7 +120,7 @@ templates = [
         "message_key": "Employee Termination",
         "message_origin": "HR",
         "message_subject": "Employee termination  from #company:",
-        "subject": "Employee Termination",
+        "recruit_details": "Employee Termination",
         "version": 1,
         "default" : True,
         "working": True
@@ -134,7 +134,7 @@ templates = [
         "message_key": "Employee Termination Policies",
         "message_origin": "HR",
         "message_subject": "Employee Termination Policies",
-        "subject": "Employee Termination Policies",
+        "recruit_details": "Employee Termination Policies",
         "version": 1,
         "default" : True,
         "working": True
@@ -148,7 +148,7 @@ templates = [
         "message_key": "Employee Confirmation",
         "message_origin": "HR",
         "message_subject": "Employment Confirmation",
-        "subject": "Employee Confirmation",
+        "recruit_details": "Employee Confirmation",
         "version": 1,
         "default" : True,
         "working": True
@@ -162,7 +162,7 @@ templates = [
         "message_key": "Employee Confirmation Policies",
         "message_origin": "HR",
         "message_subject": "Employee Confirmation Policies ",
-        "subject": "Employee Confirmation Policies",
+        "recruit_details": "Employee Confirmation Policies",
         "version": 1,
         "default" : True,
         "working": True
@@ -176,7 +176,7 @@ templates = [
         "message_key": "Leave apply",
         "message_origin": "HR",
         "message_subject": "Leave apply for #fromDate: to #toDate:",
-        "subject": "Leave apply",
+        "recruit_details": "Leave apply",
         "version": 1,
         "default" : True,
         "working": True
@@ -190,7 +190,7 @@ templates = [
         "message_key": "New Employee Important Information",
         "message_origin": "HR",
         "message_subject": "New employee important information from #company:",
-        "subject": "New Employee Important Information",
+        "recruit_details": "New Employee Important Information",
         "version": 1,
         "default" : True,
         "working": True
@@ -204,7 +204,7 @@ templates = [
         "message_key": "New Employee General Introduction",
         "message_origin": "HR",
         "message_subject": "General Introduction - #company:",
-        "subject": "New Employee General Introduction",
+        "recruit_details": "New Employee General Introduction",
         "version": 1,
         "default" : True,
         "working": True
@@ -218,7 +218,7 @@ templates = [
         "message_key": "Salary Update",
         "message_origin": "HR",
         "message_subject": "#name: your salary is updated ",
-        "subject": "Salary Update",
+        "recruit_details": "Salary Update",
         "version": 1,
         "default" : True,
         "working": True
@@ -232,7 +232,7 @@ templates = [
         "message_key": "Payslip",
         "message_origin": "HR",
         "message_subject": "#name: your payslip for #month_text: #year: is generated",
-        "subject": "Payslip",
+        "recruit_details": "Payslip",
         "version": 1,
         "default" : True,
         "working": True
@@ -246,7 +246,7 @@ templates = [
         "message_key": "Leave rejected",
         "message_origin": "HR",
         "message_subject": "#name: your leave is rejected",
-        "subject": "Leave rejected",
+        "recruit_details": "Leave rejected",
         "version": 1,
         "default" : True,
         "working": True
@@ -260,7 +260,7 @@ templates = [
         "message_key": "Leave approval",
         "message_origin": "HR",
         "message_subject": "#name: your leave is approved",
-        "subject": "Leave approval",
+        "recruit_details": "Leave approval",
         "version": 1,
         "default" : True,
         "working": True
@@ -274,7 +274,7 @@ templates = [
         "message_key": "Required Joining Documents",
         "message_origin": "HR",
         "message_subject": "Required joining documents from #company:",
-        "subject": "Required Joining Documents",
+        "recruit_details": "Required Joining Documents",
         "version": 1,
         "default" : True,
         "working": True
@@ -288,7 +288,7 @@ templates = [
         "message_key": "Experience Certificate",
         "message_origin": "HR",
         "message_subject": "Experience certificate  from #company:",
-        "subject": "Experience Certificate",
+        "recruit_details": "Experience Certificate",
         "version": 1,
         "default" : True,
         "working": True
@@ -302,7 +302,7 @@ templates = [
         "message_key": "Leave pending",
         "message_origin": "HR",
         "message_subject": "#name: your leave is pending of #fromDate:",
-        "subject": "Leave pending",
+        "recruit_details": "Leave pending",
         "version": 1,
         "default" : True,
         "working": True
