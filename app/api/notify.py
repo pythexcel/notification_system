@@ -145,12 +145,12 @@ def send_mails():
         message_str = message_detail['message']
         for detail in message_variables:
             if detail in request.json['data']:
-                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
                 message_str = re.sub(rexWithString, str(request.json['data'][detail]), message_str)
             else:
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
-                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
                         message_str = re.sub(rexWithSystem, str(element['value']), message_str)    
 
 
@@ -171,12 +171,12 @@ def send_mails():
         message_subject = message_detail['message_subject']
         for detail in subject_variables:
             if detail in request.json['data']:
-                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
                 message_subject = re.sub(rexWithString, str(request.json['data'][detail]), message_subject)
             else:
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
-                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
                         message_subject = re.sub(rexWithSystem, str(element['value']), message_subject)  
 
         missing_subject = message_subject.split("#")
