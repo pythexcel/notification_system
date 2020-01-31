@@ -16,7 +16,8 @@ dates_converter = [
     "next_increment_date",
     "start_increment_date",
     "fromDate",
-    "toDate"
+    "toDate",
+    "reporting_date"
     ]
 message_needs={
     "simple_message":[
