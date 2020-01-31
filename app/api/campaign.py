@@ -16,6 +16,7 @@ from flask_jwt_extended import (
 from app.mail_util import send_email,validate_smtp_counts,validate_smtp
 import smtplib
 from werkzeug import secure_filename
+import uuid
 
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
@@ -35,7 +36,13 @@ def create_campaign():
         message_subject = request.json.get("message_subject",None) 
         generated = request.json.get("generated_from_recruit",False)
         if not name:
-            return jsonify({"message": "Invalid Request"}), 400    
+            return jsonify({"message": "Invalid Request"}), 400   
+
+        message_creation = dict()
+        if message is not None and message_subject is not None:
+            message_creation.update({"message_id": str(uuid.uuid4()) "message": message,"message_subject": message})
+
+
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
                 "creation_date": datetime.datetime.utcnow(),
@@ -45,6 +52,14 @@ def create_campaign():
                 "status":status,
                 "generated_from_recruit":generated
         }).inserted_id
+
+        if message_creation is not None:
+            create_campaign_message = mongo.db.campaigns.update({"_id": ObjectId(str(ret))},{
+                "$push": message_creation
+            })
+        else:
+            pass
+    
         return jsonify(str(ret)),200
 
 @bp.route('/attached_file/<string:Id>', methods=["POST","DELETE"])
@@ -118,24 +133,47 @@ def list_campaign():
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
 
-@bp.route('/update_campaign/<string:Id>', methods=["PUT"])
+@bp.route('/update_campaign/<string:Id>', methods=["PUT","DELETE"])
 # @token.admin_required
 def update_campaign(Id):
     name = request.json.get("campaign_name")
     description = request.json.get("campaign_description")
     status = request.json.get("status")  
     message = request.json.get("message",None)
-    message_subject = request.json.get("message_subject",None) 
-    ret = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
-    "$set": {
-        "Campaign_name": name,
-        "Campaign_description": description,
-        "status": status,
-        "message": message,
-        "message_subject": message_subject
-    }
-    })
-    return jsonify({"message":"Campaign Updated"}),200
+    message_subject = request.json.get("message_subject",None)
+    message_id = request.json.get("message_id",None)
+    if request.method == "POST":
+        if message_id is not None:
+            campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+            "$set": {
+                "Campaign_name": name,
+                "Campaign_description": description,
+                "status": status
+            }
+            })
+        else:
+            campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+            "$set": {
+                "Campaign_name": name,
+                "Campaign_description": description,
+                "status": status
+            },
+            "$push": {
+                
+
+            }
+            })
+
+        return jsonify({"message":"Campaign Updated"}),200
+    elif request.method == "DELETE":
+        campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+        "$pull": {
+            "message_id": message_id
+        }
+        })
+
+
+
 
 @bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["DELETE"])
 @bp.route('/assign_template/<string:campaign_id>', methods=["PUT"])
