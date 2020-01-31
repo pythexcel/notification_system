@@ -128,13 +128,6 @@ def send_mails():
         system_variable = [serialize_doc(doc) for doc in system_variable]
     
         missing_payload = []
-        for k,v in request.json['data'].items():
-            if v is None:
-                missing_payload.append({"key": k , "type": "date" if k in dates_converter else "text"})
-        for missing in missing_payload:
-            if missing['key'] in request.json['data']:
-                request.json['data'].pop(missing['key'])
-    
         message_variables = []
         message = message_detail['message'].split('#')
         del message[0]
@@ -145,8 +138,9 @@ def send_mails():
         message_str = message_detail['message']
         for detail in message_variables:
             if detail in request.json['data']:
-                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
-                message_str = re.sub(rexWithString, str(request.json['data'][detail]), message_str)
+                if request.json['data'][detail] is not None:
+                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
+                    message_str = re.sub(rexWithString, str(request.json['data'][detail]), message_str)
             else:
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
@@ -171,8 +165,10 @@ def send_mails():
         message_subject = message_detail['message_subject']
         for detail in subject_variables:
             if detail in request.json['data']:
-                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
-                message_subject = re.sub(rexWithString, str(request.json['data'][detail]), message_subject)
+                if request.json['data'][detail] is not None:
+                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
+                    message_subject = re.sub(rexWithString, str(request.json['data'][detail]), message_subject)
+
             else:
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
