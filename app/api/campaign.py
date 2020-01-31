@@ -169,7 +169,6 @@ def update_campaign(Id):
                 "$push": { 
                     "message_detail" : message_creation
                     }
-                }
                 })
             else:
                 campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
