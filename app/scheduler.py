@@ -56,7 +56,7 @@ def campaign_mail():
                             campaign_status_err = mongo.db.campaigns.update({"_id":ObjectId(campaign['_id'])},
                                     {
                                         "$set": {
-                                                "status": "Error spawned"
+                                                "status": repr(error)
                                             }
                                     })
                             return None

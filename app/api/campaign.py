@@ -40,7 +40,7 @@ def create_campaign():
 
         message_creation = dict()
         if message is not None and message_subject is not None:
-            message_creation.update({"message_id": str(uuid.uuid4()) "message": message,"message_subject": message})
+            message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message})
 
 
         ret = mongo.db.campaigns.insert_one({
@@ -55,7 +55,9 @@ def create_campaign():
 
         if message_creation is not None:
             create_campaign_message = mongo.db.campaigns.update({"_id": ObjectId(str(ret))},{
-                "$push": message_creation
+                "$push": {
+                   "message_detail" : message_creation
+                }
             })
         else:
             pass
@@ -144,26 +146,39 @@ def update_campaign(Id):
     message_id = request.json.get("message_id",None)
     if request.method == "POST":
         if message_id is not None:
-            campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+            campaign = mongo.db.campaigns.update({"_id": ObjectId(Id),"message_detail.message_id": message_id},{
             "$set": {
                 "Campaign_name": name,
                 "Campaign_description": description,
-                "status": status
+                "status": status,
+                "message_detail.$.message": message,
+                "message_detail.$.message_subject": message_subject
             }
             })
         else:
-            campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
-            "$set": {
-                "Campaign_name": name,
-                "Campaign_description": description,
-                "status": status
-            },
-            "$push": {
-                
-
-            }
-            })
-
+            message_creation = dict()
+            if message is not None and message_subject is not None:
+                message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message})
+            if message_creation is not None:
+                campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+                "$set": {
+                    "Campaign_name": name,
+                    "Campaign_description": description,
+                    "status": status
+                },
+                "$push": { 
+                    "message_detail" : message_creation
+                    }
+                }
+                })
+            else:
+                campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+                "$set": {
+                    "Campaign_name": name,
+                    "Campaign_description": description,
+                    "status": status
+                }                
+                })
         return jsonify({"message":"Campaign Updated"}),200
     elif request.method == "DELETE":
         campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
@@ -171,8 +186,6 @@ def update_campaign(Id):
             "message_id": message_id
         }
         })
-
-
 
 
 @bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["DELETE"])
