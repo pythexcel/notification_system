@@ -47,8 +47,6 @@ def create_campaign():
                 "Campaign_name": name,
                 "creation_date": datetime.datetime.utcnow(),
                 "Campaign_description": description,
-                "message": message,
-                "message_subject": message_subject,
                 "status":status,
                 "generated_from_recruit":generated
         }).inserted_id
