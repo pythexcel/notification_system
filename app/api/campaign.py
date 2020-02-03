@@ -133,7 +133,7 @@ def list_campaign():
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
 
-@bp.route('/update_campaign/<string:Id>', methods=["PUT","DELETE"])
+@bp.route('/update_campaign/<string:Id>', methods=["POST","DELETE"])
 # @token.admin_required
 def update_campaign(Id):
     name = request.json.get("campaign_name")
@@ -180,9 +180,13 @@ def update_campaign(Id):
     elif request.method == "DELETE":
         campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
         "$pull": {
-            "message_id": message_id
+            "message_detail":{
+                "message_id": message_id
+
+            } 
         }
         })
+        return jsonify({"message": "message deleted from campaign"})
 
 
 @bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["DELETE"])
