@@ -10,9 +10,6 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
 import json
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 import uuid
 import os 
 from app.phone_util import Push_notification

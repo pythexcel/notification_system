@@ -15,6 +15,7 @@ from flask_jwt_extended import (
 )
 from app.mail_util import send_email,validate_smtp_counts,validate_smtp
 import smtplib
+from app.config import smtp_counts
 from werkzeug import secure_filename
 import uuid
 
@@ -40,8 +41,7 @@ def create_campaign():
 
         message_creation = dict()
         if message is not None and message_subject is not None:
-            message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message})
-
+            message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message_subject,"count":0})
 
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
@@ -133,9 +133,10 @@ def list_campaign():
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
 
-@bp.route('/update_campaign/<string:Id>', methods=["POST","DELETE"])
+@bp.route('/update_campaign/<string:Id>', methods=["POST"])
+@bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
 # @token.admin_required
-def update_campaign(Id):
+def update_campaign(Id,message_id=None):
     name = request.json.get("campaign_name")
     description = request.json.get("campaign_description")
     status = request.json.get("status")  
@@ -310,11 +311,20 @@ def campaign_start_mail(campaign):
                         "mail_cron":False
                     }
                 },multi=True)
+                smtp_count_value = []
+                for smtp in smtps:
+                    for key,value in smtp_counts.items():
+                        smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
+                        if smtp_detail['mail_server'] in smtp_counts:
+                            smtp_count_value.append(value)
+                total_time = round(len(ids)/sum(smtp_count_value))
+                total_expected_time = "{} days".format(total_time)
                 campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
                     "$set": {
                         "status": "Running",
                         "delay": delay,
-                        "smtps": smtps
+                        "smtps": smtps,
+                        "total_expected_time": total_expected_time
                     }
                 })
                 return jsonify({"message":"Mails sended"}),200
@@ -329,32 +339,40 @@ def mails_status():
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
-@bp.route("/template_hit_rate/<string:variable>/<string:user>",methods=['GET'])
-def hit_rate(variable,user):
+@bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
+def hit_rate(variable,campaign_message,user):
     hit = request.args.get('hit_rate', default=0, type=int)
+
+    campaign_update = mongo.db.campaigns.update({"message_detail.message_id": campaign_message },{
+        "$inc": 
+        {
+            "message_detail.count":hit
+        },
+    })
     hit_rate_calculation = mongo.db.mail_status.update({
         "user_id":user,
         "digit": variable
         },
-        {
-            "$inc": {
-                "hit_rate":hit
-                },
-            "$set":{
-                "seen_date": datetime.datetime.utcnow(),
-                "seen": True
-            }
+        "$set":{
+            "seen_date": datetime.datetime.utcnow(),
+            "seen": True
+        }
         })   
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
 
-@bp.route("campaign_redirect/<string:unique_key>",methods=['GET'])
-def redirectes(unique_key):
+@bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
+def redirectes(unique_key,campaign_id):
     url =  request.args.get('url', type=str)
     action = request.args.get('action', type=str,default='')
     clicked = mongo.db.mail_status.update({"digit": unique_key},{
         "$set":{
             "clicked": True
         }
+    })
+    campaign_clicked_details = mongo.db.campaign_clicked.insert_one({
+        "campaign_id": campaign_id,
+        "clicked_time": datetime.datetime.now(),
+        "fe_time": datetime.datetime.utcnow()
     })
     final_link = url+action
     return redirect(final_link), 302

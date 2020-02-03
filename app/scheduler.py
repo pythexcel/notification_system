@@ -28,14 +28,13 @@ def campaign_mail():
     for campaign in campaigns:
         if campaign is not None:
             message_subject_details = []
-            if campaign['message'] != "":
-                if campaign['message_subject'] != "":
-                    message_subject_details.append({"message":campaign['message'],"message_subject":campaign["message_subject"]})
-            if 'Template' in campaign:
-                template_data = random.choice(campaign['Template'])
-                Template_details = mongo.db.mail_template.find_one({"_id":ObjectId(template_data)})
-                message_subject_details.append({"message": Template_details['message'],"message_subject": Template_details["message_subject"]})
-            
+            if 'message_detail' in campaign:
+                if campaign['message_detail']:
+                    highest_count_message = max(campaign['message_detail'], key=lambda x:x['count'])
+                    for message_detail in campaign['message_detail']:
+                        if message_detail['count'] == highest_count_message:
+                            message_subject_details.append(message_detail)
+                    
             filelink = None
             if 'attachment_file_name' in campaign:
                 filelink = campaign['attachment_file']
@@ -88,6 +87,9 @@ def campaign_mail():
                                 if detail in campaign:
                                     rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
                                     message_str = re.sub(rexWithString, ret[detail], message_str)
+                                elif detail in user:
+                                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                                    message_str = re.sub(rexWithString, ret[detail], message_str)
                                 else:
                                     for element in system_variable:
                                         if "#" + detail == element['name'] and element['value'] is not None:
@@ -106,6 +108,9 @@ def campaign_mail():
                                 if detail in campaign:
                                     rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
                                     message_subject = re.sub(rexWithString, ret[detail], message_subject)
+                                elif detail in user:
+                                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                                    message_str = re.sub(rexWithString, ret[detail], message_str)
                                 else:
                                     for element in system_variable:
                                         if "#" + detail == element['name'] and element['value'] is not None:
@@ -125,6 +130,7 @@ def campaign_mail():
                                 sending_password= mail_password,
                                 sending_server= mail_server,
                                 digit=digit,
+                                campaign_message_id=final_message['message_id'],
                                 filelink=filelink,
                                 filename=filename,
                                 sending_port= mail_port)
@@ -240,7 +246,7 @@ def reject_mail():
         pass
 
 def cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False})
+    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"HR"})
     if ret is not None:
         vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
             {
@@ -258,3 +264,21 @@ def cron_messages():
     else:
         pass 
 
+def recruit_cron_messages():
+    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"RECRUIT"})
+    if ret is not None:
+        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
+            {
+                "$set": {
+                        "cron_status": True
+                    }
+                    })
+
+        if ret['type'] == "email":
+            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
+        elif ret['type'] == "slack":
+            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
+        else:
+            pass    
+    else:
+        pass 

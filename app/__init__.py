@@ -28,7 +28,7 @@ mongo = db.init_db()
 
 from app import token
 
-from app.scheduler import campaign_mail,reject_mail,cron_messages
+from app.scheduler import campaign_mail,reject_mail,cron_messages,recruit_cron_messages
 from app.imap_util import bounced_mail,mail_reminder
 
 def create_app(test_config=None):
@@ -105,6 +105,10 @@ def create_app(test_config=None):
             schduled_messages_scheduler.shutdown()
             
     elif app.config['origin'] == "recruit":
+        recruit_schduled_messages_scheduler = BackgroundScheduler()
+        recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
+        recruit_schduled_messages_scheduler.start()
+
         reject_mail_scheduler = BackgroundScheduler()
         reject_mail_scheduler.add_job(reject_mail, trigger='interval', seconds=5)
         reject_mail_scheduler.start()
@@ -129,6 +133,7 @@ def create_app(test_config=None):
             campaign_mail_scheduler.shutdown()
             bounced_mail_scheduler.shutdown()
             mail_reminder_scheduler.shutdown()
+            recruit_schduled_messages_scheduler.shutdown()
 
     
 @click.command("seed_hr")
