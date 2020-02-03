@@ -137,13 +137,13 @@ def list_campaign():
 @bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
 # @token.admin_required
 def update_campaign(Id,message_id=None):
-    name = request.json.get("campaign_name")
-    description = request.json.get("campaign_description")
-    status = request.json.get("status")  
-    message = request.json.get("message",None)
-    message_subject = request.json.get("message_subject",None)
-    message_id = request.json.get("message_id",None)
     if request.method == "POST":
+        name = request.json.get("campaign_name")
+        description = request.json.get("campaign_description")
+        status = request.json.get("status")  
+        message = request.json.get("message",None)
+        message_subject = request.json.get("message_subject",None)
+        message_id = request.json.get("message_id",None)
         if message_id is not None:
             campaign = mongo.db.campaigns.update({"_id": ObjectId(Id),"message_detail.message_id": message_id},{
             "$set": {
