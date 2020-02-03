@@ -157,7 +157,7 @@ def update_campaign(Id,message_id=None):
         else:
             message_creation = dict()
             if message is not None and message_subject is not None:
-                message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message})
+                message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message,"count":0})
             if message_creation is not None:
                 campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
                 "$set": {
