@@ -32,7 +32,7 @@ def campaign_mail():
                 if campaign['message_detail']:
                     highest_count_message = max(campaign['message_detail'], key=lambda x:x['count'])
                     for message_detail in campaign['message_detail']:
-                        if message_detail['count'] == highest_count_message:
+                        if message_detail['count'] == highest_count_message['count']:
                             message_subject_details.append(message_detail)
                     
             filelink = None
@@ -60,7 +60,6 @@ def campaign_mail():
                                     })
                             return None
                         else:
-                        
                             mail_server = validate['mail_server']
                             mail_port = validate['mail_port']
                             mail_username = validate['mail_username']
@@ -95,7 +94,6 @@ def campaign_mail():
                                         if "#" + detail == element['name'] and element['value'] is not None:
                                             rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
                                             message_str = re.sub(rexWithSystem, element['value'], message_str)  
-
                             subject_variables = []
                             message_sub = subject.split('#')
                             del message_sub[0]
@@ -160,6 +158,7 @@ def campaign_mail():
 
                                 working_status = False   
                             else:  
+    
                                 mail_data = mongo.db.mail_status.insert_one({
                                     "user_mail": user['email'],
                                     "user_id": str(user['_id']),
