@@ -358,7 +358,7 @@ def hit_rate(variable,campaign_message,user):
             "seen": True
         }
         })   
-    return 'done'
+    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
 
 @bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
 def redirectes(unique_key,campaign_id):
