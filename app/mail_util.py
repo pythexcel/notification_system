@@ -78,7 +78,7 @@ def validate_smtp_counts(ids):
     else:
         raise Exception("Smtp is not available")
 
-def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
@@ -157,7 +157,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
             required_url = data['href'].split("/?")
-            message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}'.format(digit))
+            message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}'.format(digit,campaign))
         message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)

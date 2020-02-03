@@ -126,6 +126,7 @@ def campaign_mail():
                                 recipients=to,
                                 subject=message_subject,
                                 user=unique,
+                                campaign=str(campaign['_id']),
                                 sending_mail= mail_username,
                                 sending_password= mail_password,
                                 sending_server= mail_server,
