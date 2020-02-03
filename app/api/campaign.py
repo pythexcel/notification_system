@@ -363,7 +363,6 @@ def hit_rate(variable,campaign_message,user):
 @bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
 def redirectes(unique_key,campaign_id):
     url =  request.args.get('url', type=str)
-    action = request.args.get('action', type=str,default='')
     clicked = mongo.db.mail_status.update({"digit": unique_key},{
         "$set":{
             "clicked": True
@@ -374,8 +373,7 @@ def redirectes(unique_key,campaign_id):
         "clicked_time": datetime.datetime.now(),
         "fe_time": datetime.datetime.utcnow()
     })
-    final_link = url+action
-    return redirect(final_link), 302
+    return redirect(url), 302
 
 @bp.route('edit_templates/<string:template_id>',methods=["POST"])
 def edit_template(template_id):
