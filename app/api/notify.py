@@ -24,6 +24,7 @@ import base64
 import bson
 import dateutil.parser
 import datetime
+import smtplib
 
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
@@ -265,6 +266,7 @@ def mails():
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)
     filelink = request.json.get("filelink",None)
+    is_reminder = request.json.get("is_reminder",True)
     if not MAIL_SEND_TO and message:
         return jsonify({"MSG": "Invalid Request"}), 400
     bcc = None
@@ -276,6 +278,14 @@ def mails():
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
     if MAIL_SEND_TO is not None:
+        for mail_store in MAIL_SEND_TO:
+            id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
+            "$set":{
+                "message": message,
+                "subject": subject,
+                "to":mail_store,
+                "is_reminder":is_reminder
+            }},upsert=True)
         send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
         return jsonify({"status":True,"Message":"Sended"}),200 
     else:
@@ -315,5 +325,13 @@ def mail_test():
     try:
         send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
         return jsonify({"status":True,"Message": "Smtp working"}), 200
+    except smtplib.SMTPServerDisconnected:
+        return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
+    except smtplib.SMTPConnectError:
+        return jsonify({"status":False,"Message": "Smtp is unable to established"}), 400    
+    except smtplib.SMTPAuthenticationError:
+        return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
+    except smtplib.SMTPDataError:
+        return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
     except Exception:
-        return jsonify({"status":False,"Message": "Smtp invalid or not working"}), 400                
+        return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         

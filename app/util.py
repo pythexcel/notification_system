@@ -63,8 +63,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
             system_require.append(data)
             message_variables.remove(data)
         else:
-            pass        
-    print(message_variables)    
+            pass           
     need_found_in_payload = True
     for data in message_variables:
         need_found_in_payload = False
