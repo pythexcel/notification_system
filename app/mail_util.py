@@ -156,7 +156,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1'>".format(base_url,digit,campaign_message_id,user)
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
-            required_url = data['href'].split("/?")
+            required_url = data['href'].split("?")
             message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}'.format(digit,campaign))
         message = message + url 
     main = MIMEText(message,'html')
