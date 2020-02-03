@@ -352,7 +352,7 @@ def hit_rate(variable,campaign_message,user):
     hit_rate_calculation = mongo.db.mail_status.update({
         "user_id":user,
         "digit": variable
-        },
+        },{
         "$set":{
             "seen_date": datetime.datetime.utcnow(),
             "seen": True
