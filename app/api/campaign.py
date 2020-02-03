@@ -346,7 +346,7 @@ def hit_rate(variable,campaign_message,user):
     campaign_update = mongo.db.campaigns.update({"message_detail.message_id": campaign_message },{
         "$inc": 
         {
-            "message_detail.count":hit
+            "message_detail.$.count":hit
         },
     })
     hit_rate_calculation = mongo.db.mail_status.update({
@@ -358,7 +358,7 @@ def hit_rate(variable,campaign_message,user):
             "seen": True
         }
         })   
-    return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
+    return 'done'
 
 @bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
 def redirectes(unique_key,campaign_id):
