@@ -28,7 +28,7 @@ mongo = db.init_db()
 
 from app import token
 
-from app.scheduler import campaign_mail,reject_mail,cron_messages
+from app.scheduler import campaign_mail,reject_mail,cron_messages,tms_cron_messages
 from app.imap_util import bounced_mail,mail_reminder
 
 def create_app(test_config=None):
@@ -102,6 +102,18 @@ def create_app(test_config=None):
             return app
         except:
             schduled_messages_scheduler.shutdown()
+    
+    elif app.config['origin'] == "tms":
+        
+        tms_schduled_messages_scheduler = BackgroundScheduler()
+        tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=1)
+        tms_schduled_messages_scheduler.start()
+        try:
+            print("create app..")
+            return app
+        except:
+            tms_schduled_messages_scheduler.shutdown()
+    
             
     elif app.config['origin'] == "recruit":
         reject_mail_scheduler = BackgroundScheduler()
