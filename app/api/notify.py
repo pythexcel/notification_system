@@ -2,9 +2,9 @@ from app import token
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.mail_util import send_email
-from app.util import serialize_doc,construct_message,validate_message
-from app.config import message_needs,messages,config_info,Base_url
-from app.slack_util import slack_message 
+from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
+from app.config import message_needs,messages,config_info,dates_converter
+from app.slack_util import slack_message,slack_id
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
@@ -13,34 +13,39 @@ import json
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-from weasyprint import HTML, CSS
 import uuid
 import os 
+from app.phone_util import Push_notification
 from bson.objectid import ObjectId
+from werkzeug import secure_filename
+from flask import current_app as app
+import re
+import base64
+import bson
+import dateutil.parser
+import datetime
+import smtplib
+
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
 
 @bp.route('/dispatch', methods=["POST"])
+# @token.authentication
 def dispatch():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)  #salary slip,xyz
-    print("MSG_KEY=====>",MSG_KEY)
     missed_req = {}
     message_detail = mongo.db.notification_msg.find_one({"message_key": MSG_KEY})
-    print("message_detail==>",message_detail)
     # finding data of payload from request key via json
     for data in messages:
         if data['message_key'] == MSG_KEY:
-            print("line number 36")
             missed_req = data
     # below will checki if message detail is completely empty return data from json or else if its any value is none replace it from json data
     if message_detail is not None:
-        print("line number 40 if condition")
         update = message_detail.update((k,v) for k,v in missed_req.items() if v is None)
     else:
-        print("line number 43 else condition")
         message_detail = missed_req
     if message_detail and message_detail['message_type'] is not None:   
             message = message_detail['message']
@@ -48,7 +53,6 @@ def dispatch():
             # looping over all the needs check if my message type in that key and if found
             for key in message_needs:
                 if message_detail['message_type'] == key:
-                    print("line number 51 if condition")
                     need_found_in_payload = False
                     # LOOP OVER THE KEYS inside the need FOR REQUEST
                     for data in message_needs[key]:
@@ -63,12 +67,9 @@ def dispatch():
                     if not missing_payload:
                         input = request.json
                         try:
-                            print("message==>",message,"message_details==>",message_detail,"req_json",input)
                             validate_message(message=message,message_detail=message_detail,req_json=input) 
-                            print("validate_message")
                             return jsonify({"status":True,"Message":"Sended"}),200 
                         except Exception as error:
-                            print("Exception line number 70 notify")
                             return(repr(error)),400
                     else:
                         ret = ",".join(missing_payload)
@@ -77,64 +78,274 @@ def dispatch():
         return jsonify("No Message Type Available"), 400
 
 @bp.route('/preview', methods=["POST"])
+# @token.admin_required
+# @token.authentication
 def send_mails():
     if not request.json:
         abort(500)
+    for elem in dates_converter:
+        if elem in request.json['data']:
+            if request.json['data'][elem] is not None:
+                if request.json['data'][elem] != "":
+                    if request.json['data'][elem] != "No Access":
+                        date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%d %b %Y")
+                        request.json['data'][elem] = date_formatted    
+        
     MSG_KEY = request.json.get("message_key", None)  
-    # MAIL_SEND_TO = request.json.get("to",None)
     Data = request.json.get("data",None)
+    Message = request.json.get("message",None)
+    Subject = request.json.get("subject",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
-    if message_detail is not None: 
-        var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
-        head = var['header_value']
-        foot = var['footer_value']
-        ret = mongo.db.mail_variables.find({})
-        ret = [serialize_doc(doc) for doc in ret] 
+    if message_detail is not None:
+        if Message is not None:
+            message_detail['message'] = Message
+        else:
+            pass
+        if Subject is not None:
+            if Subject != "":
+                message_detail['message_subject'] = Subject
+        else:
+            pass    
+
+        attachment_file = None
+        attachment_file_name = None
+        if 'attachment' in request.json:
+            if 'attachment_file' in message_detail:
+                attachment_file = message_detail['attachment_file']
+            if 'attachment_file_name' in message_detail:
+                attachment_file_name = message_detail['attachment_file_name']
+        else:
+            pass    
+            
+        header = None
+        footer = None
+        if 'template_head' in message_detail:        
+            var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
+            if var is not None:
+                header = var['header_value']
+                footer = var['footer_value']
+        system_variable = mongo.db.mail_variables.find({})
+        system_variable = [serialize_doc(doc) for doc in system_variable]
+    
+        missing_payload = []
         message_variables = []
-        message = message_detail['message'].split()
+        message = message_detail['message'].split('#')
+        del message[0]
+        rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in message:
-            if elem[0]=='#':
-                message_variables.append(elem[1:])        
+            varb = re.split(rex, elem)
+            message_variables.append(varb[0])
         message_str = message_detail['message']
         for detail in message_variables:
             if detail in request.json['data']:
-                message_str = message_str.replace("#"+detail, request.json['data'][detail])
+                if request.json['data'][detail] is not None:
+                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
+                    message_str = re.sub(rexWithString, str(request.json['data'][detail]), message_str)
             else:
-                message_str = message_str.replace("#page_header",head)
-                message_str = message_str.replace("#page_footer",foot)
-                for element in ret:
+                for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
-                        message_str = message_str.replace("#"+detail, element['value'])  
-                            
-        filename = str(uuid.uuid4())+'.pdf'
-        pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/pdf/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-        # below try except condition is for seeing if cloudnary credentials availabe or not save in file system
-        try:
-            file = cloudinary.uploader.upload(os.getcwd() + '/pdf/' + filename)
-            link = file['url']        
-        except ValueError:
-            link = Base_url + "/pdf/" + filename
-        if 'to' in request.json:
-            filelink = None
-            if 'pdf' in request.json and request.json['pdf'] is True:
-                filelink = os.getcwd() + '/pdf/' + filename
-            to = request.json['to']
-            for elem in ret:
-                if elem['name'] == "#page_header":
-                    head = elem['value']
-                if elem['name'] == "#page_footer":
-                    foo = elem['value']
-                if elem['name'] == "#page_break":
-                    br = elem['value']                    
-                    message_str = message_str.replace(head,'')
-                    message_str = message_str.replace(foo,'')
-                    message_str = message_str.replace(br,'')
-            bcc = None
-            if 'bcc' in request.json:
-                bcc = request.json['bcc']
-            cc = None
-            if 'cc' in request.json:
-                cc = request.json['cc']
-            send_email(message=message_str,recipients=to,subject=message_detail['message_subject'],bcc=bcc,cc=cc,filelink=filelink,filename=filename,link=link)
-        return jsonify({"status":True,"Message":message_str,"pdf": link}),200
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
+                        message_str = re.sub(rexWithSystem, str(element['value']), message_str)    
+
+
+        missing = message_str.split('#')
+        del missing[0]
+        missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
+        for elem in missing:
+            missing_data = re.split(missing_rex, elem)
+            missing_payload.append({"key": missing_data[0] , "type": "date" if missing_data[0] in dates_converter else "text"})
+
+        subject_variables = []
+        message_sub = message_detail['message_subject'].split('#')
+        del message_sub[0]
+        regex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
+        for elem in message_sub:
+            sub_varb = re.split(regex, elem)
+            subject_variables.append(sub_varb[0])
+        message_subject = message_detail['message_subject']
+        for detail in subject_variables:
+            if detail in request.json['data']:
+                if request.json['data'][detail] is not None:
+                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
+                    message_subject = re.sub(rexWithString, str(request.json['data'][detail]), message_subject)
+
+            else:
+                for element in system_variable:
+                    if "#" + detail == element['name'] and element['value'] is not None:
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
+                        message_subject = re.sub(rexWithSystem, str(element['value']), message_subject)  
+
+        missing_subject = message_subject.split("#")
+        del missing_subject[0]
+        missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
+        for elem in missing_subject:
+            sub_varb_missing = re.split(missing_sub_rex, elem)
+            missing_payload.append({"key": sub_varb_missing[0] , "type": "date" if sub_varb_missing[0] in dates_converter else "text"})
+
+        if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
+            if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
+                if request.json['data']['fromDate'] == request.json['data']['toDate']:
+                    message_str = message_str.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
+
+        if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
+            if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
+                if request.json['data']['fromDate'] == request.json['data']['toDate']:
+                    message_subject = message_subject.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
+
+        
+        download_pdf = "#letter_head #content #letter_foot"
+        if header is not None:
+            download_pdf = download_pdf.replace("#letter_head",header)
+        else:
+            download_pdf = download_pdf.replace("#letter_head",'')
+        download_pdf = download_pdf.replace("#content",message_str)
+        if footer is not None:
+            download_pdf = download_pdf.replace("#letter_foot",footer)
+        else:
+            download_pdf = download_pdf.replace("#letter_foot",'')
+
+        to = None
+        bcc = None
+        cc = None
+        if app.config['ENV'] == 'development':
+            if 'to' in request.json:
+                to = [app.config['to']]
+                bcc = [app.config['bcc']]
+                cc = [app.config['cc']]
+            else:
+                pass    
+        else:
+            if app.config['ENV'] == 'production':
+                if 'to' in request.json:
+                    if not request.json['to']:
+                        to = None
+                    else:     
+                        to = request.json['to']
+                else:
+                    to = None
+                if 'bcc' in request.json:    
+                    if not request.json['bcc']:
+                        bcc = None
+                    else:
+                        bcc = request.json['bcc']
+                else:
+                    bcc = None
+                
+                if 'cc' in request.json: 
+                    if not request.json['cc']:
+                        cc = None
+                    else:
+                        cc = request.json['cc']
+                else:        
+                    cc = None            
+        if message_detail['message_key'] == "interviewee_reject":
+            reject_mail = None
+            if app.config['ENV'] == 'production':
+                if 'email' in request.json['data']:
+                    reject_mail = request.json['data']['email']
+                else:
+                    return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
+            else:
+                if app.config['ENV'] == 'development':
+                    reject_mail = [app.config['to']]   
+            reject_handling = mongo.db.rejection_handling.insert_one({
+            "email": request.json['data']['email'],
+            'rejection_time': request.json['data']['rejection_time'],
+            'send_status': False,
+            'message': message_str,
+            'subject': message_subject
+            }).inserted_id  
+            return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
+        else:
+            if to is not None:
+                send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
+                return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+            else:
+                return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+        
             
+@bp.route('/send_mail', methods=["POST"])
+# @token.admin_required
+def mails():
+    if not request.json:
+        abort(500) 
+    MAIL_SEND_TO = None     
+    if app.config['ENV'] == 'development':
+        MAIL_SEND_TO = [app.config['to']]
+    else:
+        if app.config['ENV'] == 'production':
+            MAIL_SEND_TO = request.json.get("to",None)
+    message = request.json.get("message",None)
+    subject = request.json.get("subject",None)
+    filename = request.json.get("filename",None)
+    filelink = request.json.get("filelink",None)
+    #is_reminder = request.json.get("is_reminder",True)
+    if not MAIL_SEND_TO and message:
+        return jsonify({"MSG": "Invalid Request"}), 400
+    bcc = None
+    if 'bcc' in request.json:
+        bcc = request.json['bcc']
+    cc = None
+    if 'cc' in request.json:
+        cc = request.json['cc'] 
+    if 'fcm_registration_id' in request.json:
+        Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
+    if MAIL_SEND_TO is not None:
+        for mail_store in MAIL_SEND_TO:
+            id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
+            "$set":{
+                "message": message,
+                "subject": subject,
+                "to":mail_store,
+                "is_reminder":True
+            }},upsert=True)
+        send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
+        return jsonify({"status":True,"Message":"Sended"}),200 
+    else:
+        return jsonify({"status":False,"Message":"Please select a mail"}),400 
+
+
+@bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
+@token.admin_required
+def required_message(message_key):
+    if request.method == "GET":
+        ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
+        if ret is not None:
+            ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+            return jsonify(ret), 200
+        else:
+            return jsonify ({"Message": "no template exist"}), 200    
+
+@bp.route('/slack_test',methods=["POST"])
+# @token.authentication
+def token_test():
+    email = request.json.get('email')
+    try:
+        slack = slack_id(email)
+        slack_message(channel=[slack],message="Testing Slack Notification from HR System")
+        return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
+    except Exception:
+        return jsonify({"status":False,"Message": "Slack User not exist or invalid token"}), 400
+        
+
+@bp.route('/mail_test',methods=["POST"])
+# @token.authentication
+def mail_test():
+    email = None
+    if app.config['ENV']=='development':
+        email = app.config['to']
+    else:    
+        email = request.json.get('email')
+    try:
+        send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
+        return jsonify({"status":True,"Message": "Smtp working"}), 200
+    except smtplib.SMTPServerDisconnected:
+        return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
+    except smtplib.SMTPConnectError:
+        return jsonify({"status":False,"Message": "Smtp is unable to established"}), 400    
+    except smtplib.SMTPAuthenticationError:
+        return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
+    except smtplib.SMTPDataError:
+        return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
+    except Exception:
+        return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
