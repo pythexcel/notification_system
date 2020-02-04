@@ -144,6 +144,7 @@ def update_campaign(Id,message_id=None):
         message = request.json.get("message",None)
         message_subject = request.json.get("message_subject",None)
         message_id = request.json.get("message_id",None)
+        message_detail = request.json.get("message_detail",[])
         if message_id is not None:
             campaign = mongo.db.campaigns.update({"_id": ObjectId(Id),"message_detail.message_id": message_id},{
             "$set": {
@@ -154,21 +155,21 @@ def update_campaign(Id,message_id=None):
                 "message_detail.$.message_subject": message_subject
             }
             })
+            return jsonify({"message":"Campaign Updated with message"}),200
         else:
-            message_creation = dict()
-            if message is not None and message_subject is not None:
-                message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message_subject,"count":0})
-            if message_creation is not None:
-                campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
-                "$set": {
-                    "Campaign_name": name,
-                    "Campaign_description": description,
-                    "status": status
-                },
-                "$push": { 
-                    "message_detail" : message_creation
-                    }
-                })
+            if message_detail:
+                for data in message_detail:
+                    data['message_id'] = str(uuid.uuid4())
+                    campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+                    "$set": {
+                        "Campaign_name": name,
+                        "Campaign_description": description,
+                        "status": status
+                    },
+                    "$push": { 
+                        "message_detail" : data
+                        }
+                    })
             else:
                 campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
                 "$set": {
@@ -177,7 +178,7 @@ def update_campaign(Id,message_id=None):
                     "status": status
                 }                
                 })
-        return jsonify({"message":"Campaign Updated"}),200
+            return jsonify({"message":"Campaign Updated"}),200
     elif request.method == "DELETE":
         campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
         "$pull": {
@@ -188,42 +189,6 @@ def update_campaign(Id,message_id=None):
         }
         })
         return jsonify({"message": "message deleted from campaign"})
-
-
-@bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["DELETE"])
-@bp.route('/assign_template/<string:campaign_id>', methods=["PUT"])
-def assign_template(campaign_id,template_id=None):
-    if request.method == "PUT":
-        for template_id in request.json['templates']:
-            vac = mongo.db.campaigns.aggregate([
-                { "$match": { "_id": ObjectId(campaign_id)}},
-                { "$project": {"status":{"$cond":{"if":{"$ifNull": ["$Template",False]},"then":{"state": {"$in":[template_id,"$Template"]}},"else":{"state":False }}}}},
-            ])
-            for data in vac:
-                if data['status'] is not None and data['status']['state'] is False:
-                    ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
-                        "$push": {
-                            "Template": template_id  
-                        }
-                    })
-        return jsonify({"message":"Template added to campaign"}), 200
-    if request.method == "DELETE":
-        vac = mongo.db.campaigns.aggregate([
-            { "$match": { "_id": ObjectId(campaign_id)}},
-            { "$project": {"status": {"$in":[template_id,"$Template"]},"count": { "$cond": { "if": { "$isArray": "$Template" }, "then": { "$size": "$Template" }, "else": "NULL"} }}},
-        ])
-        vac = [serialize_doc(doc) for doc in vac]
-        for data in vac:
-            if data['status'] is True:
-                ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
-                    "$pull": {
-                        "Template": template_id  
-                    }
-                })
-                return jsonify({"message":"Template removed from campaign"}), 200
-            else:
-                return jsonify({"message":"Template does not exist in this campaign"}), 400
-
 
 @bp.route('/user_list_campaign',methods=["GET","POST"])
 def add_user_campaign():
@@ -259,9 +224,9 @@ def campaign_smtp_test():
     for data in mail:
         try:
             send_email(
-                message='SMTP TEST SUCCESFUL',
+                message=request.json.get('message'),
                 recipients=[request.json.get('email')],
-                subject='SMTP TEST',
+                subject=request.json.get('message_subject'),
                 sending_mail= data['mail_username'],
                 sending_password=data['mail_password'],
                 sending_server=data['mail_server'],
