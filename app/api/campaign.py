@@ -285,13 +285,13 @@ def campaign_start_mail(campaign):
                 total_time = round(len(ids)/sum(smtp_count_value))
                 if total_time == 0:
                     total_time = 1
-                total_expected_time = "{} days".format(total_time)
+                total_expected_time = "{} day".format(total_time)
                 campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
                     "$set": {
                         "status": "Running",
                         "delay": delay,
                         "smtps": smtps,
-                        "total_expected_time": total_expected_time
+                        "total_expected_time_of_completion": total_expected_time
                     }
                 })
                 return jsonify({"message":"Mails sended"}),200
