@@ -131,7 +131,7 @@ def send_mails():
         message_variables = []
         message = message_detail['message'].split('#')
         del message[0]
-        rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in message:
             varb = re.split(rex, elem)
             message_variables.append(varb[0])
@@ -150,7 +150,7 @@ def send_mails():
 
         missing = message_str.split('#')
         del missing[0]
-        missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in missing:
             missing_data = re.split(missing_rex, elem)
             missing_payload.append({"key": missing_data[0] , "type": "date" if missing_data[0] in dates_converter else "text"})
@@ -158,7 +158,7 @@ def send_mails():
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
         del message_sub[0]
-        regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        regex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in message_sub:
             sub_varb = re.split(regex, elem)
             subject_variables.append(sub_varb[0])
@@ -177,7 +177,7 @@ def send_mails():
 
         missing_subject = message_subject.split("#")
         del missing_subject[0]
-        missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in missing_subject:
             sub_varb_missing = re.split(missing_sub_rex, elem)
             missing_payload.append({"key": sub_varb_missing[0] , "type": "date" if sub_varb_missing[0] in dates_converter else "text"})
