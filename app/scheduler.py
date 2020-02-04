@@ -126,7 +126,7 @@ def reject_mail():
         pass
 
 def cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False})
+    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"HR"})
     if ret is not None:
         vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
             {
