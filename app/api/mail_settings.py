@@ -75,7 +75,7 @@ def mail_setings(origin,id=None):
         if mail_from is not None:
             email = mail_from
         else:
-            mail = mail_username  
+            email = mail_username  
         try:
             send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
         except smtplib.SMTPServerDisconnected:
