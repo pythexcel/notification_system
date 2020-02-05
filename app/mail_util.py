@@ -10,7 +10,7 @@ import mimetypes
 from flask import current_app as app
 from dotenv import load_dotenv
 
-def send_email(message,recipients,subject,bcc=None,cc=None,mail_from=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None):
+def send_email(message,recipients,subject,bcc=None,cc=None,mail_from=None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,files=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
@@ -74,6 +74,17 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from=None,fileli
     msg['From'] = username
     msg['To'] = ','.join(recipients) 
     msg['Cc'] = cc
+
+    if files is not None:
+        for f in files:
+            file_path = open(f['file'],'rb')
+            attachment = email.mime.application.MIMEApplication(fo.read())
+            file_path.close()
+            attachment.add_header('Content-Disposition','attachment', filename=f['file_name'])
+            msg.attach(attachment)
+    else:
+        pass
+
     if filelink is not None:
         fo=open(filelink,'rb')
         file = email.mime.application.MIMEApplication(fo.read())
