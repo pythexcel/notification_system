@@ -59,7 +59,6 @@ def mail_setings(origin,id=None):
     if request.method == "POST":
         if not request.json:
             abort(500)
-            #checking origin of api hit so if it is HR one smtp conf can be created or updated only
         mail_server = request.json.get("mail_server", "smtp.gmail.com")
         mail_port = request.json.get("mail_port", 465)
         mail_use_tls = request.json.get("mail_use_tls", True)
@@ -98,6 +97,8 @@ def mail_setings(origin,id=None):
                             "mail_use_tls": mail_use_tls,
                             "mail_username":mail_username,
                             "mail_password":mail_password,
+                            "active": active,
+                            "type": type_s,
                             "mail_from": mail_from
                         }
                     },upsert=True)

@@ -143,6 +143,17 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
     msg['From'] = username
     msg['To'] = ','.join(recipients) 
     msg['Cc'] = cc
+
+    if files is not None:
+        for f in files:
+            file_path = open(f['file'],'rb')
+            attachment = email.mime.application.MIMEApplication(fo.read())
+            file_path.close()
+            attachment.add_header('Content-Disposition','attachment', filename=f['file_name'])
+            msg.attach(attachment)
+    else:
+        pass
+
     if filelink is not None:
         fo=open(filelink,'rb')
         file = email.mime.application.MIMEApplication(fo.read())

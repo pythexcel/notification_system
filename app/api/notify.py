@@ -93,7 +93,7 @@ def send_mails():
                 message_detail['message_subject'] = Subject
         else:
             pass    
-        
+
         attachment_file = None
         attachment_file_name = None
         if 'attachment' in request.json:
@@ -113,66 +113,69 @@ def send_mails():
                 footer = var['footer_value']
         system_variable = mongo.db.mail_variables.find({})
         system_variable = [serialize_doc(doc) for doc in system_variable]
-
+    
         missing_payload = []
         message_variables = []
         message = message_detail['message'].split('#')
         del message[0]
-        rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in message:
             varb = re.split(rex, elem)
             message_variables.append(varb[0])
         message_str = message_detail['message']
         for detail in message_variables:
             if detail in request.json['data']:
-                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                message_str = re.sub(rexWithString, str(request.json['data'][detail]), message_str)
+                if request.json['data'][detail] is not None:
+                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
+                    message_str = re.sub(rexWithString, str(request.json['data'][detail]), message_str)
             else:
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
-                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
                         message_str = re.sub(rexWithSystem, str(element['value']), message_str)    
 
 
         missing = message_str.split('#')
         del missing[0]
-        missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in missing:
             missing_data = re.split(missing_rex, elem)
-            missing_payload.append(missing_data[0])
+            missing_payload.append({"key": missing_data[0] , "type": "date" if missing_data[0] in dates_converter else "text"})
 
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
         del message_sub[0]
-        regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        regex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in message_sub:
             sub_varb = re.split(regex, elem)
             subject_variables.append(sub_varb[0])
         message_subject = message_detail['message_subject']
         for detail in subject_variables:
             if detail in request.json['data']:
-                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                message_subject = re.sub(rexWithString, str(request.json['data'][detail]), message_subject)
+                if request.json['data'][detail] is not None:
+                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
+                    message_subject = re.sub(rexWithString, str(request.json['data'][detail]), message_subject)
+
             else:
                 for element in system_variable:
                     if "#" + detail == element['name'] and element['value'] is not None:
-                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
                         message_subject = re.sub(rexWithSystem, str(element['value']), message_subject)  
 
         missing_subject = message_subject.split("#")
         del missing_subject[0]
-        missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+        missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
         for elem in missing_subject:
             sub_varb_missing = re.split(missing_sub_rex, elem)
-            missing_payload.append(sub_varb_missing[0])
+            missing_payload.append({"key": sub_varb_missing[0] , "type": "date" if sub_varb_missing[0] in dates_converter else "text"})
 
-        if 'fromDate' in request.json['data']:
-            if 'toDate' in request.json['data']:
+        if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
+            if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
                 if request.json['data']['fromDate'] == request.json['data']['toDate']:
                     message_str = message_str.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
 
-        if 'fromDate' in request.json['data']:
-            if 'toDate' in request.json['data']:
+        if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
+            if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
                 if request.json['data']['fromDate'] == request.json['data']['toDate']:
                     message_subject = message_subject.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
 
