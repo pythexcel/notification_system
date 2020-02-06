@@ -316,6 +316,62 @@ def Template_details(details):
         details['Template'] = Template_data
     else:
         pass
+    
+    validate = mongo.db.campaign_clicked.find({"campaign_id": details['_id']})
+    if validate:
+        clicking_details = mongo.db.campaign_clicked.aggregate([
+            {
+            "$project": 
+            {   "clicked_time": 1,
+                "campaign_id": 1,
+                "time":{
+                "$switch":
+                {
+                "branches": [
+                    {
+                    "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },0 ] },
+                                    { "$lt" : [ { "$hour" : "$clicked_time" },6 ] } ] },
+                    "then": "morning"
+                    },
+                    {
+                    "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },6 ] },
+                                    { "$lt" : [ { "$hour" : "$clicked_time" },12 ] } ] },
+                    "then": "noon"
+                    },
+                    {
+                    "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },12 ] },
+                                    { "$lt" : [ { "$hour" : "$clicked_time" },18 ] } ] },
+                    "then": "evening"
+                    },
+                    {
+                    "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },18 ] },
+                                    { "$lt" : [ { "$hour" : "$clicked_time" },24 ] } ] },
+                    "then": "night"
+                    }
+                ],
+                "default": "No record found."
+                } 
+                }}},
+                {
+                "$match": {"campaign_id": details['_id']}
+                },
+                { "$group": { "_id": {"interval":"$time","date":"$clicked_time"}, "myCount": { "$sum": 1 } } },
+                { "$sort" : { "_id.date" : 1 } }
+                ])
+        clicking_data = []
+        currDate = None
+        currMonth = None
+        for data in clicking_details:
+            if currDate is None or currMonth != data['_id']['date'].month and currDate == data['_id']['date'].day or currDate != data['_id']['date'].day:
+                clicking_data.append([data])
+            else:
+                clicking_data[len(clicking_data)-1].append(data) 
+            currMonth = data['_id']['date'].month 
+            currDate = data['_id']['date'].day
+        details['clicking_details'] = clicking_data
+    else:
+        details['clicking_details'] = []
+
     return details
 
 def campaign_details(user):
