@@ -248,58 +248,6 @@ def template_requirement(user):
     return user              
 
 def Template_details(details):
-     mongo.db.campaign_clicked.aggregate([
-        {
-        "$project": 
-        {   "clicked_time": 1,
-            "campaign_id": 1,
-            "time":{
-             "$switch":
-            {
-              "branches": [
-                {
-                  "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },0 ] },
-                                   { "$lt" : [ { "$hour" : "$clicked_time" },6 ] } ] },
-                  "then": "morning"
-                },
-                {
-                  "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },6 ] },
-                                   { "$lt" : [ { "$hour" : "$clicked_time" },12 ] } ] },
-                  "then": "noon"
-                },
-                {
-                  "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },12 ] },
-                                   { "$lt" : [ { "$hour" : "$clicked_time" },18 ] } ] },
-                  "then": "evening"
-                },
-                {
-                  "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },18 ] },
-                                   { "$lt" : [ { "$hour" : "$clicked_time" },24 ] } ] },
-                  "then": "night"
-                }
-              ],
-              "default": "No record found."
-            } 
-            }}},
-            {
-            "$match": {"campaign_id": "5e3809de3810633f9924c940"}
-            },
-            { "$group": { "_id": {"interval":"$time","date":"$clicked_time"}, "myCount": { "$sum": 1 } } },
-            { "$sort" : { "_id.date" : 1 } }
-            ])
-    a = []
-    currDate = None
-    currMonth = None
-    # i = 0
-    for data in x:
-        # print(currDate, data['_id']['date'].day)
-        print (len(a),"INDEX",data['_id']['date'].day,data['_id']['date'].month)
-        if currDate is None or currMonth != data['_id']['date'].month and currDate == data['_id']['date'].day or currDate != data['_id']['date'].day:
-            a.append([data])
-        else:
-            a[len(a)-1].append(data) 
-        currMonth = data['_id']['date'].month 
-        currDate = data['_id']['date'].day
     users = 0
     Template_data = []
     user_data = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
