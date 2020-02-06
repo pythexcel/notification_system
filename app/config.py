@@ -1,5 +1,3 @@
-import cloudinary
-
 # PLEASE UPDATE AS PER DEPLOYMENT SYSYTME EXAMPLE RECRUIT OR HR
 base_url = "http://176.9.137.77:8005/"
 
@@ -52,10 +50,5 @@ message_needs={
                 ]        
             }
 
-config_info = cloudinary.config( 
-    cloud_name='dp0y84e66',
-    api_key= '166465296448686',
-    api_secret= '0ks_nfDa39dimm7joD8gKSEdz6g'
-)
 
 fcm_api_key = "AIzaSyBO2S6xvT5qD2KuTYw-emCpNaJMVFZrzU0"

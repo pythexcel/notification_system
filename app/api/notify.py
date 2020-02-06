@@ -3,16 +3,13 @@ from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
-from app.config import message_needs,config_info,dates_converter
+from app.config import message_needs,dates_converter
 from app.slack_util import slack_message,slack_id
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
 import json
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 import uuid
 import os 
 from app.phone_util import Push_notification

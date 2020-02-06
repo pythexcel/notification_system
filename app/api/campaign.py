@@ -15,6 +15,7 @@ from flask_jwt_extended import (
 )
 from app.mail_util import send_email,validate_smtp_counts,validate_smtp
 import smtplib
+from app.config import smtp_counts
 from werkzeug import secure_filename
 import uuid
 
@@ -40,8 +41,7 @@ def create_campaign():
 
         message_creation = dict()
         if message is not None and message_subject is not None:
-            message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message})
-
+            message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message_subject,"count":0})
 
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
@@ -133,16 +133,18 @@ def list_campaign():
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
 
-@bp.route('/update_campaign/<string:Id>', methods=["POST","DELETE"])
+@bp.route('/update_campaign/<string:Id>', methods=["POST"])
+@bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
 # @token.admin_required
-def update_campaign(Id):
-    name = request.json.get("campaign_name")
-    description = request.json.get("campaign_description")
-    status = request.json.get("status")  
-    message = request.json.get("message",None)
-    message_subject = request.json.get("message_subject",None)
-    message_id = request.json.get("message_id",None)
+def update_campaign(Id,message_id=None):
     if request.method == "POST":
+        name = request.json.get("campaign_name")
+        description = request.json.get("campaign_description")
+        status = request.json.get("status")  
+        message = request.json.get("message",None)
+        message_subject = request.json.get("message_subject",None)
+        message_id = request.json.get("message_id",None)
+        message_detail = request.json.get("message_detail",[])
         if message_id is not None:
             campaign = mongo.db.campaigns.update({"_id": ObjectId(Id),"message_detail.message_id": message_id},{
             "$set": {
@@ -153,21 +155,21 @@ def update_campaign(Id):
                 "message_detail.$.message_subject": message_subject
             }
             })
+            return jsonify({"message":"Campaign Updated with message"}),200
         else:
-            message_creation = dict()
-            if message is not None and message_subject is not None:
-                message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message})
-            if message_creation is not None:
-                campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
-                "$set": {
-                    "Campaign_name": name,
-                    "Campaign_description": description,
-                    "status": status
-                },
-                "$push": { 
-                    "message_detail" : message_creation
-                    }
-                })
+            if message_detail:
+                for data in message_detail:
+                    data['message_id'] = str(uuid.uuid4())
+                    campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+                    "$set": {
+                        "Campaign_name": name,
+                        "Campaign_description": description,
+                        "status": status
+                    },
+                    "$push": { 
+                        "message_detail" : data
+                        }
+                    })
             else:
                 campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
                 "$set": {
@@ -176,7 +178,7 @@ def update_campaign(Id):
                     "status": status
                 }                
                 })
-        return jsonify({"message":"Campaign Updated"}),200
+            return jsonify({"message":"Campaign Updated"}),200
     elif request.method == "DELETE":
         campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
         "$pull": {
@@ -187,42 +189,6 @@ def update_campaign(Id):
         }
         })
         return jsonify({"message": "message deleted from campaign"})
-
-
-@bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["DELETE"])
-@bp.route('/assign_template/<string:campaign_id>', methods=["PUT"])
-def assign_template(campaign_id,template_id=None):
-    if request.method == "PUT":
-        for template_id in request.json['templates']:
-            vac = mongo.db.campaigns.aggregate([
-                { "$match": { "_id": ObjectId(campaign_id)}},
-                { "$project": {"status":{"$cond":{"if":{"$ifNull": ["$Template",False]},"then":{"state": {"$in":[template_id,"$Template"]}},"else":{"state":False }}}}},
-            ])
-            for data in vac:
-                if data['status'] is not None and data['status']['state'] is False:
-                    ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
-                        "$push": {
-                            "Template": template_id  
-                        }
-                    })
-        return jsonify({"message":"Template added to campaign"}), 200
-    if request.method == "DELETE":
-        vac = mongo.db.campaigns.aggregate([
-            { "$match": { "_id": ObjectId(campaign_id)}},
-            { "$project": {"status": {"$in":[template_id,"$Template"]},"count": { "$cond": { "if": { "$isArray": "$Template" }, "then": { "$size": "$Template" }, "else": "NULL"} }}},
-        ])
-        vac = [serialize_doc(doc) for doc in vac]
-        for data in vac:
-            if data['status'] is True:
-                ret = mongo.db.campaigns.update({"_id":ObjectId(campaign_id)},{
-                    "$pull": {
-                        "Template": template_id  
-                    }
-                })
-                return jsonify({"message":"Template removed from campaign"}), 200
-            else:
-                return jsonify({"message":"Template does not exist in this campaign"}), 400
-
 
 @bp.route('/user_list_campaign',methods=["GET","POST"])
 def add_user_campaign():
@@ -258,9 +224,9 @@ def campaign_smtp_test():
     for data in mail:
         try:
             send_email(
-                message='SMTP TEST SUCCESFUL',
+                message=request.json.get('message'),
                 recipients=[request.json.get('email')],
-                subject='SMTP TEST',
+                subject=request.json.get('message_subject'),
                 sending_mail= data['mail_username'],
                 sending_password=data['mail_password'],
                 sending_server=data['mail_server'],
@@ -310,11 +276,22 @@ def campaign_start_mail(campaign):
                         "mail_cron":False
                     }
                 },multi=True)
+                smtp_count_value = []
+                for smtp in smtps:
+                    for key,value in smtp_counts.items():
+                        smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
+                        if smtp_detail['mail_server'] in smtp_counts:
+                            smtp_count_value.append(value)
+                total_time = round(len(ids)/sum(smtp_count_value))
+                if total_time == 0:
+                    total_time = 1
+                total_expected_time = "{} day".format(total_time)
                 campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
                     "$set": {
                         "status": "Running",
                         "delay": delay,
-                        "smtps": smtps
+                        "smtps": smtps,
+                        "total_expected_time_of_completion": total_expected_time
                     }
                 })
                 return jsonify({"message":"Mails sended"}),200
@@ -329,35 +306,41 @@ def mails_status():
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
-@bp.route("/template_hit_rate/<string:variable>/<string:user>",methods=['GET'])
-def hit_rate(variable,user):
+@bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
+def hit_rate(variable,campaign_message,user):
     hit = request.args.get('hit_rate', default=0, type=int)
+
+    campaign_update = mongo.db.campaigns.update({"message_detail.message_id": campaign_message },{
+        "$inc": 
+        {
+            "message_detail.$.count":hit
+        },
+    })
     hit_rate_calculation = mongo.db.mail_status.update({
         "user_id":user,
         "digit": variable
-        },
-        {
-            "$inc": {
-                "hit_rate":hit
-                },
-            "$set":{
-                "seen_date": datetime.datetime.utcnow(),
-                "seen": True
-            }
+        },{
+        "$set":{
+            "seen_date": datetime.datetime.utcnow(),
+            "seen": True
+        }
         })   
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
 
-@bp.route("campaign_redirect/<string:unique_key>",methods=['GET'])
-def redirectes(unique_key):
+@bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
+def redirectes(unique_key,campaign_id):
     url =  request.args.get('url', type=str)
-    action = request.args.get('action', type=str,default='')
     clicked = mongo.db.mail_status.update({"digit": unique_key},{
         "$set":{
             "clicked": True
         }
     })
-    final_link = url+action
-    return redirect(final_link), 302
+    campaign_clicked_details = mongo.db.campaign_clicked.insert_one({
+        "campaign_id": campaign_id,
+        "clicked_time": datetime.datetime.now(),
+        "fe_time": datetime.datetime.utcnow()
+    })
+    return redirect(url), 302
 
 @bp.route('edit_templates/<string:template_id>',methods=["POST"])
 def edit_template(template_id):
