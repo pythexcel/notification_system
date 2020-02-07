@@ -40,7 +40,7 @@ def notification_message(message_origin):
         for_phone = request.json.get("for_phone", False)
 
         if not MSG and MSG_TYPE and MSG_KEY:
-            return jsonify({"msg": "Invalid Request"}), 400
+            return jsonify({"message": "Invalid Request"}), 400
 
         ret = mongo.db.notification_msg.update({"message_key": MSG_KEY}, {
             "$set": {
@@ -60,7 +60,7 @@ def notification_message(message_origin):
                 "for_phone": for_phone
             }
         },upsert=True)
-        return jsonify({"MSG": "upsert"}), 200
+        return jsonify({"message": "upsert"}), 200
 
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
@@ -82,7 +82,7 @@ def special_var():
                 "variable_type": variable_type
             }
         },upsert=True)
-        return jsonify({"MSG": "upsert"}), 200
+        return jsonify({"message": "upsert"}), 200
 
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT","DELETE"])
@@ -96,7 +96,7 @@ def mail_message(message_origin):
         MSG_KEY = request.json.get("message_key", None)
         ret = mongo.db.mail_template.remove({"message_key": MSG_KEY})
         return jsonify({
-                "Message": "Template Deleted",
+                "message": "Template Deleted",
                 "status": True
             }), 200
     if request.method == "PUT":
@@ -162,7 +162,7 @@ def mail_message(message_origin):
                 }
             })
             return jsonify({
-                "Message": "Template Updated",
+                "message": "Template Updated",
                 "status": True
             }), 200
         else:
@@ -193,7 +193,7 @@ def mail_message(message_origin):
                     "attachment_file_name":attachment_file_name 
                 }
             },upsert=True)
-            return jsonify({"Message": "Template Added", "status": True}), 200
+            return jsonify({"message": "Template Added", "status": True}), 200
 
 @bp.route('/letter_heads', methods=["GET", "PUT"])
 @bp.route('/letter_heads/<string:id>', methods=["DELETE"])
@@ -216,10 +216,10 @@ def letter_heads(id=None):
                 "working": Working
             }
         },upsert=True)
-        return jsonify({"MSG": "Letter Head Created","status":True}), 200
+        return jsonify({"message": "Letter Head Created","status":True}), 200
     if request.method == "DELETE":
         ret = mongo.db.letter_heads.remove({"_id": ObjectId(id)})
-        return jsonify({"MSG": "Letter Head Deleted","status":True}), 200
+        return jsonify({"message": "Letter Head Deleted","status":True}), 200
 
 
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',methods=["PUT"])
@@ -230,7 +230,7 @@ def assign_letter_heads(template_id, letter_head_id):
         {"$set": {
             "template_head": letter_head_id
         }})
-    return jsonify({"MSG": "Letter Head Added To Template"}), 200
+    return jsonify({"message": "Letter Head Added To Template"}), 200
 
 @bp.route('/slack_channel_test', methods=["POST"])
 # @token.admin_required
@@ -240,4 +240,4 @@ def slack_channel_test():
         "channel_id" : channel,
     })
     slack_message(channel=[channel],message="Your slack account is integrated")
-    return jsonify({"Message": "Sended","status":True}), 200
+    return jsonify({"message": "Sended","status":True}), 200
