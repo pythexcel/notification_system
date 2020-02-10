@@ -225,6 +225,32 @@ def campaign_mail():
         else:
             pass
                 
+def calculate_bounce_rate():
+    campaigns = mongo.db.campaigns.find({"status":"Running"})
+    campaigns = [serialize_doc(doc) for doc in campaigns]
+    
+    for campaign in campaigns:
+        if campaign is not None:
+            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id']})
+            campaign_users = [serialize_doc(doc) for doc in campaign_users]
+            bounce = mongo.db.bounce_emails.find({})
+            bounce = [serialize_doc(doc) for doc in bounce]
+            bounce_users = []
+            total_users = len(campaign_users)
+            for user in campaign_users:
+                for data in bounce:
+                    if user['email'] == data['bounced_mail'] and data['bounce_type'] == "hard":
+                        if user['email'] not in bounce_users:
+                            bounce_users.append(user['email'])
+            bounce_rate = len(bounce_users) *100 / total_users
+            campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
+                "$set": {
+                    "bounce_rate": bounce_rate
+                }
+            })
+        else:
+            pass
+
             
 def reject_mail():
     ret = mongo.db.rejection_handling.find_one({"send_status":False})
