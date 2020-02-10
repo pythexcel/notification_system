@@ -139,7 +139,7 @@ def create_app(test_config=None):
 
 
         calculate_bounce_rate_scheduler = BackgroundScheduler()
-        calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate_scheduler, trigger='interval', seconds=5)
+        calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=5)
         calculate_bounce_rate_scheduler.start()
 
         try:
