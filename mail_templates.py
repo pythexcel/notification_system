@@ -1,8 +1,6 @@
 templates = [
     {
         "Doc_type": "document",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Offer letter",
         "message": "<p><br></p><p><strong>Dear </strong><em><strong>#name:,&nbsp;</strong></em></p><p>With your application and subsequent interview, we are pleased to offer you an appointment for the position of #designation:<strong> </strong>at <strong>#company:</strong></p><p>There would be a <strong>training </strong>period of #training_month:, from your date of joining. During which you will be evaluated on the basis of your performance and other factor, after which your employment will be confirmed. You will be paid a sum of <strong>Rs. #lower_limit_salary: to #upper_limit_salary: </strong>as a stipend during your training period (depending upon your performance). Training period stipend is giving only after completion of #training_month:months training.CTC given to candidate is <strong>#CTC@ &nbsp;per annum</strong>.</p><p>The company follows a <strong>holding policy </strong>for freshers. Details of this are mentioned in Appendix and will be discussed with you on the date of your joining.</p><p>For increments you will be considered for increment every #increament_after_month: months after your employment confirmation.</p><p>The final Appointment Letter containing other Employment Terms would be provided to you in the first month of your joining.</p><p>This offer is recruit_details to your medical fitness, verification of your educational certificates, credit checks and satisfactory references.</p><p><strong>Note:</strong></p><p>Notice Period: 4 weeks<br>Number of Working Hours: Min 9hrs per day<br>Working Days: 6 days a week - <strong>2 Saturday (Second and Fourth)</strong> open in a Month.<br>Let us know if you have any questions. Please feel free to discuss any other concerns that you might have.* This offer letter is valid for 7--</p><p><strong>Regards,</strong></p><p><strong>#hr_signature:</strong></p><p>#venue:</p><p>&nbsp;</p>",
         "message_key": "OFFER LETTER",
@@ -15,8 +13,6 @@ templates = [
     },
     {
         "Doc_type": "document",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "RELIEVING CERTIFICATE",
         "message": "<p><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;</strong><u><strong>TO WHOMSOEVER IT MAY CONCERN</strong></u></p><p><strong>Date: #date_of_sending:</strong></p><p>This has reference to your resignation letter dated <strong>#resignation_date: </strong>from the services of the company #company:<strong> </strong>In this respect we would like to inform you that your resignation from the services of the company has been accepted and you have been relieved w.e.f. <strong>#relieving_date: </strong>on the closing of working hours.</p><p>We wish you all the success in your future endeavors.&nbsp;</p><p><strong>#company:,<br></strong></p><p><strong>#director_signature:</strong></p><p><br></p>",
         "message_key": "RELIEVING CERTIFICATE",
@@ -29,8 +25,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "New Employee Welcome Email",
         "message": "<p>Dear <strong>#name!</strong>,</p><p>We are all really excited to welcome you to our team! As agreed, your start date is #dateofjoining: &nbsp;You shall be expected to work a minimum of 9 hours per day between <strong>9.30 am-7.30 pm</strong>. We practice flexible timing till 10.30 am.</p><p>At #company:, we care about giving our employees everything they need to perform their best. As you will soon see, we have prepared your workstation with all necessary equipment. Our team will help you setup your computer, software and online accounts on your first day.</p><p>If you have any questions prior to your arrival, please feel free to email or call me and I will be more than happy to help you.</p><p>We are looking forward to working with you and seeing you achieve great things!</p><p>Best regards,</p><p><strong>#company:</strong></p><p><strong>#director_signature:<br>#logo:</strong></p>",
         "message_key": "New Employee Welcome Email",
@@ -43,8 +37,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Birthday Wish",
         "message": "<p>Dear #name:,</p><p>#company: wishes you a very HAPPY BIRTHDAY. May each passing year bring you wisdom, peace and cheer. Have a wonderful day and fabulous year ahead.</p><p>Regards</p><p><em>#director_signature!</em></p>",
         "message_key": "Birthday Wish",
@@ -57,8 +49,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Offer Letter with company",
         "message": "<p>Hi <strong>#name: ,</strong></p><p><strong>Greetings!</strong></p><p><br>We are pleased to appoint you as #jobtitle: with #company: with effect from #dateofjoining! .<br><br>You are requested to bring the photocopy of the following documents along with originals, mandatory on #dateofjoining: , at the Venue: #venue: at sharp 10:30 AM.<br><br>Joining Documents, as required:<br><br>1. #company: Offer Letter Copy<br><br>2. 2 Passport Size Photograph<br><br>3. Mark Sheets and Passing Certificates of all educational Qualifications<br><br>4. PAN Card<br><br>5. One of the following as ID proof<br><br>a. Copy of Passport<br><br>b. Copy of Driving License<br><br>. Copy of Voter Identity Card.<br><br>d. Aadhar Card<br><br>6. Previous Company Document (if applicable)<br><br>1. Experience Letter<br><br>2. Offer Letter<br><br>3. Latest Salary Slip<br><br></p><p>Kindly bring all the originals supporting your photocopy.</p><p>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Offer Letter with company",
@@ -71,8 +61,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Important HR guidelines and Company Policies",
         "message": "<p><br></p><p>Dear <strong>#name:,</strong></p><p>Welcome to #company:</p><p><br>Some of the company policy documents are attached with this mail. Before you start working in the office, kindly go through to all of them and get a clear understanding of company policies, work culture and environment.</p><p>Once you are well versed with them, you can proceed with your work. In case of any doubt feel free to contact.<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Important HR guidelines and Company Policies",
@@ -85,8 +73,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Offer Discussion",
         "message": "<p>Hi<strong> #name:,</strong></p><p><strong>Congratulations !</strong></p><p>We have selected you for job at #company:. However, before we roll out the offer letter please confirm regarding the offer discussion which we had today. Please revert on this as soon as possible to get an offer mail from our side.</p><p>Awaiting your response<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Offer Discussion",
@@ -99,8 +85,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Welcome employee",
         "message": "<p>Dear #name:,</p><p>Welcome to #company:.</p><p>We have the pleasure in offering you the position of <strong>#jobtitle:</strong> in #company:.</p><p>Please note the following:</p><p>1. You shall be expected to work a minimum of 9 hours per day between 9.30 am-8.30 pm. We practice flexible timing till 10.30am.</p><p>2. We work six days a week from Monday to Saturday only 2nd and 4th week. Saturday (First, Third and Fifth) and Sunday would be a holiday.</p><p>3. You will be on training for a period of two months. After completion of two months of training, you will be confirmed provided your performance has been found satisfactory and the same will be conveyed by your Manager.</p><p>4. Leave policy will not be applicable till the time you are on training.</p><p>5. You are required to join slack for all communication. Use your company email id and sign with the link #slack_link:</p><p>6. You can view HR Policy of the company at #hrms: login details are:-</p><p>Login ID- #username:</p><p>Password- #password_generated:</p><p>Email ID: #work_email:</p><p>Password- #password_generated:</p><p>Employee ID: #user_Id:</p><p>You can log in from gmail.com to your work email.<br>regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Welcome employee",
@@ -113,8 +97,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Employee Termination",
         "message": "<p>Hi #name:,<br>This is to inform you that your employment with #company: will end as of #termination_date:<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Employee Termination",
@@ -127,8 +109,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Employee Termination Policies",
         "message": "<p>Dear #name:<br>As you were informed in the preceding mail that your employment term would be ending soon with #company:, we would like this process to be smooth &amp; as clear as possible to avoid confusion between the employee and the employer.<br>To safeguard this we would like you to go through the termination policies in the attachment below. Please take a look and contact your HR in case of any doubts.<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Employee Termination Policies",
@@ -141,8 +121,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Employee Confirmation",
         "message": "<p>Hello #name:,</p><p><br>Congratulations!!<br>Your employment has been confirmed with effect from #training_completion_date:. Hope to see you continue doing the good work<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Employee Confirmation",
@@ -155,8 +133,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Employee Confirmation Policies",
         "message": "<p>Dear #name:,<br>After careful evaluation of your performance during the training/probation period we are now pleased to inform you that your employment has been confirmed with #company:<br>Your confirmation starts with effect from #training_completion_date:<br>In order to help you during your employment term, we have attached the confirmation policies in a doc below. Please go through the same to make this process a seamless one.<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Employee Confirmation Policies",
@@ -169,8 +145,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Leave apply",
         "message": "<p>Dear #name:,<br>You have applied for #leave_type: from #fromDate: to #toDate:</p><p>Reason : #reason:<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Leave apply",
@@ -183,8 +157,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "New Employee Important Information",
         "message": "<p>Dear #name:,<br>As you become part of #company:, we would like to draw your attention to few of the important policies/information which you must take note of to make your tenure with the company a pleasant experience.<br>Please read the policies below and contact your HR in case of any doubt or clarifications<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "New Employee Important Information",
@@ -197,8 +169,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "New Employee General Introduction",
         "message": "<p>Dear #name:,<br>We're delighted that you joined #company:. Hope you'd be a great asset to the company and we look forward to a positive employment relationship<br>Please find attached our company presentation so you get to know more about us.<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "New Employee General Introduction",
@@ -211,8 +181,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Salary Update",
         "message": "<p>Hello #name:,<br>Your salary has been updated. Kindly check your profile on HR.<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Salary Update",
@@ -225,8 +193,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Payslip",
         "message": "<p>Dear #name:,<br>Your payslip has been generated. Here are the details for the same.<br>Total Working Days = #total_working_days:<br>Days Present = #days_present:<br>Paid Leave Taken = #paid_leaves: <br>Leave Without Pay = #unpaid_leaves: <br>Total leave taken = #total_leave_taken: <br>Allocated Leave = #allocated_leaves: <br>Previous month leave balance = #leave_balance: <br>Final leave balance = #final_leave_balance: <br>Arrears = #arrear: <br>Misc Deduction = #misc_deduction: <br>Bonus =#bonus:<br>Total earning = #total_earning:<br>Total deduction = #total_deduction: <br>Net Salary = #net_salary:<br>In case of discrepancies please contact your HR.<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Payslip",
@@ -239,8 +205,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Leave rejected",
         "message": "<p>Hi #name:,<br>This is to inform you that your leave of #fromDate: has been rejected.<br>Reason: #reason:<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Leave rejected",
@@ -253,8 +217,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Leave approval",
         "message": "<p>Dear #name:,<br>Your leave from #fromDate: to #toDate: has been approved.<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Leave approval",
@@ -267,8 +229,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file":  None,
-        "attachment_file_name": None,
         "for": "Required Joining Documents",
         "message": "<p>Dear <strong>#name:</strong>, #work_email:</p><p>#salary_detail: , #username: , #work_email: , #user_Id: , #mobile_ph: , #training_completion_date: , #termination_date:</p><p>This is to inform you that, You are requested to <strong>bring the following documents</strong> along with &nbsp;originals, <strong>mandatory</strong> on <strong>#reporting_date: </strong>at the</p><p>venue <strong>#venue: </strong>at sharp #office_time:</p><p><u><strong>Joining Documents, as required</strong></u>&nbsp;</p><p>1. &nbsp;2 Passport Size Photograph.</p><p>2. &nbsp;Mark Sheets and Passing Certificates of all educational Qualifications.</p><p>3. &nbsp;PAN Card (2 Photocopy).</p><p>4. &nbsp;One of the following as ID proof for opening New Bank Account.</p><p>&nbsp;&nbsp;&nbsp;&nbsp;a. &nbsp;Copy of Passport</p><p>&nbsp;&nbsp;&nbsp;&nbsp;b. &nbsp;Copy of Driving License</p><p>&nbsp;&nbsp;&nbsp;&nbsp;c. &nbsp;Copy of Voter Identity Card.</p><p>&nbsp;&nbsp;&nbsp;&nbsp;d. &nbsp;Aadhar Card</p><p>#page_footer:</p><p>#page_break:</p><p>#page_header:</p><p>5. Previous Company Document (if applicable)</p><p>&nbsp;&nbsp;&nbsp;a. Experience Letter</p><p>&nbsp;&nbsp;&nbsp;b. Offer Letter</p><p>&nbsp;&nbsp;&nbsp;c. Latest Salary Slip&nbsp;</p><p>&nbsp;</p><p>Kindly bring all the originals supporting your photocopy.&nbsp;</p><p>&nbsp;</p><p>For any query kindly revert us.&nbsp;</p><p>&nbsp;</p><p><strong>Sincerely,</strong></p><p><em><strong>#hr_signature:</strong></em></p><p><em><strong>#logo:</strong></em></p>",
         "message_key": "Required Joining Documents",
@@ -281,8 +241,6 @@ templates = [
     },
     {
         "Doc_type": "document",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Experience Certificate",
         "message": "<p><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u><strong>TO WHOMSOEVER IT MAY CONCERN</strong></u></p><p><strong>Date: #date: |DD/MM/YYYY|</strong></p><p>This is to certify that Mr./Ms. #employee_name: has worked as a <strong>#employee_title: </strong>in our organization #company: from #from_date: |dd/mm/yyyy| to #to_date: |dd/mm/yyyy| with a total compensation of Rs.<strong> #salary: </strong>per annum. During the time of his/her tenure we found him/her extremely resourceful in all the technologies that he/she is competent.</p><p><br>We found him/her to be a good team player besides being a hard worker. We wish him/her all success in his/her future endeavors.</p><p><br></p><p><strong>#director_signature:</strong></p>",
         "message_key": "Experience Certificate",
@@ -295,8 +253,6 @@ templates = [
     },
     {
         "Doc_type": "email",
-        "attachment_file": None,
-        "attachment_file_name": None,
         "for": "Leave pending",
         "message": "<p>Dear #name:,<br>Your leave of &nbsp;#fromDate: is pending to be approved.<br>Regards<br>#hr_signature:<br>#logo:</p>",
         "message_key": "Leave pending",

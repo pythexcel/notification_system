@@ -1,3 +1,5 @@
+import os
+import uuid
 from app import mongo
 from app import token
 from flask import (Blueprint, flash, jsonify, abort, request)
@@ -9,9 +11,9 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
 from werkzeug.utils import secure_filename
-import os
 from flask import current_app as app
 from app.slack_util import slack_message
+
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
@@ -96,7 +98,7 @@ def mail_message(message_origin):
         MSG_KEY = request.json.get("message_key", None)
         ret = mongo.db.mail_template.remove({"message_key": MSG_KEY})
         return jsonify({
-                "Message": "Template Deleted",
+                "message": "Template Deleted",
                 "status": True
             }), 200
     if request.method == "PUT":
@@ -117,26 +119,12 @@ def mail_message(message_origin):
         if "default" in request.form:
             default = request.form["default"]
             
-
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
+        
         ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
         if ver is not None:
-            attachment_file = None
-            attachment_file_name = None
-            if 'attachment_file' not in request.files:
-                if 'attachment_file' in ver:
-                    attachment_file = ver['attachment_file']
-                    attachment_file_name = ver['attachment_file_name']
-                else:
-                    pass
-            else:
-                file = request.files['attachment_file']
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-                    attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    attachment_file_name = filename     
+                 
             version = ver['version'] + 1
             ver_message = ver['message']
             ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
@@ -156,44 +144,86 @@ def mail_message(message_origin):
                     "for": for_detail,
                     "default": default,
                     "recruit_details":recruit_details,
-                    "Doc_type": Doc_type,
-                    "attachment_file": attachment_file,
-                    "attachment_file_name":attachment_file_name
+                    "Doc_type": Doc_type
                 }
             })
+
+            if 'attachment_files' in request.files:
+                attachment_files = request.files.getlist('attachment_files')
+                for file in attachment_files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                        attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        attachment_file_name = filename
+                        
+                        mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                        "$push": {
+                            "attachment_files":{
+                                "file_id": str(uuid.uuid4()),
+                                "file_name": attachment_file_name,
+                                "file": attachment_file
+                            }
+                            }
+                        })
+            else:
+                pass
+
             return jsonify({
-                "Message": "Template Updated",
+                "message": "Template Updated",
                 "status": True
             }), 200
+        
         else:
-            attachment_file = None
-            attachment_file_name = None
-            if 'attachment_file' in request.files:
-                file = request.files['attachment_file']
-                if file and allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-                    attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    attachment_file_name = filename
+            ret = mongo.db.mail_template.insert_one({
+                "message_key": MSG_KEY,
+                "message": MSG,
+                "message_key": MSG_KEY,
+                "working": working,
+                "message_origin": message_origin,
+                "message_subject": MSG_SUBJECT,
+                "version": 1,
+                "default": False,
+                "for": for_detail,
+                "recruit_details":recruit_details,
+                "Doc_type": Doc_type, 
+            }).inserted_id
+
+            if 'attachment_files' in request.files:
+                attachment_files = request.files.getlist('attachment_files')
+                for file in attachment_files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                        attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        attachment_file_name = filename
+                        
+                        mongo.db.mail_template.update({"_id": ObjectId(str(ret))},{
+                        "$push": {
+                            "attachment_files":{
+                                "file_id": str(uuid.uuid4()),
+                                "file_name": attachment_file_name,
+                                "file": attachment_file
+                            }
+                            }
+                        })
             else:
-                pass             
-            ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
-                "$set": {
-                    "message": MSG,
-                    "message_key": MSG_KEY,
-                    "working": working,
-                    "message_origin": message_origin,
-                    "message_subject": MSG_SUBJECT,
-                    "version": 1,
-                    "default": False,
-                    "for": for_detail,
-                    "recruit_details":recruit_details,
-                    "Doc_type": Doc_type,
-                    "attachment_file": attachment_file,
-                    "attachment_file_name":attachment_file_name 
-                }
-            },upsert=True)
-            return jsonify({"Message": "Template Added", "status": True}), 200
+                pass  
+                                
+            return jsonify({"message": "Template Added", "status": True}), 200
+
+@bp.route('/delete_file/<string:id>/<string:file_id>',methods=["DELETE"])
+def delete_attached_file(id,file_id):
+    ret = mongo.db.mail_template.update({"_id": ObjectId(id)},{
+        "$pull": {
+            "attachment_files":{
+                "file_id": file_id
+
+            } 
+        }
+        })
+    return jsonify({"message": "File deleted", "status": True}), 200
+
 
 @bp.route('/letter_heads', methods=["GET", "PUT"])
 @bp.route('/letter_heads/<string:id>', methods=["DELETE"])
@@ -216,10 +246,10 @@ def letter_heads(id=None):
                 "working": Working
             }
         },upsert=True)
-        return jsonify({"MSG": "Letter Head Created","status":True}), 200
+        return jsonify({"message": "Letter Head Created","status":True}), 200
     if request.method == "DELETE":
         ret = mongo.db.letter_heads.remove({"_id": ObjectId(id)})
-        return jsonify({"MSG": "Letter Head Deleted","status":True}), 200
+        return jsonify({"message": "Letter Head Deleted","status":True}), 200
 
 
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',methods=["PUT"])
@@ -230,7 +260,7 @@ def assign_letter_heads(template_id, letter_head_id):
         {"$set": {
             "template_head": letter_head_id
         }})
-    return jsonify({"MSG": "Letter Head Added To Template"}), 200
+    return jsonify({"message": "Letter Head Added To Template"}), 200
 
 @bp.route('/slack_channel_test', methods=["POST"])
 # @token.admin_required
@@ -240,4 +270,4 @@ def slack_channel_test():
         "channel_id" : channel,
     })
     slack_message(channel=[channel],message="Your slack account is integrated")
-    return jsonify({"Message": "Sended","status":True}), 200
+    return jsonify({"message": "Sended","status":True}), 200
