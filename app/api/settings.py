@@ -15,7 +15,7 @@ bp = Blueprint('settings', __name__, url_prefix='/')
 # @token.admin_required
 def system_settings_setings():
     if request.method == "GET":
-        system_settings = mongo.db.system_settings.find_one({})
+        system_settings = mongo.db.system_settings.find_one({},{"_id":0})
         return jsonify(system_settings)
 
     if request.method == "PUT":
