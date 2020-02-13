@@ -20,8 +20,6 @@ def system_settings_setings():
 
     if request.method == "PUT":
         pdf_allow = request.json.get("pdf",False)
-        if not pdf_allow:
-            return jsonify({"message": "Invalid request"}), 400
         ret = mongo.db.system_settings.update({}, {
             "$set": {
                 "pdf": pdf_allow
