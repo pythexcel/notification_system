@@ -12,6 +12,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
 import json
 import uuid
 import os 
+from weasyprint import HTML, CSS
 from app.phone_util import Push_notification
 from bson.objectid import ObjectId
 from werkzeug import secure_filename
@@ -190,6 +191,12 @@ def send_mails():
             download_pdf = download_pdf.replace("#letter_foot",footer)
         else:
             download_pdf = download_pdf.replace("#letter_foot",'')
+
+        if message_detail['message_key'] == "Payslip":
+            filename = str(uuid.uuid4())
+            pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+            attachment_file_name = filename
+            attachment_file = os.getcwd() + '/attached_documents/' + filename
 
         to = None
         bcc = None

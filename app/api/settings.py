@@ -9,22 +9,22 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
 
 import datetime
 
-bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
+bp = Blueprint('settings', __name__, url_prefix='/')
 
 @bp.route('/settings', methods=["PUT", "GET"])
 # @token.admin_required
-def slack_seting():
+def system_settings_setings():
     if request.method == "GET":
-        slack = mongo.db.slack_settings.find_one({},{"_id":0})
-        return jsonify(slack)
+        system_settings = mongo.db.system_settings.find_one({})
+        return jsonify(system_settings)
 
     if request.method == "PUT":
-        slack_token = request.json.get("slack_token")
-        if not slack_token:
-            return jsonify({"message": "Slack Token missing"}), 400
-        ret = mongo.db.slack_settings.update({}, {
+        pdf_allow = request.json.get("pdf",False)
+        if not pdf_allow:
+            return jsonify({"message": "Invalid request"}), 400
+        ret = mongo.db.system_settings.update({}, {
             "$set": {
-                "slack_token": slack_token
+                "pdf": pdf_allow
             }
         },upsert=True)
         return jsonify({"message":"upserted","status":True}), 200
