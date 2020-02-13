@@ -314,7 +314,7 @@ def required_message(message_key):
             ret = [template_requirement(serialize_doc(doc)) for doc in ret]
             return jsonify(ret), 200
         else:
-            return jsonify ({"Message": "no template exist"}), 200    
+            return jsonify ({"message": "no template exist"}), 200    
 
 @bp.route('/slack_test',methods=["POST"])
 # @token.authentication
@@ -323,9 +323,9 @@ def token_test():
     try:
         slack = slack_id(email)
         slack_message(channel=[slack],message="Testing Slack Notification from HR System")
-        return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
+        return jsonify({"status":True,"message": "Slack Token Tested"}), 200
     except Exception:
-        return jsonify({"status":False,"Message": "Slack User not exist or invalid token"}), 400
+        return jsonify({"status":False,"message": "Slack User not exist or invalid token"}), 400
         
 
 @bp.route('/mail_test',methods=["POST"])
@@ -338,14 +338,14 @@ def mail_test():
         email = request.json.get('email')
     try:
         send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
-        return jsonify({"status":True,"Message": "Smtp working"}), 200
+        return jsonify({"status":True,"message": "Smtp working"}), 200
     except smtplib.SMTPServerDisconnected:
-        return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
+        return jsonify({"status":False,"message": "Smtp server is disconnected"}), 400                
     except smtplib.SMTPConnectError:
-        return jsonify({"status":False,"Message": "Smtp is unable to established"}), 400    
+        return jsonify({"status":False,"message": "Smtp is unable to established"}), 400    
     except smtplib.SMTPAuthenticationError:
-        return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
+        return jsonify({"status":False,"message": "Smtp login and password is wrong"}), 400                           
     except smtplib.SMTPDataError:
-        return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
+        return jsonify({"status":False,"message": "Smtp account is not activated"}), 400 
     except Exception:
-        return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
+        return jsonify({"status":False,"message": "Something went wrong with smtp"}), 400                                                         
