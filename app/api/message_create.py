@@ -147,17 +147,15 @@ def mail_message(message_origin):
                     "Doc_type": Doc_type
                 }
             })
-
-            if 'num_attachment' in request.files:
-                if request.files['num_attachment'] != 0:
-                    for i in range(0,request.files['num_attachment']):
+            if 'num_attachment' in request.form:
+                if request.form['num_attachment'] != 0:
+                    for i in range(0,int(request.form['num_attachment'])):
                         file = request.files['attachment_file_{}'.format(i)]
                         if file and allowed_file(file.filename):
                             filename = secure_filename(file.filename)
                             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
                             attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                             attachment_file_name = filename
-                            
                             mongo.db.mail_template.update({"message_key": MSG_KEY},{
                             "$push": {
                                 "attachment_files":{
@@ -190,16 +188,15 @@ def mail_message(message_origin):
                 "Doc_type": Doc_type, 
             }).inserted_id
 
-            if 'num_attachment' in request.files:
-                if request.files['num_attachment'] != 0:
-                    for i in range(0,request.files['num_attachment']):
+            if 'num_attachment' in request.form:
+                if request.form['num_attachment'] != 0:
+                    for i in range(0,int(request.form['num_attachment'])):
                         file = request.files['attachment_file_{}'.format(i)]
                         if file and allowed_file(file.filename):
                             filename = secure_filename(file.filename)
                             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
                             attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                             attachment_file_name = filename
-                            
                             mongo.db.mail_template.update({"message_key": MSG_KEY},{
                             "$push": {
                                 "attachment_files":{
@@ -211,7 +208,6 @@ def mail_message(message_origin):
                             })
             else:
                 pass
-
                                 
             return jsonify({"message": "Template Added", "status": True}), 200
 
