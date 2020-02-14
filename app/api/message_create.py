@@ -148,24 +148,25 @@ def mail_message(message_origin):
                 }
             })
 
-            if 'attachment_files' in request.files:
-                attachment_files = request.files.getlist('attachment_files')
-                for file in attachment_files:
-                    if file and allowed_file(file.filename):
-                        filename = secure_filename(file.filename)
-                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-                        attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                        attachment_file_name = filename
-                        
-                        mongo.db.mail_template.update({"message_key": MSG_KEY},{
-                        "$push": {
-                            "attachment_files":{
-                                "file_id": str(uuid.uuid4()),
-                                "file_name": attachment_file_name,
-                                "file": attachment_file
-                            }
-                            }
-                        })
+            if 'num_attachment' in request.files:
+                if request.files['num_attachment'] != 0:
+                    for i in range(0,request.files['num_attachment']):
+                        file = request.files['attachment_file_{}'.format(i)]
+                        if file and allowed_file(file.filename):
+                            filename = secure_filename(file.filename)
+                            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                            attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                            attachment_file_name = filename
+                            
+                            mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                            "$push": {
+                                "attachment_files":{
+                                    "file_id": str(uuid.uuid4()),
+                                    "file_name": attachment_file_name,
+                                    "file": attachment_file
+                                }
+                                }
+                            })
             else:
                 pass
 
@@ -189,26 +190,28 @@ def mail_message(message_origin):
                 "Doc_type": Doc_type, 
             }).inserted_id
 
-            if 'attachment_files' in request.files:
-                attachment_files = request.files.getlist('attachment_files')
-                for file in attachment_files:
-                    if file and allowed_file(file.filename):
-                        filename = secure_filename(file.filename)
-                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-                        attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                        attachment_file_name = filename
-                        
-                        mongo.db.mail_template.update({"_id": ObjectId(str(ret))},{
-                        "$push": {
-                            "attachment_files":{
-                                "file_id": str(uuid.uuid4()),
-                                "file_name": attachment_file_name,
-                                "file": attachment_file
-                            }
-                            }
-                        })
+            if 'num_attachment' in request.files:
+                if request.files['num_attachment'] != 0:
+                    for i in range(0,request.files['num_attachment']):
+                        file = request.files['attachment_file_{}'.format(i)]
+                        if file and allowed_file(file.filename):
+                            filename = secure_filename(file.filename)
+                            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                            attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                            attachment_file_name = filename
+                            
+                            mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                            "$push": {
+                                "attachment_files":{
+                                    "file_id": str(uuid.uuid4()),
+                                    "file_name": attachment_file_name,
+                                    "file": attachment_file
+                                }
+                                }
+                            })
             else:
-                pass  
+                pass
+
                                 
             return jsonify({"message": "Template Added", "status": True}), 200
 
