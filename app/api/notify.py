@@ -293,8 +293,20 @@ def mails():
                 "to":mail_store,
                 "is_reminder":is_reminder
             }},upsert=True)
-        send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
-        return jsonify({"status":True,"Message":"Sended"}),200 
+        try:
+            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
+            return jsonify({"status":True,"Message":"Sended"}),200 
+        except smtplib.SMTPServerDisconnected:
+            return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
+        except smtplib.SMTPConnectError:
+            return jsonify({"status":False,"Message": "Smtp is unable to established"}), 400    
+        except smtplib.SMTPAuthenticationError:
+            return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
+        except smtplib.SMTPDataError:
+            return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
+        except Exception:
+            return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
+
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
 
