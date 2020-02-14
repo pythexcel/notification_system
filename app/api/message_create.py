@@ -42,7 +42,7 @@ def notification_message(message_origin):
         for_phone = request.json.get("for_phone", False)
 
         if not MSG and MSG_TYPE and MSG_KEY:
-            return jsonify({"msg": "Invalid Request"}), 400
+            return jsonify({"message": "Invalid Request"}), 400
 
         ret = mongo.db.notification_msg.update({"message_key": MSG_KEY}, {
             "$set": {
@@ -62,7 +62,7 @@ def notification_message(message_origin):
                 "for_phone": for_phone
             }
         },upsert=True)
-        return jsonify({"MSG": "upsert"}), 200
+        return jsonify({"message": "upsert"}), 200
 
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
@@ -84,7 +84,7 @@ def special_var():
                 "variable_type": variable_type
             }
         },upsert=True)
-        return jsonify({"MSG": "upsert"}), 200
+        return jsonify({"message": "upsert"}), 200
 
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT","DELETE"])
