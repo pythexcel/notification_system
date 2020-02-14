@@ -80,7 +80,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from=None,fileli
             file_path = open(f['file'],'rb')
             attachment = email.mime.application.MIMEApplication(file_path.read())
             file_path.close()
-            attachment.add_header('Content-Disposition','attachment', filename=file_path['file_name'])
+            attachment.add_header('Content-Disposition','attachment', filename=f['file_name'])
             msg.attach(attachment)
     else:
         pass
