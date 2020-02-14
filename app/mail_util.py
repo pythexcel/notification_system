@@ -78,9 +78,9 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from=None,fileli
     if files is not None:
         for f in files:
             file_path = open(f['file'],'rb')
-            attachment = email.mime.application.MIMEApplication(f.read())
+            attachment = email.mime.application.MIMEApplication(file_path.read())
             file_path.close()
-            attachment.add_header('Content-Disposition','attachment', filename=f['file_name'])
+            attachment.add_header('Content-Disposition','attachment', filename=file_path['file_name'])
             msg.attach(attachment)
     else:
         pass
