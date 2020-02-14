@@ -56,7 +56,7 @@ def update_campaign(Id):
         "active":active
     }
     })
-    return jsonify({"MSG":"Campaign Updated"}),200
+    return jsonify({"message":"Campaign Updated"}),200
 
 @bp.route('/assign_template/<string:campaign_id>/<string:template_id>', methods=["PUT","DELETE"])
 def assign_template(campaign_id,template_id):
@@ -73,9 +73,9 @@ def assign_template(campaign_id,template_id):
                         "Template": template_id  
                     }
                 })
-                return jsonify({"MSG":"Template added to campaign"}), 200
+                return jsonify({"message":"Template added to campaign"}), 200
             else:
-                return jsonify({"MSG":"Template exist in campaign"}), 200
+                return jsonify({"message":"Template exist in campaign"}), 200
     if request.method == "DELETE":
         vac = mongo.db.campaigns.aggregate([
             { "$match": { "_id": ObjectId(campaign_id)}},
@@ -90,11 +90,11 @@ def assign_template(campaign_id,template_id):
                             "Template": template_id  
                         }
                     })
-                    return jsonify({"MSG":"Template removed from campaign"}), 200
+                    return jsonify({"message":"Template removed from campaign"}), 200
                 else:
-                    return jsonify({"MSG":"Template for the campaign cannot be none"}), 400
+                    return jsonify({"message":"Template for the campaign cannot be none"}), 400
             else:
-                return jsonify({"MSG":"Template does not exist in this campaign"}), 400
+                return jsonify({"message":"Template does not exist in this campaign"}), 400
 
 
 @bp.route('/user_list_campaign',methods=["GET","POST"])
@@ -112,7 +112,7 @@ def add_user_campaign():
             data['campaign'] = campaign
 
         ret = mongo.db.campaign_users.insert_many(users)
-        return jsonify({"MSG":"Users added to campaign"}), 200  
+        return jsonify({"message":"Users added to campaign"}), 200  
 
 @bp.route("/mails_status",methods=["GET"])
 def mails_status():

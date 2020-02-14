@@ -15,6 +15,7 @@ import cloudinary.uploader
 import cloudinary.api
 import uuid
 import os 
+from weasyprint import HTML, CSS
 from app.phone_util import Push_notification
 from bson.objectid import ObjectId
 from werkzeug import secure_filename
@@ -204,6 +205,15 @@ def send_mails():
         else:
             download_pdf = download_pdf.replace("#letter_foot",'')
 
+        if message_detail['message_key'] == "Payslip":
+            system_settings = mongo.db.system_settings.find_one({},{"_id":0})
+            if system_settings['pdf'] is True:
+                filename = "{}.pdf".format(str(uuid.uuid4()))
+                pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+                attachment_file_name = filename
+                attachment_file = os.getcwd() + '/attached_documents/' + filename
+            else:
+                pass
         to = None
         bcc = None
         cc = None
