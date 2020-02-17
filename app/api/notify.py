@@ -117,7 +117,11 @@ def send_mails():
                 attachment_file_name = message_detail['attachment_file_name']
         else:
             pass    
-            
+        
+        files = None
+        if message_detail['attachment_files']:
+            files = message_detail['attachment_files']
+
         header = None
         footer = None
         if 'template_head' in message_detail:        
@@ -207,13 +211,14 @@ def send_mails():
 
         if message_detail['message_key'] == "Payslip":
             system_settings = mongo.db.system_settings.find_one({},{"_id":0})
-            if system_settings['pdf'] is True:
-                filename = "{}.pdf".format(str(uuid.uuid4()))
-                pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-                attachment_file_name = filename
-                attachment_file = os.getcwd() + '/attached_documents/' + filename
-            else:
-                pass
+            if system_settings is not None:
+                if system_settings['pdf'] is True:
+                    filename = "{}.pdf".format(str(uuid.uuid4()))
+                    pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+                    attachment_file_name = filename
+                    attachment_file = os.getcwd() + '/attached_documents/' + filename
+                else:
+                    pass
         to = None
         bcc = None
         cc = None
@@ -268,7 +273,7 @@ def send_mails():
             return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
             if to is not None:
-                send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
+                send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
                 return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
             else:
                 return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
