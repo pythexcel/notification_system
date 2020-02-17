@@ -104,7 +104,11 @@ def send_mails():
                 attachment_file_name = message_detail['attachment_file_name']
         else:
             pass    
-            
+        
+        files = None
+        if message_detail['attachment_files']:
+            files = message_detail['attachment_files']
+
         header = None
         footer = None
         if 'template_head' in message_detail:        
@@ -193,11 +197,15 @@ def send_mails():
             download_pdf = download_pdf.replace("#letter_foot",'')
 
         if message_detail['message_key'] == "Payslip":
-            filename = str(uuid.uuid4())
-            pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
-            attachment_file_name = filename
-            attachment_file = os.getcwd() + '/attached_documents/' + filename
-
+            system_settings = mongo.db.system_settings.find_one({},{"_id":0})
+            if system_settings is not None:
+                if system_settings['pdf'] is True:
+                    filename = "{}.pdf".format(str(uuid.uuid4()))
+                    pdfkit = HTML(string=message_str).write_pdf(os.getcwd() + '/attached_documents/' + filename,stylesheets=[CSS(string='@page {size:Letter; margin: 0in 0in 0in 0in;}')])
+                    attachment_file_name = filename
+                    attachment_file = os.getcwd() + '/attached_documents/' + filename
+                else:
+                    pass
         to = None
         bcc = None
         cc = None
@@ -252,7 +260,7 @@ def send_mails():
             return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
             if to is not None:
-                send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name)
+                send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
                 return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
             else:
                 return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
@@ -319,7 +327,7 @@ def required_message(message_key):
             ret = [template_requirement(serialize_doc(doc)) for doc in ret]
             return jsonify(ret), 200
         else:
-            return jsonify ({"Message": "no template exist"}), 200    
+            return jsonify ({"message": "no template exist"}), 200    
 
 @bp.route('/slack_test',methods=["POST"])
 # @token.authentication
@@ -328,9 +336,9 @@ def token_test():
     try:
         slack = slack_id(email)
         slack_message(channel=[slack],message="Testing Slack Notification from HR System")
-        return jsonify({"status":True,"Message": "Slack Token Tested"}), 200
+        return jsonify({"status":True,"message": "Slack Token Tested"}), 200
     except Exception:
-        return jsonify({"status":False,"Message": "Slack User not exist or invalid token"}), 400
+        return jsonify({"status":False,"message": "Slack User not exist or invalid token"}), 400
         
 
 @bp.route('/mail_test',methods=["POST"])
@@ -343,14 +351,14 @@ def mail_test():
         email = request.json.get('email')
     try:
         send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
-        return jsonify({"status":True,"Message": "Smtp working"}), 200
+        return jsonify({"status":True,"message": "Smtp working"}), 200
     except smtplib.SMTPServerDisconnected:
-        return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
+        return jsonify({"status":False,"message": "Smtp server is disconnected"}), 400                
     except smtplib.SMTPConnectError:
-        return jsonify({"status":False,"Message": "Smtp is unable to established"}), 400    
+        return jsonify({"status":False,"message": "Smtp is unable to established"}), 400    
     except smtplib.SMTPAuthenticationError:
-        return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
+        return jsonify({"status":False,"message": "Smtp login and password is wrong"}), 400                           
     except smtplib.SMTPDataError:
-        return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
+        return jsonify({"status":False,"message": "Smtp account is not activated"}), 400 
     except Exception:
-        return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
+        return jsonify({"status":False,"message": "Something went wrong with smtp"}), 400                                                         
