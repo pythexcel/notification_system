@@ -106,8 +106,10 @@ def send_mails():
             pass    
         
         files = None
-        if message_detail['attachment_files']:
-            files = message_detail['attachment_files']
+
+        if 'attachment_files' in message_detail:
+            if message_detail['attachment_files']:
+                files = message_detail['attachment_files']
 
         header = None
         footer = None
