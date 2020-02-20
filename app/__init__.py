@@ -99,6 +99,14 @@ def create_app(test_config=None):
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
 
+<<<<<<< HEAD
+=======
+
+<<<<<<< HEAD
+
+=======
+>>>>>>> 8b0d15b30a77410d508bc9edcbe92de58d72b9f8
+>>>>>>> 47e21e61685eeed1ed9556cbf8cce2d86ba23ecc
     if app.config['origin'] == "hr":
         
         schduled_messages_scheduler = BackgroundScheduler()
