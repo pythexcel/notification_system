@@ -28,12 +28,7 @@ mongo = db.init_db()
 
 from app import token
 
-<<<<<<< HEAD
 from app.scheduler import campaign_mail,reject_mail,cron_messages,recruit_cron_messages,tms_cron_messages,calculate_bounce_rate
-from app.imap_util import bounced_mail,mail_reminder
-=======
-from app.scheduler import campaign_mail,reject_mail,cron_messages,tms_cron_messages
->>>>>>> 2c0635e03c11aa4609d8cfc3d6bfbb741fdcc191
 
 def create_app(test_config=None):
     # create and configure the app
@@ -99,14 +94,6 @@ def create_app(test_config=None):
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
 
-<<<<<<< HEAD
-=======
-
-<<<<<<< HEAD
-
-=======
->>>>>>> 8b0d15b30a77410d508bc9edcbe92de58d72b9f8
->>>>>>> 47e21e61685eeed1ed9556cbf8cce2d86ba23ecc
     if app.config['origin'] == "hr":
         
         schduled_messages_scheduler = BackgroundScheduler()
@@ -142,6 +129,7 @@ def create_app(test_config=None):
         campaign_mail_scheduler = BackgroundScheduler()
         campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
         campaign_mail_scheduler.start()
+
 
         calculate_bounce_rate_scheduler = BackgroundScheduler()
         calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=5)
