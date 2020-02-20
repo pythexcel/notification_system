@@ -301,7 +301,8 @@ def mails():
                 "message": message,
                 "subject": subject,
                 "to":mail_store,
-                "is_reminder":is_reminder
+                "is_reminder":is_reminder,
+                "date": datetime.datetime.now()
             }},upsert=True)
         try:
             send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
