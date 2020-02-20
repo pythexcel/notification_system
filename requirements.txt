@@ -32,7 +32,6 @@ grpcio==1.22.0
 gunicorn==19.9.0
 html5lib==1.0.1
 idna==2.8
-IMAPClient==2.1.0
 isodate==0.6.0
 isort==4.3.20
 itsdangerous==1.1.0
@@ -84,7 +83,6 @@ Werkzeug==0.15.3
 wkhtmltopdf==0.2
 xhtml2pdf==0.2.3
 yapf==0.28.0
-IMAPClient==2.1.0
 pyzmail36==1.0.4
 six==1.14.0
 

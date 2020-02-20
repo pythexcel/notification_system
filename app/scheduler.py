@@ -13,8 +13,6 @@ from flask import current_app as app
 from dotenv import load_dotenv
 import uuid
 import time
-import imapclient
-import pyzmail
 import email
 
 
