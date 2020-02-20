@@ -131,13 +131,13 @@ def create_app(test_config=None):
         campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
         campaign_mail_scheduler.start()
         
-        bounced_mail_scheduler = BackgroundScheduler()
-        bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=30)
-        bounced_mail_scheduler.start()
+        # bounced_mail_scheduler = BackgroundScheduler()
+        # bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=30)
+        # bounced_mail_scheduler.start()
 
-        mail_reminder_scheduler = BackgroundScheduler()
-        mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=18,minute=12)
-        mail_reminder_scheduler.start()
+        # mail_reminder_scheduler = BackgroundScheduler()
+        # mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=18,minute=12)
+        # mail_reminder_scheduler.start()
 
 
         calculate_bounce_rate_scheduler = BackgroundScheduler()
@@ -150,8 +150,8 @@ def create_app(test_config=None):
         except:
             reject_mail_scheduler.shutdown()
             campaign_mail_scheduler.shutdown()
-            bounced_mail_scheduler.shutdown()
-            mail_reminder_scheduler.shutdown()
+            # bounced_mail_scheduler.shutdown()
+            # mail_reminder_scheduler.shutdown()
             recruit_schduled_messages_scheduler.shutdown()
             calculate_bounce_rate_scheduler.shutdown()
 
