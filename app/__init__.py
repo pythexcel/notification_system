@@ -28,7 +28,7 @@ mongo = db.init_db()
 
 from app import token
 
-from app.scheduler import campaign_mail,reject_mail,cron_messages,tms_cron_messages
+from app.scheduler import campaign_mail,reject_mail,cron_messages,recruit_cron_messages,tms_cron_messages,calculate_bounce_rate
 
 def create_app(test_config=None):
     # create and configure the app
@@ -63,9 +63,9 @@ def create_app(test_config=None):
     def not_found(error):
         return make_response(jsonify(error='Not found'), 400)
     
-    @app.route('/pdf/<path:path>')
+    @app.route('/images/<path:path>')
     def send_file(path):
-        return send_from_directory('pdf', path)
+        return send_from_directory(app.config['UPLOAD_FOLDER'], path)
 
     @app.errorhandler(500)
     def error_500(error):
@@ -79,6 +79,7 @@ def create_app(test_config=None):
     from app.api import mail_settings
     from app.api import message_create
     from app.api import campaign
+    from app.api import imap
     from app.api import settings
     
     app.register_blueprint(notify.bp)
@@ -87,11 +88,11 @@ def create_app(test_config=None):
     app.register_blueprint(mail_settings.bp)
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)
+    app.register_blueprint(imap.bp)
     app.register_blueprint(settings.bp)
     
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
-
 
     if app.config['origin'] == "hr":
         
@@ -117,21 +118,32 @@ def create_app(test_config=None):
     
             
     elif app.config['origin'] == "recruit":
+        recruit_schduled_messages_scheduler = BackgroundScheduler()
+        recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
+        recruit_schduled_messages_scheduler.start()
+
         reject_mail_scheduler = BackgroundScheduler()
         reject_mail_scheduler.add_job(reject_mail, trigger='interval', seconds=5)
         reject_mail_scheduler.start()
 
         campaign_mail_scheduler = BackgroundScheduler()
-        campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=1)
+        campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
         campaign_mail_scheduler.start()
 
-        
+
+        calculate_bounce_rate_scheduler = BackgroundScheduler()
+        calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=5)
+        calculate_bounce_rate_scheduler.start()
+
         try:
             print("create app..")
             return app
         except:
             reject_mail_scheduler.shutdown()
             campaign_mail_scheduler.shutdown()
+            recruit_schduled_messages_scheduler.shutdown()
+            calculate_bounce_rate_scheduler.shutdown()
+
             
     
 @click.command("seed_hr")

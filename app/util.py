@@ -14,6 +14,93 @@ def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
+def user_data(campaign_details):
+    details = mongo.db.campaign_users.find({"campaign":campaign_details['_id']})
+    details = [serialize_doc(doc) for doc in details]
+    
+    for data in details:
+        hit_data = []
+        if 'mail_message' in data:
+            for element in data['mail_message']:
+                if element['campaign'] == campaign_details['_id']:
+                    hit_details = mongo.db.mail_status.find_one({"digit": element['sended_message_details']},
+                    {   
+                        "hit_rate":1,
+                        "message":1,
+                        "mail_sended_status":1,
+                        "seen_date":1,
+                        "sending_time": 1,
+                        "subject": 1,
+                        "seen": 1 ,
+                        "clicked": 1
+
+                    })
+                    if hit_details is not None:
+                        hit_details['_id'] = str(hit_details['_id'])
+                        if hit_details not in hit_data:
+                            hit_data.append(hit_details)
+                    
+        data['hit_details'] = hit_data
+        data['mail_message'] = None
+    
+    campaign_details['users'] = details
+
+    validate = mongo.db.campaign_clicked.find({"campaign_id": campaign_details['_id']})
+    if validate:
+        clicking_details = mongo.db.campaign_clicked.aggregate([
+            {
+            "$project": 
+            {   "clicked_time": 1,
+                "campaign_id": 1,
+                "time":{
+                "$switch":
+                {
+                "branches": [
+                    {
+                    "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },0 ] },
+                                    { "$lt" : [ { "$hour" : "$clicked_time" },6 ] } ] },
+                    "then": "morning"
+                    },
+                    {
+                    "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },6 ] },
+                                    { "$lt" : [ { "$hour" : "$clicked_time" },12 ] } ] },
+                    "then": "noon"
+                    },
+                    {
+                    "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },12 ] },
+                                    { "$lt" : [ { "$hour" : "$clicked_time" },18 ] } ] },
+                    "then": "evening"
+                    },
+                    {
+                    "case": { "$and" : [ { "$gte" : [ {  "$hour" : "$clicked_time" },18 ] },
+                                    { "$lt" : [ { "$hour" : "$clicked_time" },24 ] } ] },
+                    "then": "night"
+                    }
+                ],
+                "default": "No record found."
+                } 
+                }}},
+                {
+                "$match": {"campaign_id": campaign_details['_id']}
+                },
+                { "$group": { "_id": {"interval":"$time","date":"$clicked_time"}, "myCount": { "$sum": 1 } } },
+                { "$sort" : { "_id.date" : 1 } }
+                ])
+        clicking_data = []
+        currDate = None
+        currMonth = None
+        for data in clicking_details:
+            if currDate is None or currMonth != data['_id']['date'].month and currDate == data['_id']['date'].day or currDate != data['_id']['date'].day:
+                clicking_data.append([data])
+            else:
+                clicking_data[len(clicking_data)-1].append(data) 
+            currMonth = data['_id']['date'].month 
+            currDate = data['_id']['date'].day
+            
+        campaign_details['clicking_details'] = clicking_data
+    else:
+        campaign_details['clicking_details'] = []
+    return campaign_details
 
 def validate_message(user=None,message=None,req_json=None,message_detail=None):
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
@@ -32,7 +119,7 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
             system_require.append(data)
             message_variables.remove(data)
         else:
-            pass        
+            pass           
     need_found_in_payload = True
     for data in message_variables:
         need_found_in_payload = False
@@ -217,7 +304,14 @@ def template_requirement(user):
     return user              
 
 def Template_details(details):
+    users = 0
     Template_data = []
+    user_data = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+    user_data = [serialize_doc(doc) for doc in user_data]
+    if user_data:
+        for data in user_data:
+            users = data['count']
+    details['users'] = users    
     if 'Template' in details:
         for elem in details['Template']:
             ret = mongo.db.mail_template.find_one({"_id":ObjectId(elem)})
@@ -230,18 +324,11 @@ def Template_details(details):
 
 def campaign_details(user):
     name = user['campaign']
-    Id = user['_id']
-    print(Id)
-
-    Messages = []
-    vet = mongo.db.mail_status.find({"user_id":Id})
-    for data in vet:
-        print(data['message'])
-        Messages.append({"Message": data['message'],"Subject":data['subject'],"sending_time":data['sending_time']})
-
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(name)})
-    user['campaign'] = serialize_doc(ret)
-    user['Messages_detail'] = Messages
+    if ret is not None:
+        user['campaign'] = serialize_doc(ret)
+    else:
+        user['campaign'] = None
     return user   
 
 def allowed_file(filename):

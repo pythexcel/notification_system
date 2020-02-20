@@ -3,16 +3,13 @@ from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
-from app.config import message_needs,messages,config_info,dates_converter
+from app.config import message_needs,dates_converter
 from app.slack_util import slack_message,slack_id
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
 import json
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 import uuid
 import os 
 from weasyprint import HTML, CSS
@@ -36,18 +33,8 @@ bp = Blueprint('notify', __name__, url_prefix='/notify')
 def dispatch():
     if not request.json:
         abort(500)
-    MSG_KEY = request.json.get("message_key", None)  #salary slip,xyz
-    missed_req = {}
+    MSG_KEY = request.json.get("message_key", None)
     message_detail = mongo.db.notification_msg.find_one({"message_key": MSG_KEY})
-    # finding data of payload from request key via json
-    for data in messages:
-        if data['message_key'] == MSG_KEY:
-            missed_req = data
-    # below will checki if message detail is completely empty return data from json or else if its any value is none replace it from json data
-    if message_detail is not None:
-        update = message_detail.update((k,v) for k,v in missed_req.items() if v is None)
-    else:
-        message_detail = missed_req
     if message_detail and message_detail['message_type'] is not None:   
             message = message_detail['message']
             missing_payload = []
@@ -119,6 +106,7 @@ def send_mails():
             pass    
         
         files = None
+
         if 'attachment_files' in message_detail:
             if message_detail['attachment_files']:
                 files = message_detail['attachment_files']
@@ -295,7 +283,7 @@ def mails():
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)
     filelink = request.json.get("filelink",None)
-    #is_reminder = request.json.get("is_reminder",True)
+    is_reminder = request.json.get("is_reminder",True)
     if not MAIL_SEND_TO and message:
         return jsonify({"MSG": "Invalid Request"}), 400
     bcc = None
@@ -313,13 +301,25 @@ def mails():
                 "message": message,
                 "subject": subject,
                 "to":mail_store,
-                "is_reminder":True
+                "is_reminder":is_reminder,
+                "date": datetime.datetime.now()
             }},upsert=True)
-        send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
-        return jsonify({"status":True,"Message":"Sended"}),200 
+        try:
+            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
+            return jsonify({"status":True,"Message":"Sended"}),200 
+        except smtplib.SMTPServerDisconnected:
+            return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
+        except smtplib.SMTPConnectError:
+            return jsonify({"status":False,"Message": "Smtp is unable to established"}), 400    
+        except smtplib.SMTPAuthenticationError:
+            return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
+        except smtplib.SMTPDataError:
+            return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
+        except Exception:
+            return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
+
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
-
 
 @bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
 @token.admin_required

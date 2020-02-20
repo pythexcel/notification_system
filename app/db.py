@@ -1,6 +1,7 @@
 import os
-from flask_pymongo import PyMongo
 from dotenv import load_dotenv
+from flask_pymongo import PyMongo
+
 
 def init_db():
     mongo = PyMongo()
