@@ -1,5 +1,11 @@
-# PLEASE UPDATE AS PER DEPLOYMENT SYSYTME EXAMPLE RECRUIT OR HR
-base_url = "http://176.9.137.77:8005/"
+import os
+from dotenv import load_dotenv
+
+APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
+dotenv_path = os.path.join(APP_ROOT, '.env')
+load_dotenv(dotenv_path)
+
+base_url = os.getenv('base_url',"http://176.9.137.77:8005/")
 
 smtp_counts = {
     'smtp.gmail.com' : 100,

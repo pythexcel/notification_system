@@ -4,3 +4,4 @@ bcc=bcc_testing_recruit@mailinator.com
 cc=cc_testing_recruit@mailinator.com
 origin=hr
 database= your mongo uri
+base_url = base_url of system
