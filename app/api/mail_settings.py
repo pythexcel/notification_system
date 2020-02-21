@@ -123,8 +123,8 @@ def mail_setings(origin,id=None):
                             "active": active,
                             "type": type_s,
                             "mail_from": mail_from
-                    })
-                    return jsonify({"message":"upsert"}),200
+                    }).inserted_id
+                    return jsonify({"message":"upsert","id":str(ret)}),200
                 else:
                     return jsonify({"message":"Smtp already exists"}),400
 
@@ -151,8 +151,8 @@ def mail_setings(origin,id=None):
                                 "mail_from": mail_from,
                                 "created_at": datetime.datetime.today()
 
-                        })
-                        return jsonify({"message":"upsert"}),200
+                        }).inserted_id
+                        return jsonify({"message":"upsert","id":str(ret)}),200
                     else:
                         return jsonify({"message":"Smtp already exists"}),400
 
