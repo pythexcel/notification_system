@@ -185,3 +185,45 @@ def smtp_priority(Id,position):
     },upsert=False) 
 
     return jsonify({"message": "priority changed"}), 200
+
+@bp.route('/update_settings/<string:origin>/<string:id>', methods=["PUT"])
+def update_smtp(id,origin):
+    new_password = request.json.get('new_password')
+    mail_details = mongo.db.mail_settings.find_one({"_id": ObjectId(str(id))})
+    if mail_details is None:
+        return jsonify({"message": "No smtp exists"}),400
+    else:
+        username = mail_details["mail_username"]
+        password = mail_details["mail_password"]
+        port = mail_details['mail_port']
+        mail_server = mail_details['mail_server']
+        mail_from = mail_details['mail_from']
+
+        email = None
+        if mail_from is not None:
+            email = mail_from
+        else:
+            email = username 
+
+        try:
+            send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=username,sending_password=password,sending_port=port,sending_server=mail_server)
+        except smtplib.SMTPServerDisconnected:
+            return jsonify({"message": "Smtp server is disconnected"}), 400                
+        except smtplib.SMTPConnectError:
+            return jsonify({"message": "Smtp is unable to established"}), 400    
+        except smtplib.SMTPAuthenticationError:
+            return jsonify({"message": "Smtp login and password is wrong"}), 400                           
+        except smtplib.SMTPDataError:
+            return jsonify({"message": "Smtp account is not activated"}), 400 
+        except Exception:
+            return jsonify({"message": "Something went wrong with smtp"}), 400
+        else:
+            mail = mongo.db.mail_settings.update({"origin":origin,"_id": ObjectId(str(id))},{
+                "$set":{
+                    "mail_password": new_password
+                }
+            })
+            return jsonify({"message": "Smtp password updated"}), 200
+
+
+
