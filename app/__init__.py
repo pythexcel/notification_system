@@ -91,6 +91,7 @@ def create_app(test_config=None):
     
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
+    app.cli.add_command(seed_system)
 
     if app.config['origin'] == "hr":
         
