@@ -5,7 +5,11 @@ APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
-base_url = os.getenv('base_url',"http://176.9.137.77:8005/")
+if os.getenv("origin")=="recruit":
+    try:
+        base_url = os.getenv('base_url')
+    except Exception as e:
+        raise Exception(e)
 
 smtp_counts = {
     'smtp.gmail.com' : 100,
