@@ -19,7 +19,7 @@ bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 
 @bp.route('/settings/<string:origin>', methods=["POST", "GET"])
 @bp.route('/settings/<string:origin>/<string:id>', methods=["DELETE","PUT"])
-# @token.admin_required
+@token.admin_required
 def mail_setings(origin,id=None):
     if request.method == "GET":
        mail = mongo.db.mail_settings.find({"origin":origin},{"mail_password":0})
@@ -157,6 +157,7 @@ def mail_setings(origin,id=None):
                         return jsonify({"message":"Smtp already exists"}),400
 
 @bp.route('/smtp_priority/<string:Id>/<int:position>', methods=["POST"])
+@token.admin_required
 def smtp_priority(Id,position):
     prior_check = mongo.db.mail_settings.find({"origin": "CAMPAIGN"}).sort("priority",1)
     prior_check = [serialize_doc(doc) for doc in prior_check]
@@ -187,6 +188,7 @@ def smtp_priority(Id,position):
     return jsonify({"message": "priority changed"}), 200
 
 @bp.route('/update_settings/<string:origin>/<string:id>', methods=["PUT"])
+@token.admin_required
 def update_smtp(id,origin):
     new_password = request.json.get('new_password')
     mail_details = mongo.db.mail_settings.find_one({"_id": ObjectId(str(id))})

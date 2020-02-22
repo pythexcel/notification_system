@@ -29,7 +29,7 @@ bp = Blueprint('notify', __name__, url_prefix='/notify')
 
 
 @bp.route('/dispatch', methods=["POST"])
-# @token.authentication
+@token.authentication
 def dispatch():
     if not request.json:
         abort(500)
@@ -66,8 +66,8 @@ def dispatch():
         return jsonify("No Message Type Available"), 400
 
 @bp.route('/preview', methods=["POST"])
-# @token.admin_required
-# @token.authentication
+@token.admin_required
+@token.authentication
 def send_mails():
     if not request.json:
         abort(500)
@@ -269,7 +269,7 @@ def send_mails():
         
             
 @bp.route('/send_mail', methods=["POST"])
-# @token.admin_required
+@token.admin_required
 def mails():
     if not request.json:
         abort(500) 
@@ -333,7 +333,7 @@ def required_message(message_key):
             return jsonify ({"message": "no template exist"}), 200    
 
 @bp.route('/slack_test',methods=["POST"])
-# @token.authentication
+@token.authentication
 def token_test():
     email = request.json.get('email')
     try:
@@ -345,7 +345,7 @@ def token_test():
         
 
 @bp.route('/mail_test',methods=["POST"])
-# @token.authentication
+@token.authentication
 def mail_test():
     email = None
     if app.config['ENV']=='development':
