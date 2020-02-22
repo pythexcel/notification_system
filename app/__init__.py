@@ -79,7 +79,6 @@ def create_app(test_config=None):
     from app.api import mail_settings
     from app.api import message_create
     from app.api import campaign
-    from app.api import imap
     from app.api import settings
     
     app.register_blueprint(notify.bp)
@@ -88,7 +87,6 @@ def create_app(test_config=None):
     app.register_blueprint(mail_settings.bp)
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)
-    app.register_blueprint(imap.bp)
     app.register_blueprint(settings.bp)
     
     app.cli.add_command(seed_hr)
@@ -186,3 +184,11 @@ def seed_recruit():
     else:
         notification_message = mongo.db.notification_msg.insert_many(rec_message)
 
+@click.command("seed_system")
+@with_appcontext
+def seed_system():
+    if mail_variable_exist:
+        mongo.db.mail_variables.remove({})
+        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
+    else:
+        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
