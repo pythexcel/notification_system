@@ -5,12 +5,13 @@ APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
-if os.getenv("origin")=="recruit":
-    try:
-        base_url = os.getenv('base_url')
-    except Exception as e:
-        raise Exception(e)
+base_url = os.getenv("base_url")
+if os.getenv("origin") == "recruit":
+    if base_url is None:
+        raise Exception ('missing base url')
 
+
+    
 smtp_counts = {
     'smtp.gmail.com' : 100,
     'smtp.office365.com' : 50,
