@@ -23,7 +23,7 @@ import uuid
 bp = Blueprint('campaigns', __name__, url_prefix='/')
 
 @bp.route('/create_campaign', methods=["GET", "POST"])
-# @token.admin_required
+#@token.admin_required
 def create_campaign():
     if request.method == "GET":
         ret = mongo.db.campaigns.aggregate([])
@@ -41,7 +41,8 @@ def create_campaign():
 
         message_creation = dict()
         if message is not None and message_subject is not None:
-            message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message_subject,"count":0})
+            message_id = str(uuid.uuid4())
+            message_creation.update({"message_id": message_id, "message": message,"message_subject": message_subject,"count":0})
 
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
@@ -60,45 +61,41 @@ def create_campaign():
         else:
             pass
     
-        return jsonify(str(ret)),200
+        return jsonify({"campaign_id":str(ret),"message_id":message_id}),200
 
-@bp.route('/attached_file/<string:Id>', methods=["POST","DELETE"])
-def attache_campaign(Id):
+@bp.route('/attached_file/<string:Id>/<string:message_id>', methods=["POST","DELETE"])
+#@token.admin_required
+def attache_campaign(Id,message_id):
     if request.method == "POST":
         file = request.files['attachment_file']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
             attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            attachment_file_name = filename     
-            ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
+            attachment_file_name = filename  
+            print("HERE") 
+            ret = mongo.db.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
                 "$set":{
-                    "attachment_file_name": attachment_file_name,
-                    "attachment_file": attachment_file
+                    "message_detail.$.attachment_file_name": attachment_file_name,
+                    "message_detail.$.attachment_file": attachment_file
                 }
             })
             return jsonify({"message": "File attached to campaign"}), 200
         else:
             return jsonify({"message": "Please select a file"}), 400
     elif request.method == "DELETE":
-        ret = mongo.db.campaigns.find_one({
-            "_id":ObjectId(Id),
-            "attachment_file_name":{ "$exists": True},
-            "attachment_file":{ "$exists": True}
+        ret = mongo.db.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
+            "$unset":{
+                "message_detail.$.attachment_file_name": 1,
+                "message_detail.$.attachment_file": 1
+            }
         })
-        if ret is not None:
-            ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
-                "$unset":{
-                    "attachment_file_name": 1,
-                    "attachment_file": 1
-                }
-            })
-            return jsonify({"message": "File deleted from campaign"}), 200
-        else:
-            return jsonify({"message": "File not attached to campaign"}), 200
+        return jsonify({"message": "File deleted from campaign"}), 200
+
 
 
 @bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
+#@token.admin_required
 def pause_campaign(Id,status):
     working = None
     if status == 1:
@@ -122,12 +119,13 @@ def pause_campaign(Id,status):
 
 
 @bp.route('/delete_campaign/<string:Id>', methods=["DELETE"])
+#@token.admin_required
 def delete_campaign(Id):
     ret = mongo.db.campaigns.remove({"_id":ObjectId(Id)})
     return jsonify({"message":"Campaign deleted"}),200
 
 @bp.route('/list_campaign', methods=["GET"])
-# @token.admin_required
+#@token.admin_required
 def list_campaign():
         ret = mongo.db.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
@@ -135,7 +133,7 @@ def list_campaign():
 
 @bp.route('/update_campaign/<string:Id>', methods=["POST"])
 @bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
-# @token.admin_required
+#@token.admin_required
 def update_campaign(Id,message_id=None):
     if request.method == "POST":
         name = request.json.get("campaign_name")
@@ -155,11 +153,14 @@ def update_campaign(Id,message_id=None):
                 "message_detail.$.message_subject": message_subject
             }
             })
-            return jsonify({"message":"Campaign Updated with message"}),200
+            return jsonify({"message":"Campaign Updated with message","message_id":message_id}),200
         else:
             if message_detail:
+                message_ids = []
                 for data in message_detail:
                     data['message_id'] = str(uuid.uuid4())
+                    data['count'] = 0
+                    message_ids.append(data['message_id'])
                     campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
                     "$set": {
                         "Campaign_name": name,
@@ -178,7 +179,7 @@ def update_campaign(Id,message_id=None):
                     "status": status
                 }                
                 })
-            return jsonify({"message":"Campaign Updated"}),200
+            return jsonify({"message":"Campaign Updated","message_id":message_ids}),200
     elif request.method == "DELETE":
         campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
         "$pull": {
@@ -191,6 +192,7 @@ def update_campaign(Id,message_id=None):
         return jsonify({"message": "message deleted from campaign"})
 
 @bp.route('/user_list_campaign',methods=["GET","POST"])
+#@token.admin_required
 def add_user_campaign():
     if request.method == "GET":
         ret = mongo.db.campaign_users.aggregate([])
@@ -209,14 +211,22 @@ def add_user_campaign():
             return jsonify({"message":"Users added to campaign"}), 200
         except pymongo.errors.BulkWriteError as bwe:
             return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200
+
+@bp.route('/user_delete_campaign/<string:campaign_id>/<string:user_id>',methods=["DELETE"])
+def delete_user_campaign(campaign_id,user_id):
+    ret = mongo.db.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
+    return jsonify({"message":"User deleted from campaign"}), 200
+        
           
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
+#@token.admin_required
 def campaign_detail(Id):
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
     detail = serialize_doc(ret)
     return jsonify(user_data(detail)),200
 
 @bp.route("/campaign_smtp_test", methods=["POST"])
+#@token.admin_required
 def campaign_smtp_test():
     mail = mongo.db.mail_settings.find({"origin":"CAMPAIGN"})
     mail = [serialize_doc(doc) for doc in mail]
@@ -246,6 +256,7 @@ def campaign_smtp_test():
     return jsonify({"message": "sended"}),200
 
 @bp.route("/campaign_mails/<string:campaign>", methods=["POST"])
+#@token.admin_required
 def campaign_start_mail(campaign):   
     delay = request.json.get("delay",30)
     smtps = request.json.get("smtps",[])
@@ -278,14 +289,28 @@ def campaign_start_mail(campaign):
                 },multi=True)
                 smtp_count_value = []
                 for smtp in smtps:
-                    for key,value in smtp_counts.items():
-                        smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
-                        if smtp_detail['mail_server'] in smtp_counts:
-                            smtp_count_value.append(value)
-                total_time = round(len(ids)/sum(smtp_count_value))
-                if total_time == 0:
-                    total_time = 1
-                total_expected_time = "{} day".format(total_time)
+                    smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
+                    if smtp_detail['mail_server'] in smtp_counts:
+                        for key,value in smtp_counts.items():
+                            if key == smtp_detail['mail_server']:
+                                smtp_count_value.append(value)
+
+                total_time = (float(len(ids))* delay / float(len(smtp_count_value)))
+                if total_time < 60:
+                    total_time = round(total_time,2)
+                    total_expected_time = "{} second".format(total_time)
+                elif total_time>60 and total_time<3600:
+                    total_time = total_time/60
+                    total_time = round(total_time,1)
+                    total_expected_time = "{} minutes".format(total_time)
+                elif total_time>3600 and total_time<86400:
+                    total_time = total_time/3600
+                    total_time = round(total_time,1)
+                    total_expected_time = "{} hours".format(total_time)
+                else:
+                    total_time = total_time/86400
+                    total_time = round(total_time,1)
+                    total_expected_time = "{} days".format(total_time)
                 campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
                     "$set": {
                         "status": "Running",
@@ -299,6 +324,7 @@ def campaign_start_mail(campaign):
         return jsonify({"message":"Please select smtps"}),400
 
 @bp.route("/mails_status",methods=["GET"])
+#@token.admin_required
 def mails_status():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         

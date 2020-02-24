@@ -33,13 +33,6 @@ def campaign_mail():
                         if message_detail['count'] == highest_count_message['count']:
                             message_subject_details.append(message_detail)
                     
-            filelink = None
-            if 'attachment_file_name' in campaign:
-                filelink = campaign['attachment_file']
-            filename = None
-            if 'attachment_file' in campaign:
-                filename = campaign['attachment_file_name']
-
             campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id']})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
             total_users = 0
@@ -68,6 +61,14 @@ def campaign_mail():
                             if os.getenv('ENVIRONMENT') == "development":
                                 mail = os.getenv('to')
                             unique = str(user['_id'])
+
+                            filelink = None
+                            if 'attachment_file_name' in final_message:
+                                filelink = final_message['attachment_file']
+                            filename = None
+                            if 'attachment_file' in final_message:
+                                filename = final_message['attachment_file_name']
+
                             
                             system_variable = mongo.db.mail_variables.find({})
                             system_variable = [serialize_doc(doc) for doc in system_variable]

@@ -19,7 +19,7 @@ bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 
 @bp.route('/settings/<string:origin>', methods=["POST", "GET"])
 @bp.route('/settings/<string:origin>/<string:id>', methods=["DELETE","PUT"])
-# @token.admin_required
+#@token.admin_required
 def mail_setings(origin,id=None):
     if request.method == "GET":
        mail = mongo.db.mail_settings.find({"origin":origin},{"mail_password":0})
@@ -128,35 +128,44 @@ def mail_setings(origin,id=None):
                 else:
                     return jsonify({"message":"Smtp already exists"}),400
 
-            elif origin == "CAMPAIGN":  
-                    vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
-                            "mail_password":mail_password,"origin":origin})
-                    if vet is None:
-                        priority = 1
-                        previous =  mongo.db.mail_settings.find({"origin":"CAMPAIGN"}).sort("priority", -1).limit(1)
-                        prior_check = [serialize_doc(doc) for doc in previous]
-                        if prior_check:
-                            for data in prior_check:
-                                priority = data['priority'] + 1
-                        ret = mongo.db.mail_settings.insert_one({
-                                "mail_server": mail_server,
-                                "mail_port": mail_port,
-                                "origin": origin,
-                                "mail_use_tls": mail_use_tls,
-                                "mail_username":mail_username,
-                                "mail_password":mail_password,
-                                "active": active,
-                                "type": type_s,
-                                "priority": priority,
-                                "mail_from": mail_from,
-                                "created_at": datetime.datetime.today()
+            elif origin == "CAMPAIGN":
+                daemon_mail = None
+                if mail_server == "smtp.gmail.com":
+                    daemon_mail = "mailer-daemon@googlemail.com"
+                elif mail_server == "smtp.mail.yahoo.com":
+                    daemon_mail = "mailer-daemon@yahoo.com"
+                elif mail_server == "smtp.office365.com":
+                    daemon_mail = "postmaster@outlook.com"
+                vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
+                        "mail_password":mail_password,"origin":origin})
+                if vet is None:
+                    priority = 1
+                    previous =  mongo.db.mail_settings.find({"origin":"CAMPAIGN"}).sort("priority", -1).limit(1)
+                    prior_check = [serialize_doc(doc) for doc in previous]
+                    if prior_check:
+                        for data in prior_check:
+                            priority = data['priority'] + 1
+                    ret = mongo.db.mail_settings.insert_one({
+                            "mail_server": mail_server,
+                            "mail_port": mail_port,
+                            "origin": origin,
+                            "mail_use_tls": mail_use_tls,
+                            "mail_username":mail_username,
+                            "mail_password":mail_password,
+                            "active": active,
+                            "type": type_s,
+                            "daemon_mail":daemon_mail,
+                            "priority": priority,
+                            "mail_from": mail_from,
+                            "created_at": datetime.datetime.today()
 
-                        }).inserted_id
-                        return jsonify({"message":"upsert","id":str(ret)}),200
-                    else:
-                        return jsonify({"message":"Smtp already exists"}),400
+                    }).inserted_id
+                    return jsonify({"message":"upsert","id":str(ret)}),200
+                else:
+                    return jsonify({"message":"Smtp already exists"}),400
 
 @bp.route('/smtp_priority/<string:Id>/<int:position>', methods=["POST"])
+#@token.admin_required
 def smtp_priority(Id,position):
     prior_check = mongo.db.mail_settings.find({"origin": "CAMPAIGN"}).sort("priority",1)
     prior_check = [serialize_doc(doc) for doc in prior_check]
@@ -187,6 +196,7 @@ def smtp_priority(Id,position):
     return jsonify({"message": "priority changed"}), 200
 
 @bp.route('/update_settings/<string:origin>/<string:id>', methods=["PUT"])
+#@token.admin_required
 def update_smtp(id,origin):
     new_password = request.json.get('new_password')
     mail_details = mongo.db.mail_settings.find_one({"_id": ObjectId(str(id))})
