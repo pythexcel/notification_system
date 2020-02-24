@@ -23,13 +23,14 @@ from slack_messages import slack_message
 from recruit_templates import rec_templates
 
 from recruit_slack import rec_message
-from app.imap_util import bounced_mail,mail_reminder
 
 mongo = db.init_db()
 
 from app import token
 
 from app.scheduler import campaign_mail,reject_mail,cron_messages,recruit_cron_messages,tms_cron_messages,calculate_bounce_rate
+from app.imap_util import bounced_mail,mail_reminder
+
 
 def create_app(test_config=None):
     # create and configure the app

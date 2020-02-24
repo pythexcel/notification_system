@@ -2,13 +2,12 @@ import imapclient
 import pyzmail
 import email
 import re
-from app import mongo
 from app.util import serialize_doc
 import datetime
 from app.mail_util import send_email
 from bson.objectid import ObjectId
 from app.config import bounced_mail_since,remind_mail_since,hard_bounce_status,soft_bounce_status
-
+from app import mongo
 
 
 #cron for remind candidates if candidates not replied msg
