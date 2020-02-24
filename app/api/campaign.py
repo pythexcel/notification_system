@@ -41,7 +41,8 @@ def create_campaign():
 
         message_creation = dict()
         if message is not None and message_subject is not None:
-            message_creation.update({"message_id": str(uuid.uuid4()), "message": message,"message_subject": message_subject,"count":0})
+            message_id = str(uuid.uuid4())
+            message_creation.update({"message_id": message_id, "message": message,"message_subject": message_subject,"count":0})
 
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
@@ -60,7 +61,7 @@ def create_campaign():
         else:
             pass
     
-        return jsonify(str(ret)),200
+        return jsonify({"campaign_id":str(ret),"message_id":message_id}),200
 
 @bp.route('/attached_file/<string:Id>/<string:message_id>', methods=["POST","DELETE"])
 #@token.admin_required
