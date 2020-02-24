@@ -24,7 +24,7 @@ def user_data(campaign_details):
             for element in data['mail_message']:
                 if element['campaign'] == campaign_details['_id']:
                     hit_details = mongo.db.mail_status.find_one({"digit": element['sended_message_details']},
-                    {   
+                    {
                         "hit_rate":1,
                         "message":1,
                         "mail_sended_status":1,
@@ -33,7 +33,7 @@ def user_data(campaign_details):
                         "subject": 1,
                         "seen": 1 ,
                         "clicked": 1
-
+                    
                     })
                     if hit_details is not None:
                         hit_details['_id'] = str(hit_details['_id'])

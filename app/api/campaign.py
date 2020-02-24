@@ -289,10 +289,16 @@ def campaign_start_mail(campaign):
                         smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
                         if smtp_detail['mail_server'] in smtp_counts:
                             smtp_count_value.append(value)
-                total_time = round(len(ids)/sum(smtp_count_value))
-                if total_time == 0:
-                    total_time = 1
-                total_expected_time = "{} day".format(total_time)
+                total_time = (float(len(ids))/float(sum(smtp_count_value)))
+                #if total_time == 0:
+                #    total_time = 1
+                if total_time < 60:
+                    total_time = round(total_time,2)
+                    total_expected_time = "{} second".format(total_time)
+                else:
+                    total_time = total_time/60
+                    total_time = round(total_time,2)
+                    total_expected_time = "{} minutes".format(total_time)
                 campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
                     "$set": {
                         "status": "Running",
