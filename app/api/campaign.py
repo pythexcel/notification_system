@@ -209,6 +209,12 @@ def add_user_campaign():
             return jsonify({"message":"Users added to campaign"}), 200
         except pymongo.errors.BulkWriteError as bwe:
             return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200
+
+@bp.route('/user_delete_campaign/<string:campaign_id>/<string:user_id>',methods=["DELETE"])
+def delete_user_campaign(campaign_id,user_id):
+    ret = mongo.db.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
+    return jsonify({"message":"User deleted from campaign"}), 200
+        
           
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
 def campaign_detail(Id):
