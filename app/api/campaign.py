@@ -153,7 +153,7 @@ def update_campaign(Id,message_id=None):
                 "message_detail.$.message_subject": message_subject
             }
             })
-            return jsonify({"message":"Campaign Updated with message"}),200
+            return jsonify({"message":"Campaign Updated with message","message_id":message_id}),200
         else:
             if message_detail:
                 for data in message_detail:
@@ -176,7 +176,7 @@ def update_campaign(Id,message_id=None):
                     "status": status
                 }                
                 })
-            return jsonify({"message":"Campaign Updated"}),200
+            return jsonify({"message":"Campaign Updated","message_id":message_id}),200
     elif request.method == "DELETE":
         campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
         "$pull": {
