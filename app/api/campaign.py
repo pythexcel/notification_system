@@ -213,6 +213,12 @@ def add_user_campaign():
             return jsonify({"message":"Users added to campaign"}), 200
         except pymongo.errors.BulkWriteError as bwe:
             return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200
+
+@bp.route('/user_delete_campaign/<string:campaign_id>/<string:user_id>',methods=["DELETE"])
+def delete_user_campaign(campaign_id,user_id):
+    ret = mongo.db.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
+    return jsonify({"message":"User deleted from campaign"}), 200
+        
           
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
 #@token.admin_required
@@ -285,20 +291,28 @@ def campaign_start_mail(campaign):
                 },multi=True)
                 smtp_count_value = []
                 for smtp in smtps:
-                    for key,value in smtp_counts.items():
-                        smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
-                        if smtp_detail['mail_server'] in smtp_counts:
-                            smtp_count_value.append(value)
-                total_time = (float(len(ids))/float(sum(smtp_count_value)))
-                #if total_time == 0:
-                #    total_time = 1
-            if total_time < 60:
-                total_time = round(total_time,2)
-                total_expected_time = "{} second".format(total_time)
-            else:
-                total_time = total_time/60
-                total_time = round(total_time,2)
-                total_expected_time = "{} minutes".format(total_time)
+                    smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
+                    if smtp_detail['mail_server'] in smtp_counts:
+                        for key,value in smtp_counts.items():
+                            if key == smtp_detail['mail_server']:
+                                smtp_count_value.append(value)
+
+                total_time = (float(len(ids))/float(len(smtp_count_value)))
+                if total_time < 60:
+                    total_time = round(total_time,2)
+                    total_expected_time = "{} second".format(total_time)
+                elif total_time>60 and total_time<3600:
+                    total_time = total_time/60
+                    total_time = round(total_time,1)
+                    total_expected_time = "{} minutes".format(total_time)
+                elif total_time>3600 and total_time<86400:
+                    total_time = total_time/3600
+                    total_time = round(total_time,1)
+                    total_expected_time = "{} hours".format(total_time)
+                else:
+                    total_time = total_time/86400
+                    total_time = round(total_time,1)
+                    total_expected_time = "{} days".format(total_time)
                 campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
                     "$set": {
                         "status": "Running",
