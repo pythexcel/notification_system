@@ -292,7 +292,7 @@ def campaign_start_mail(campaign):
                             if key == smtp_detail['mail_server']:
                                 smtp_count_value.append(value)
 
-                total_time = (float(len(ids))/float(len(smtp_count_value)))
+                total_time = (float(len(ids))* delay / float(len(smtp_count_value)))
                 if total_time < 60:
                     total_time = round(total_time,2)
                     total_expected_time = "{} second".format(total_time)
