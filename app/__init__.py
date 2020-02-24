@@ -133,7 +133,7 @@ def create_app(test_config=None):
 
 #---------------------------------------------------
         bounced_mail_scheduler = BackgroundScheduler()
-        bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=13,minute=00)
+        bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=12,minute=43)
         bounced_mail_scheduler.start()
 
 

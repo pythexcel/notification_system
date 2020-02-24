@@ -1,13 +1,14 @@
 import imapclient
 import pyzmail
 import email
+import datetime
 import re
 from app.util import serialize_doc
-import datetime
 from app.mail_util import send_email
 from bson.objectid import ObjectId
 from app.config import bounced_mail_since,remind_mail_since,hard_bounce_status,soft_bounce_status
 from app import mongo
+from datetime import date
 
 
 #cron for remind candidates if candidates not replied msg
@@ -84,6 +85,7 @@ def bounced_mail():
             imapObj = None
         if imapObj is not None:
             imapObj.select_folder('INBOX')
+            #bounced_mail_since = '1-Jan-2020'
             search_bounce_mails=imapObj.search(['SINCE',bounced_mail_since,'FROM',daemon_mail]) #searching bounced mails from a date
             for search_bounce_mail in search_bounce_mails:  #fetching bounced mail info from msg body
                 rawMessages = imapObj.fetch(search_bounce_mail,['BODY[]'])
@@ -108,8 +110,11 @@ def bounced_mail():
                             bounce_status = bounce_code
                             bounce_type = "soft"
                             break
-                    ret = mongo.db.bounce_emails.update({ 
-                            "bounced_mail": bounced_mail
+                    dt = date.today()
+                    ddate = datetime.datetime.combine(dt, datetime.datetime.min.time())
+                    ret = mongo.db.mail_status.update({
+                            "user_mail": bounced_mail,
+                            "sending_time": {"$gte":ddate}
                         }, {
                             "$set": {
                                 "bounced_mail": bounced_mail,
@@ -120,3 +125,15 @@ def bounced_mail():
                     pass
         else:
             pass
+"""
+
+def bounced_mail():
+    dt=date.today()
+    #print(dt)
+    ddate = datetime.datetime.combine(dt,datetime.datetime.min.time())
+    #ret = mongo.db.mail_status.find({"sending_time":"2020-02-03T11:54:59.198+00:00"})
+    ret = mongo.db.mail_status.find({"sending_time": {"$gte":ddate}})
+    rettt = [serialize_doc(doc) for doc in ret]
+    for rett in  rettt:
+        print(rett['sending_time'])
+"""
