@@ -159,6 +159,7 @@ def update_campaign(Id,message_id=None):
                 message_ids = []
                 for data in message_detail:
                     data['message_id'] = str(uuid.uuid4())
+                    data['count'] = 0
                     message_ids.append(data['message_id'])
                     campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
                     "$set": {
