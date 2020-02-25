@@ -33,16 +33,14 @@ def user_data(campaign_details):
                         "subject": 1,
                         "seen": 1 ,
                         "clicked": 1
-                    
                     })
                     if hit_details is not None:
                         hit_details['_id'] = str(hit_details['_id'])
                         if hit_details not in hit_data:
                             hit_data.append(hit_details)
-                    
         data['hit_details'] = hit_data
         data['mail_message'] = None
-    
+
     campaign_details['users'] = details
 
     validate = mongo.db.campaign_clicked.find({"campaign_id": campaign_details['_id']})
