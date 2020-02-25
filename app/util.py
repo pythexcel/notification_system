@@ -52,6 +52,8 @@ def user_data(campaign_details):
             "$project": 
             {   "clicked_time": 1,
                 "campaign_id": 1,
+                "month": { "$month": "$clicked_time" },
+                "day": { "$dayOfMonth": "$clicked_time" },
                 "time":{
                 "$switch":
                 {
@@ -83,20 +85,20 @@ def user_data(campaign_details):
                 {
                 "$match": {"campaign_id": campaign_details['_id']}
                 },
-                { "$group": { "_id": {"interval":"$time","date":"$clicked_time"}, "myCount": { "$sum": 1 } } },
+                { "$group": { "_id": {"interval":"$time","month":"$month","day":"$day"}, "myCount": { "$sum": 1 } } },
                 { "$sort" : { "_id.date" : 1 } }
                 ])
         clicking_data = []
         currDate = None
         currMonth = None
         for data in clicking_details:
-            if currDate is None or currMonth != data['_id']['date'].month and currDate == data['_id']['date'].day or currDate != data['_id']['date'].day:
+            print(currDate,clicking_data,currMonth)
+            if currDate is None or (currMonth != data['_id']['month'] and currDate == data['_id']['day']) or (currDate != data['_id']['day']):
                 clicking_data.append([data])
             else:
                 clicking_data[len(clicking_data)-1].append(data) 
-            currMonth = data['_id']['date'].month 
-            currDate = data['_id']['date'].day
-            
+            currMonth = data['_id']['month']
+            currDate = data['_id']['day']
         campaign_details['clicking_details'] = clicking_data
     else:
         campaign_details['clicking_details'] = []
