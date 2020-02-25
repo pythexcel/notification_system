@@ -168,7 +168,10 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
             required_url = data['href'].split("?")
-            message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}'.format(digit,campaign))
+            if len(required_url) == 1: 
+                message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}?url={}'.format(digit,campaign,required_url[0]) )
+            else:
+                message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}'.format(digit,campaign))
         message = message + url 
     main = MIMEText(message,'html')
     msg.attach(main)
