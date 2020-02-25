@@ -85,14 +85,13 @@ def user_data(campaign_details):
                 {
                 "$match": {"campaign_id": campaign_details['_id']}
                 },
-                { "$group": { "_id": {"interval":"$time","month":"$month","day":"$day"}, "myCount": { "$sum": 1 } } },
+                { "$group": { "_id": {"interval":"$time","month":"$month","day":"$day"}, "myCount": { "$sum": 1 },"clicking_date" : {"$first": "$clicked_time"} } },
                 { "$sort" : { "_id.date" : 1 } }
                 ])
         clicking_data = []
         currDate = None
         currMonth = None
         for data in clicking_details:
-            print(currDate,clicking_data,currMonth)
             if currDate is None or (currMonth != data['_id']['month'] and currDate == data['_id']['day']) or (currDate != data['_id']['day']):
                 clicking_data.append([data])
             else:

@@ -72,8 +72,7 @@ def attache_campaign(Id,message_id):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
             attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            attachment_file_name = filename  
-            print("HERE") 
+            attachment_file_name = filename   
             ret = mongo.db.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
                 "$set":{
                     "message_detail.$.attachment_file_name": attachment_file_name,
