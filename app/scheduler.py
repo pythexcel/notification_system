@@ -173,8 +173,8 @@ def campaign_mail():
                                     "sending_server":mail_server,
                                     "seen": False,
                                     "sending_port":mail_port,
-                                    "clicked": False
-
+                                    "clicked": False,
+                                    "bounce_type":"success"
                                 }).inserted_id
                                 smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(count_details)},{
                                     "$inc": {
