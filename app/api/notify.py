@@ -296,6 +296,7 @@ def mails():
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
     if MAIL_SEND_TO is not None:
         for mail_store in MAIL_SEND_TO:
+            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True}) 
             id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
             "$set":{
                 "message": message,
@@ -306,7 +307,7 @@ def mails():
             }},upsert=True)
         try:
             send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
-            return jsonify({"status":True,"Message":"Sended"}),200 
+            return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_server']}),200 
         except smtplib.SMTPServerDisconnected:
             return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
