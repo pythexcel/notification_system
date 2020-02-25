@@ -6,7 +6,7 @@ import re
 from app.util import serialize_doc
 from app.mail_util import send_email
 from bson.objectid import ObjectId
-from app.config import bounced_mail_since,remind_mail_since,hard_bounce_status,soft_bounce_status
+from app.config import hard_bounce_status,soft_bounce_status
 from app import mongo
 from datetime import date
 
