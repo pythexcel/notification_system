@@ -39,7 +39,10 @@ def user_data(campaign_details):
                         hit_details['_id'] = str(hit_details['_id'])
                         if hit_details not in hit_data:
                             hit_data.append(hit_details)
-                    bounce_status = hit_details['bounce_type']
+                    if "bounce_type" in hit_details:
+                        bounce_status = hit_details['bounce_type']
+                    else:
+                        bounce_status = None
         data['hit_details'] = hit_data
         data['mail_message'] = None
         data['bounce_type'] = bounce_status
