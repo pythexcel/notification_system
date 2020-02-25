@@ -32,17 +32,17 @@ def user_data(campaign_details):
                         "sending_time": 1,
                         "subject": 1,
                         "seen": 1 ,
-                        "clicked": 1
-                    
+                        "clicked": 1,
+                        "bounce": 1,
+                        "bounce_type" : 1
                     })
                     if hit_details is not None:
                         hit_details['_id'] = str(hit_details['_id'])
                         if hit_details not in hit_data:
                             hit_data.append(hit_details)
-                    
         data['hit_details'] = hit_data
         data['mail_message'] = None
-    
+
     campaign_details['users'] = details
 
     validate = mongo.db.campaign_clicked.find({"campaign_id": campaign_details['_id']})
@@ -52,6 +52,8 @@ def user_data(campaign_details):
             "$project": 
             {   "clicked_time": 1,
                 "campaign_id": 1,
+                "month": { "$month": "$clicked_time" },
+                "day": { "$dayOfMonth": "$clicked_time" },
                 "time":{
                 "$switch":
                 {
@@ -83,20 +85,19 @@ def user_data(campaign_details):
                 {
                 "$match": {"campaign_id": campaign_details['_id']}
                 },
-                { "$group": { "_id": {"interval":"$time","date":"$clicked_time"}, "myCount": { "$sum": 1 } } },
+                { "$group": { "_id": {"interval":"$time","month":"$month","day":"$day"}, "myCount": { "$sum": 1 },"clicking_date" : {"$first": "$clicked_time"} } },
                 { "$sort" : { "_id.date" : 1 } }
                 ])
         clicking_data = []
         currDate = None
         currMonth = None
         for data in clicking_details:
-            if currDate is None or currMonth != data['_id']['date'].month and currDate == data['_id']['date'].day or currDate != data['_id']['date'].day:
+            if currDate is None or (currMonth != data['_id']['month'] and currDate == data['_id']['day']) or (currDate != data['_id']['day']):
                 clicking_data.append([data])
             else:
                 clicking_data[len(clicking_data)-1].append(data) 
-            currMonth = data['_id']['date'].month 
-            currDate = data['_id']['date'].day
-            
+            currMonth = data['_id']['month']
+            currDate = data['_id']['day']
         campaign_details['clicking_details'] = clicking_data
     else:
         campaign_details['clicking_details'] = []

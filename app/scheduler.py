@@ -173,8 +173,9 @@ def campaign_mail():
                                     "sending_server":mail_server,
                                     "seen": False,
                                     "sending_port":mail_port,
-                                    "clicked": False
-
+                                    "clicked": False,
+                                    "bounce_type":"pending",
+                                    "bounce": False
                                 }).inserted_id
                                 smtp_val = mongo.db.smtp_count_validate.update({"_id": ObjectId(count_details)},{
                                     "$inc": {
@@ -232,15 +233,9 @@ def calculate_bounce_rate():
         if campaign is not None:
             campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id']})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
-            bounce = mongo.db.bounce_emails.find({})
-            bounce = [serialize_doc(doc) for doc in bounce]
-            bounce_users = []
+            bounce_users = mongo.db.mail_status.find({"campaign":campaign['_id'],"bounce": True,"bounce_type":"hard"})
+            bounce_users = [serialize_doc(doc) for doc in bounce_users]
             total_users = len(campaign_users)
-            for user in campaign_users:
-                for data in bounce:
-                    if user['email'] == data['bounced_mail'] and data['bounce_type'] == "hard":
-                        if user['email'] not in bounce_users:
-                            bounce_users.append(user['email'])
             bounce_rate = len(bounce_users) *100 / total_users
             campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
                 "$set": {

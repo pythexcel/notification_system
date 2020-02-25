@@ -93,7 +93,6 @@ def sl_profile():
     if not request.json:
             abort(500)
     email = request.json.get("email", None)
-    print(email)
     try:
         slack = slack_profile(email)
         return jsonify (slack), 200

@@ -12,5 +12,4 @@ def Push_notification(fcm_registration_id=None,message=None,subject=None):
     message_title = subject
     message_body = message
     result = push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body)
-    print(result)
 

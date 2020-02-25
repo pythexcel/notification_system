@@ -132,7 +132,7 @@ def create_app(test_config=None):
         campaign_mail_scheduler.start()
 
         bounced_mail_scheduler = BackgroundScheduler()
-        bounced_mail_scheduler.add_job(bounced_mail, trigger='cron', day_of_week='mon-sat',hour=12,minute=43)
+        bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=3)
         bounced_mail_scheduler.start()
 
 
@@ -153,7 +153,6 @@ def create_app(test_config=None):
             recruit_schduled_messages_scheduler.shutdown()
             calculate_bounce_rate_scheduler.shutdown()
             bounced_mail_scheduler.shutdown()
-            #mail_reminder_scheduler.shutdown()
     
 @click.command("seed_hr")
 @with_appcontext
