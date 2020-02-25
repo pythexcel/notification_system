@@ -187,7 +187,7 @@ def bounced_mail():
                             "sending_time": {"$gte": sendDate}
                         }, {
                             "$set": {
-                                "bounced_mail": bounced_mail,
+                                "bounce": True,
                                 "bounce_status":bounce_status,
                                 "bounce_type":bounce_type
                             }})

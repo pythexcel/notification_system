@@ -32,7 +32,9 @@ def user_data(campaign_details):
                         "sending_time": 1,
                         "subject": 1,
                         "seen": 1 ,
-                        "clicked": 1
+                        "clicked": 1,
+                        "bounce": 1,
+                        "bounce_type" : 1
                     })
                     if hit_details is not None:
                         hit_details['_id'] = str(hit_details['_id'])
