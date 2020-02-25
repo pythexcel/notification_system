@@ -295,14 +295,14 @@ def campaign_start_mail(campaign):
                                 smtp_count_value.append(value)
 
                 total_time = (float(len(ids))* delay / float(len(smtp_count_value)))
-                if total_time < 60:
+                if total_time <= 60:
                     total_time = round(total_time,2)
                     total_expected_time = "{} second".format(total_time)
-                elif total_time>60 and total_time<3600:
+                elif total_time>60 and total_time<=3600:
                     total_time = total_time/60
                     total_time = round(total_time,1)
                     total_expected_time = "{} minutes".format(total_time)
-                elif total_time>3600 and total_time<86400:
+                elif total_time>3600 and total_time<=86400:
                     total_time = total_time/3600
                     total_time = round(total_time,1)
                     total_expected_time = "{} hours".format(total_time)
