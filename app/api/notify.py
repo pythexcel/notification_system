@@ -307,7 +307,7 @@ def mails():
             }},upsert=True)
         try:
             send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
-            return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_server']}),200 
+            return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username']}),200 
         except smtplib.SMTPServerDisconnected:
             return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
