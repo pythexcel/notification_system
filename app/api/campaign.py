@@ -362,8 +362,7 @@ def redirectes(unique_key,campaign_id):
     })
     campaign_clicked_details = mongo.db.campaign_clicked.insert_one({
         "campaign_id": campaign_id,
-        "clicked_time": datetime.datetime.now(),
-        "fe_time": datetime.datetime.utcnow()
+        "clicked_time": datetime.datetime.now()
     })
     return redirect(url), 302
 
