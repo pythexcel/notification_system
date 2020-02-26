@@ -226,7 +226,7 @@ def campaign_mail():
             pass
                 
 def calculate_bounce_rate():
-    campaigns = mongo.db.campaigns.find({"status":"Running"})
+    campaigns = mongo.db.campaigns.find({})
     campaigns = [serialize_doc(doc) for doc in campaigns]
     
     for campaign in campaigns:
