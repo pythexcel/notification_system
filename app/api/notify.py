@@ -284,6 +284,7 @@ def mails():
     filename = request.json.get("filename",None)
     filelink = request.json.get("filelink",None)
     is_reminder = request.json.get("is_reminder",True)
+    smtp_email = request.json.get("smtp_email",None)
     if not MAIL_SEND_TO and message:
         return jsonify({"MSG": "Invalid Request"}), 400
     bcc = None
@@ -295,8 +296,7 @@ def mails():
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
     if MAIL_SEND_TO is not None:
-        for mail_store in MAIL_SEND_TO:
-            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True}) 
+        for mail_store in MAIL_SEND_TO: 
             id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
             "$set":{
                 "message": message,
@@ -305,8 +305,12 @@ def mails():
                 "is_reminder":is_reminder,
                 "date": datetime.datetime.now()
             }},upsert=True)
+        if smtp_email is not None:
+            mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email)})
+        else:
+            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True})
         try:
-            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
+            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
             return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username']}),200 
         except smtplib.SMTPServerDisconnected:
             return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
@@ -318,7 +322,6 @@ def mails():
             return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
         except Exception:
             return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
-
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
 
