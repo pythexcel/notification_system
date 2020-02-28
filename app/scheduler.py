@@ -246,8 +246,10 @@ def calculate_bounce_rate():
             pass
 
 def update_completion_time():
+    print("running completion")
     campaigns = mongo.db.campaigns.find({"$or": [{"status": "Running"}, {"status": "Completed"}]})
     campaigns = [serialize_doc(doc) for doc in campaigns]
+    print("campaigns records",campaigns)
     for campaign in campaigns:
         delay= campaign['delay']
         smtp = campaign['smtps']
@@ -255,6 +257,7 @@ def update_completion_time():
         campaign_users = [serialize_doc(doc) for doc in campaign_users]
         ids = len(campaign_users)
         total_time = (float(len(ids))* delay / float(len(smtp)))
+        print("total_time",total_time)
         if total_time <= 60:
             total_time = round(total_time,2)
             total_expected_time = "{} second".format(total_time)
@@ -270,6 +273,7 @@ def update_completion_time():
             total_time = total_time/86400
             total_time = round(total_time,1)
             total_expected_time = "{} days".format(total_time)
+        print("total_expected_time",total_expected_time)
         campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
             "$set": {
                 "total_expected_time_of_completion": total_expected_time
