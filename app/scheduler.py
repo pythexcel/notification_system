@@ -256,7 +256,7 @@ def update_completion_time():
         campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"send_status": False})
         campaign_users = [serialize_doc(doc) for doc in campaign_users]
         ids = len(campaign_users)
-        total_time = (float(len(ids))* delay / float(len(smtp)))
+        total_time = (float(ids)* delay / float(len(smtp)))
         print("total_time",total_time)
         if total_time <= 60:
             total_time = round(total_time,2)
