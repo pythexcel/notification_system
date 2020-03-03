@@ -164,7 +164,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         pass
 
     if user is not None:
-        url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1'>".format(base_url,digit,campaign_message_id,user)
+        url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1' hidden=true>".format(base_url,digit,campaign_message_id,user)
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
             required_url = data['href'].split("?")
