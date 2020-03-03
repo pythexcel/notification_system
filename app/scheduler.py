@@ -236,12 +236,15 @@ def calculate_bounce_rate():
             bounce_users = mongo.db.mail_status.find({"campaign":campaign['_id'],"bounce": True,"bounce_type":"hard"})
             bounce_users = [serialize_doc(doc) for doc in bounce_users]
             total_users = len(campaign_users)
-            bounce_rate = len(bounce_users) *100 / total_users
-            campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
-                "$set": {
-                    "bounce_rate": bounce_rate
-                }
-            })
+            if total_users != 0:
+                bounce_rate = len(bounce_users) *100 / total_users
+                campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
+                    "$set": {
+                        "bounce_rate": bounce_rate
+                    }
+                })
+            else:
+                pass
         else:
             pass
 
