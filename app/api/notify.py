@@ -311,6 +311,8 @@ def mails():
                 return jsonify({"status":False,"Message": "Smtp not available in db"})
         else:
             mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True})
+            if mail_details is None:
+                return jsonify({"status":False,"Message": "No smtp active in DB"})
         try:
             send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
             return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username']}),200 
