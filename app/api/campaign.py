@@ -352,6 +352,20 @@ def hit_rate(variable,campaign_message,user):
         })   
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
 
+
+@bp.route("/unsubscribe_mail/<string:unsubscribe_mail>",methods=['GET'])
+def unsubscribe_mail(unsubscribe_mail):
+    unsubscribe = mongo.db.unsubscribe_mails.update({
+        "email":unsubscribe_mail,
+        },{
+        "$set":{
+            "unsubscribe_at": datetime.datetime.utcnow(),
+            "email": unsubscribe_mail
+        }
+        },upsert=True)
+    return "unsubscribed successfully"
+
+
 @bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
 def redirectes(unique_key,campaign_id):
     url =  request.args.get('url', type=str)

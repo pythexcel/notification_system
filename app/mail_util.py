@@ -165,7 +165,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
 
     if user is not None:
         url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1' hidden=true>".format(base_url,digit,campaign_message_id,user)
-        unsuscribe_url = "<a href='{}unsubscribe_mail/{}' hidden=true>Unsubscribe</a>".format(base_url,delivered[0])
+        unsuscribe_url = "<div style='text-align: center'><a href='{}unsubscribe_mail/{}'>Unsubscribe</a></div>".format(base_url,delivered[0])
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
             required_url = data['href'].split("?")
@@ -176,7 +176,6 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         message = message + url + unsuscribe_url
     main = MIMEText(message,'html')
     msg.attach(main)
-    print(delivered)
     mail.sendmail(username,delivered, msg.as_string())
     mail.quit()
     
