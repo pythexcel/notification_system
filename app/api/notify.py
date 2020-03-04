@@ -286,7 +286,7 @@ def mails():
     is_reminder = request.json.get("is_reminder",True)
     smtp_email = request.json.get("smtp_email",None)
     if not MAIL_SEND_TO and message:
-        return jsonify({"MSG": "Invalid Request"}), 400
+        return jsonify({"status":False,"Message": "Invalid Request"}), 400
     bcc = None
     if 'bcc' in request.json:
         bcc = request.json['bcc']
