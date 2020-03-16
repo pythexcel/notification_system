@@ -271,50 +271,50 @@ def send_mails():
 @bp.route('/send_mail', methods=["POST"])
 #@token.admin_required
 def mails():
-    data = request.form
+    if not request.json:
+        abort(500) 
     MAIL_SEND_TO = None     
     if app.config['ENV'] == 'development':
         MAIL_SEND_TO = [app.config['to']]
     else:
         if app.config['ENV'] == 'production':
-            MAIL_SEND_TO = ast.literal_eval(data.get("to"))
-    message = data.get("message")
-    subject = data.get("subject")
-    smtp_email = data.get("smtp_email")
+            MAIL_SEND_TO = request.json.get("to",None)
+    message = request.json.get("message",None)
+    subject = request.json.get("subject",None)
+    filename = request.json.get("filename",None)
+    filelink = request.json.get("filelink",None)
+    is_reminder = request.json.get("is_reminder",True)
+    smtp_email = request.json.get("smtp_email",None)
     if not MAIL_SEND_TO and message:
-        return jsonify({"MSG": "Invalid Request"}), 400
+        return jsonify({"status":False,"Message": "Invalid Request"}), 400
     bcc = None
-    if 'bcc' in request.form:
-        bcc = ast.literal_eval(data.get("bcc"))
+    if 'bcc' in request.json:
+        bcc = request.json['bcc']
     cc = None
-    if 'cc' in request.form:
-        cc = ast.literal_eval(data.get("cc"))
+    if 'cc' in request.json:
+        cc = request.json['cc'] 
+    if 'fcm_registration_id' in request.json:
+        Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
     if MAIL_SEND_TO is not None:
-        attachment_file = None
-        attachment_file_name = None
-        if 'attachment_file' in request.form:
-            file = request.files['attachment_file']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-                attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                attachment_file_name = filename
         for mail_store in MAIL_SEND_TO: 
             id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
             "$set":{
                 "message": message,
                 "subject": subject,
                 "to":mail_store,
-                "attachment_file": attachment_file,
-                "attachment_file_name": attachment_file_name,
+                "is_reminder":is_reminder,
                 "date": datetime.datetime.now()
             }},upsert=True)
-        if smtp_email!="null":
+        if smtp_email is not None:
             mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email)})
+            if mail_details is None:
+                return jsonify({"status":False,"Message": "Smtp not available in db"})
         else:
             mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True})
+            if mail_details is None:
+                return jsonify({"status":False,"Message": "No smtp active in DB"})
         try:
-            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
             return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username']}),200 
         except smtplib.SMTPServerDisconnected:
             return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
@@ -329,27 +329,27 @@ def mails():
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
 
-# @bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
-# #@token.admin_required
-# def required_message(message_key):
-#     if request.method == "GET":
-#         ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
-#         if ret is not None:
-#             ret = [template_requirement(serialize_doc(doc)) for doc in ret]
-#             return jsonify(ret), 200
-#         else:
-#             return jsonify ({"message": "no template exist"}), 200    
+@bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
+#@token.admin_required
+def required_message(message_key):
+    if request.method == "GET":
+        ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
+        if ret is not None:
+            ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+            return jsonify(ret), 200
+        else:
+            return jsonify ({"message": "no template exist"}), 200    
 
-# @bp.route('/slack_test',methods=["POST"])
-# #@token.authentication
-# def token_test():
-#     email = request.json.get('email')
-#     try:
-#         slack = slack_id(email)
-#         slack_message(channel=[slack],message="Testing Slack Notification from HR System")
-#         return jsonify({"status":True,"message": "Slack Token Tested"}), 200
-#     except Exception:
-#         return jsonify({"status":False,"message": "Slack User not exist or invalid token"}), 400
+@bp.route('/slack_test',methods=["POST"])
+#@token.authentication
+def token_test():
+    email = request.json.get('email')
+    try:
+        slack = slack_id(email)
+        slack_message(channel=[slack],message="Testing Slack Notification from HR System")
+        return jsonify({"status":True,"message": "Slack Token Tested"}), 200
+    except Exception:
+        return jsonify({"status":False,"message": "Slack User not exist or invalid token"}), 400
         
 
 @bp.route('/mail_test',methods=["POST"])
