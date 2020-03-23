@@ -374,3 +374,12 @@ def edit_template(template_id):
     return jsonify({
         "message": "Template Updated",
         "status": True}), 200
+
+
+@bp.route('/daily_validate_details',methods = ["GET"])
+def validate_details():
+    limit = request.args.get('limit',default=0, type=int)
+    skip = request.args.get('skip',default=0, type=int)         
+    ret = mongo.db.smtp_count_validate.find({}).skip(skip).limit(limit)
+    ret = [serialize_doc(doc) for doc in ret]        
+    return jsonify(ret), 200
