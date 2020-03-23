@@ -332,6 +332,7 @@ def mails_status():
     return jsonify(ret), 200
 
 @bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
+#@token.admin_required
 def hit_rate(variable,campaign_message,user):
     hit = request.args.get('hit_rate', default=0, type=int)
 
@@ -354,6 +355,7 @@ def hit_rate(variable,campaign_message,user):
 
 
 @bp.route("/unsubscribe_mail/<string:unsubscribe_mail>",methods=['GET'])
+#@token.admin_required
 def unsubscribe_mail(unsubscribe_mail):
     unsubscribe = mongo.db.unsubscribe_mails.update({
         "email":unsubscribe_mail,
@@ -366,7 +368,18 @@ def unsubscribe_mail(unsubscribe_mail):
     return "unsubscribed successfully"
 
 
+@bp.route("/unsubscribe_mails_list",methods=["GET"])
+#@token.admin_required
+def mails_status():
+    limit = request.args.get('limit',default=0, type=int)
+    skip = request.args.get('skip',default=0, type=int)         
+    ret = mongo.db.unsubscribe_mails.find({}).skip(skip).limit(limit)
+    ret = [serialize_doc(doc) for doc in ret]        
+    return jsonify(ret), 200
+
+
 @bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
+#@token.admin_required
 def redirectes(unique_key,campaign_id):
     url =  request.args.get('url', type=str)
     clicked = mongo.db.mail_status.update({"digit": unique_key},{
@@ -381,6 +394,7 @@ def redirectes(unique_key,campaign_id):
     return redirect(url), 302
 
 @bp.route('edit_templates/<string:template_id>',methods=["POST"])
+#@token.admin_required
 def edit_template(template_id):
     mongo.db.mail_template.update({"_id": ObjectId(template_id)}, {
     "$set": request.json

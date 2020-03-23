@@ -13,7 +13,7 @@ from app.config import smtp_counts,base_url
 import uuid
 from bs4 import BeautifulSoup
 from bson import ObjectId
-#import re
+import re
 
 
 def serialize_doc(doc):
@@ -117,24 +117,17 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
     else:
         mail = smtplib.SMTP_SSL(str(mail_server), port)
         mail.login(username,password)
-    #regex = '^\w+([\.-]?\w+)*@(excellencetechnologies|mailinator)(\.\w{2,3})+$'
     delivered = []
     for element in recipients:
         delivered.append(element)
-        #if(re.search(regex,element)):  
-            #delivered.append(element)
     if bcc is not None:
         for data in bcc:
             delivered.append(data)
-            #if(re.search(regex,data)):
-            #delivered.append(data) 
     else:
         bcc = None
     if cc is not None:
         for data in cc:
             delivered.append(data)
-            #if(re.search(regex,data)):
-            #delivered.append(data)
         cc =  ','.join(cc)
     else:
         cc = None
@@ -151,7 +144,6 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
     msg['From'] = username
     msg['To'] = ','.join(recipients) 
     msg['Cc'] = cc
-    msg['unsubscribe'] = '{}unsubscribe_mail/{}'.format(base_url,delivered[0])
 
     if files is not None:
         for f in files:
@@ -174,7 +166,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
 
     if user is not None:
         url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1' hidden=true>".format(base_url,digit,campaign_message_id,user)
-        unsuscribe_url = "<div style='text-align: center'><a href='{}unsubscribe_mail/{}'>Unsubscribe</a></div>".format(base_url,delivered[0])
+        unsuscribe_url =  "<div style='text-align: center'><a href='{}unsubscribe_mail/{}'>Unsubscribe</a></div>".format(base_url,delivered[0])
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
             required_url = data['href'].split("?")
@@ -182,7 +174,19 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
                 message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}?url={}'.format(digit,campaign,required_url[0]) )
             else:
                 message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}'.format(digit,campaign))
-        message = message + url + unsuscribe_url
+        
+        exp = re.compile('#unsub')
+        unsub_exist = False
+        if re.search(exp, message):
+            rexWithString = '#' + re.escape('unsub')
+            message = re.sub(rexWithString, "<a href='{}unsubscribe_mail/{}'>Unsubscribe</a>".format(base_url,delivered[0]), message)
+            unsub_exist = True
+
+        if unsub_exist:
+            message = message + url 
+        else:
+            message = message + url + unsuscribe_url
+
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string())
