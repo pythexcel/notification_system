@@ -134,7 +134,7 @@ def campaign_mail():
                                 sending_port= mail_port)
                             except Exception as error:
                                 if total_users == 3:
-                                    error = mongo.dbsd.campaigns.update({"campaign_id": campaign['_id']},{
+                                    error = mongo.db.campaigns.update({"campaign_id": campaign['_id']},{
                                         "$pull":{
                                             "smtps": mail_server
                                         }
@@ -148,7 +148,7 @@ def campaign_mail():
                                         "$set": {
                                                 "send_status": True,
                                                 "mail_cron": True,
-                                                "successful":  working_status,
+                                                "successful":  False,
                                                 "error_message" : repr(error),
                                                 "error_time": datetime.datetime.now(),
                                             
