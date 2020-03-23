@@ -151,6 +151,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
     msg['From'] = username
     msg['To'] = ','.join(recipients) 
     msg['Cc'] = cc
+    msg['unsubscribe'] = '{}unsubscribe_mail/{}'.format(base_url,delivered[0])
 
     if files is not None:
         for f in files:
