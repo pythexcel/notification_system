@@ -10,6 +10,7 @@ __pycache__/
 /app/__pycache__/
 tms_env/
 myenv/
+notify_env/
 # Distribution / packaging
 .Python
 build/
