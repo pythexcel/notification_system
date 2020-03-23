@@ -370,7 +370,7 @@ def unsubscribe_mail(unsubscribe_mail):
 
 @bp.route("/unsubscribe_mails_list",methods=["GET"])
 #@token.admin_required
-def mails_status():
+def unsubscribe_mails_list():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
     ret = mongo.db.unsubscribe_mails.find({}).skip(skip).limit(limit)
