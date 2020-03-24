@@ -179,7 +179,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         unsub_exist = False
         if re.search(unsub_expression, message):
             rexWithString = '#' + re.escape('unsub')
-            message = re.sub(rexWithString, "<a href='{}unsubscribe_mail/{}/{}'>Unsubscribe</a>".format(base_url,delivered[0]),campaign)
+            message = re.sub(rexWithString, "<a href='{}unsubscribe_mail/{}/{}'>Unsubscribe</a>".format(base_url,delivered[0],campaign),message)
             unsub_exist = True
         if unsub_exist:
             message = message + url 
