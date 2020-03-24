@@ -108,7 +108,7 @@ def mail_setings(origin,id=None):
                 vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
                         "mail_password":mail_password,"origin":origin})
                 if vet is None:
-                    exist = mongo.db.mail_settings.find_one({"origin":origin})
+                    exist = mongo.db.mail_settings.find_one({"origin":origin,"active":True})
                     if exist is None:
                         active = True
                     else:
