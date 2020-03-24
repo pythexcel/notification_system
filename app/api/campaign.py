@@ -214,6 +214,7 @@ def add_user_campaign():
 @bp.route('/user_delete_campaign/<string:campaign_id>/<string:user_id>',methods=["DELETE"])
 def delete_user_campaign(campaign_id,user_id):
     ret = mongo.db.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
+    vet = mongo.db.mail_status.remove({"user_id":user_id,"campaign":campaign_id})
     return jsonify({"message":"User deleted from campaign"}), 200
         
           
