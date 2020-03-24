@@ -371,7 +371,7 @@ def campaign_details():
             clicked_user = mongo.db.mail_status.find({"campaign":campaign['_id'],"clicked": True})
             clicked_user = [serialize_doc(doc) for doc in clicked_user]
             clicked_rate = 0
-            if clicked_rate:
+            if clicked_user:
                 clicked_rate = len(clicked_user) * 100 / len(campaign_users)
             unsubscribe_users =  mongo.db.campaign_users.find({"campaign":campaign['_id'],"unsubscribe" : True})
             unsubscribe_users = [serialize_doc(doc) for doc in unsubscribe_users]
