@@ -9,10 +9,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
-from app.config import smtp_counts,base_url
+from app.config import smtp_counts,base_url,default_unsub
 import uuid
 from bs4 import BeautifulSoup
 from bson import ObjectId
+import re
 
 
 def serialize_doc(doc):
@@ -164,6 +165,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         pass
 
     if user is not None:
+        unsuscribe_url = default_unsub.format(base_url,delivered[0])
         url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1' hidden=true>".format(base_url,digit,campaign_message_id,user)
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
@@ -172,7 +174,18 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
                 message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}?url={}'.format(digit,campaign,required_url[0]) )
             else:
                 message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}'.format(digit,campaign))
-        message = message + url 
+        
+        unsub_expression = re.compile('#unsub')
+        unsub_exist = False
+        if re.search(exp, message):
+            rexWithString = '#' + re.escape('unsub')
+            message = re.sub(rexWithString, "<a href='{}unsubscribe_mail/{}'>Unsubscribe</a>".format(base_url,delivered[0]), message)
+            unsub_exist = True
+        if unsub_exist:
+            message = message + url 
+        else:
+            message = message + url + unsuscribe_url 
+
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 

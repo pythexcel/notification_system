@@ -5,6 +5,10 @@ APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
+
+default_unsub = "<div style='text-align: center'><a href='{}unsubscribe_mail/{}'>Unsubscribe</a></div>"
+
+
 base_url = os.getenv("base_url")
 if os.getenv("origin") == "recruit":
     if base_url is None:
