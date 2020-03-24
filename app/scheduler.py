@@ -186,7 +186,7 @@ def campaign_mail():
                                                 "send_status": True,
                                                 "mail_cron": True,
                                                 "successful":  working_status,
-                                                "sended_date": datetime.datetime.now(),
+                                                "sended_date": datetime.datetime.now()
                                         },
                                             "$push": {
                                                 "mail_message": {
