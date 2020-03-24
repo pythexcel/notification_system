@@ -284,8 +284,9 @@ def mails():
     filename = request.json.get("filename",None)
     filelink = request.json.get("filelink",None)
     is_reminder = request.json.get("is_reminder",True)
+    smtp_email = request.json.get("smtp_email",None)
     if not MAIL_SEND_TO and message:
-        return jsonify({"MSG": "Invalid Request"}), 400
+        return jsonify({"status":False,"Message": "Invalid Request"}), 400
     bcc = None
     if 'bcc' in request.json:
         bcc = request.json['bcc']
@@ -296,7 +297,6 @@ def mails():
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
     if MAIL_SEND_TO is not None:
         for mail_store in MAIL_SEND_TO:
-            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True}) 
             id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
             "$set":{
                 "message": message,
@@ -305,8 +305,16 @@ def mails():
                 "is_reminder":is_reminder,
                 "date": datetime.datetime.now()
             }},upsert=True)
+        if smtp_email is not None:
+            mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email)})
+            if mail_details is None:
+                return jsonify({"status":False,"Message": "Smtp not available in db"})
+        else:
+            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True})
+            if mail_details is None:
+                return jsonify({"status":False,"Message": "No smtp active in DB"})
         try:
-            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename)    
+            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
             return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username']}),200 
         except smtplib.SMTPServerDisconnected:
             return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
