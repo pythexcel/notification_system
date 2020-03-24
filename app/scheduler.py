@@ -118,29 +118,42 @@ def campaign_mail():
                             to = []
                             to.append(mail)
                             working_status = True
-                            state = mongo.db.unsubscribe_mails.find_one({"email":str(to[0])})
-                            if state is None:
-                                try:        
-                                    send_email(message=message_str,
-                                    recipients=to,
-                                    subject=message_subject,
-                                    user=unique,
-                                    campaign=str(campaign['_id']),
-                                    sending_mail= mail_username,
-                                    sending_password= mail_password,
-                                    sending_server= mail_server,
-                                    digit=digit,
-                                    campaign_message_id=final_message['message_id'],
-                                    filelink=filelink,
-                                    filename=filename,
-                                    sending_port= mail_port)
-                                except Exception as error:
-                                    if total_users == 3:
-                                        error = mongo.dbsd.campaigns.update({"campaign_id": campaign['_id']},{
-                                            "$pull":{
-                                                "smtps": mail_server
-                                            }
+                            try:        
+                                send_email(message=message_str,
+                                recipients=to,
+                                subject=message_subject,
+                                user=unique,
+                                campaign=str(campaign['_id']),
+                                sending_mail= mail_username,
+                                sending_password= mail_password,
+                                sending_server= mail_server,
+                                digit=digit,
+                                campaign_message_id=final_message['message_id'],
+                                filelink=filelink,
+                                filename=filename,
+                                sending_port= mail_port)
+                            except Exception as error:
+                                if total_users == 3:
+                                    error = mongo.db.campaigns.update({"campaign_id": campaign['_id']},{
+                                        "$pull":{
+                                            "smtps": mail_server
+                                        }
 
+                                    })
+                                    return None
+                                else:
+                                    total_users +=1
+                                    campaing_user_failed = mongo.db.campaign_users.update({"_id":ObjectId(user['_id'])},
+                                    {
+                                        "$set": {
+                                                "send_status": False,
+                                                "mail_cron": True,
+                                                "successful":  False,
+                                                "error_message" : repr(error),
+                                                "error_time": datetime.datetime.now(),
+                                            
+                                        }
+                                    })
                                         })
                                         return None
                                     else:
