@@ -150,11 +150,9 @@ def campaign_mail():
                                                 "mail_cron": True,
                                                 "successful":  False,
                                                 "error_message" : repr(error),
-                                                "error_time": datetime.datetime.now(),
-                                            
+                                                "error_time": datetime.datetime.now()
                                         }
                                     })
-
                                 working_status = False   
                             else:  
     
