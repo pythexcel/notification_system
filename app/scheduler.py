@@ -145,7 +145,7 @@ def campaign_mail():
                                     campaing_user_failed = mongo.db.campaign_users.update({"_id":ObjectId(user['_id'])},
                                     {
                                         "$set": {
-                                                "send_status": False,
+                                                "send_status": True,
                                                 "mail_cron": True,
                                                 "successful":  False,
                                                 "error_message" : repr(error),
