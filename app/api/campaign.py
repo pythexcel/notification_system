@@ -384,24 +384,14 @@ def validate_details():
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
-@bp.route("/unsubscribe_mail/<string:unsubscribe_mail>",methods=['GET'])
-def unsubscribe_mail(unsubscribe_mail):
-    unsubscribe = mongo.db.unsubscribe_mails.update({
+@bp.route("/unsubscribe_mail/<string:unsubscribe_mail>/<string:campaign_id>",methods=['GET'])
+def unsubscribe_mail(unsubscribe_mail,campaign_id):
+    unsubscribe = mongo.db.campaign_users.update({"campaign": campaign_id 
         "email":unsubscribe_mail,
         },{
         "$set":{
             "unsubscribe_at": datetime.datetime.utcnow(),
-            "email": unsubscribe_mail
+            "unsubscribe": True
         }
-        },upsert=True)
+        })
     return "unsubscribed successfully"
-
-
-@bp.route("/unsubscribe_mails_list",methods=["GET"])
-#@token.admin_required
-def unsubscribe_mails_list():
-    limit = request.args.get('limit',default=0, type=int)
-    skip = request.args.get('skip',default=0, type=int)         
-    ret = mongo.db.unsubscribe_mails.find({}).skip(skip).limit(limit)
-    ret = [serialize_doc(doc) for doc in ret]        
-    return jsonify(ret), 200

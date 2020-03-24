@@ -165,7 +165,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         pass
 
     if user is not None:
-        unsuscribe_url = default_unsub.format(base_url,delivered[0])
+        unsuscribe_url = default_unsub.format(base_url,delivered[0],campaign)
         url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1' hidden=true>".format(base_url,digit,campaign_message_id,user)
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
@@ -179,7 +179,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         unsub_exist = False
         if re.search(exp, message):
             rexWithString = '#' + re.escape('unsub')
-            message = re.sub(rexWithString, "<a href='{}unsubscribe_mail/{}'>Unsubscribe</a>".format(base_url,delivered[0]), message)
+            message = re.sub(rexWithString, "<a href='{}unsubscribe_mail/{}/{}'>Unsubscribe</a>".format(base_url,delivered[0]), message,campaign)
             unsub_exist = True
         if unsub_exist:
             message = message + url 
