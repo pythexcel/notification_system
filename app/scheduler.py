@@ -325,3 +325,37 @@ def recruit_cron_messages():
             pass    
     else:
         pass 
+
+
+def update_completion_time():
+    campaigns = mongo.db.campaigns.find({"$or": [{"status": "Running"}, {"status": "Completed"}]})
+    campaigns = [serialize_doc(doc) for doc in campaigns]
+    for campaign in campaigns:
+        delay= campaign['delay']
+        smtp = campaign['smtps']
+        campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"send_status": False})
+        campaign_users = [serialize_doc(doc) for doc in campaign_users]
+        ids = len(campaign_users)
+        total_time = (float(ids)* delay / float(len(smtp)))
+        if total_time <= 60:
+            total_time = round(total_time,2)
+            total_expected_time = "{} second".format(total_time)
+        elif total_time>60 and total_time<=3600:
+            total_time = total_time/60
+            total_time = round(total_time,1)
+            total_expected_time = "{} minutes".format(total_time)
+        elif total_time>3600 and total_time<=86400:
+            total_time = total_time/3600
+            total_time = round(total_time,1)
+            total_expected_time = "{} hours".format(total_time)
+        else:
+            total_time = total_time/86400
+            total_time = round(total_time,1)
+            total_expected_time = "{} days".format(total_time)
+        campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
+            "$set": {
+                "total_expected_time_of_completion": total_expected_time
+            }
+        })
+
+
