@@ -9,7 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.mime.application
 import mimetypes
-from app.config import smtp_counts,base_url,default_unsub
+from app.config import smtp_counts,base_url
 import uuid
 from bs4 import BeautifulSoup
 from bson import ObjectId
@@ -165,7 +165,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         pass
 
     if user is not None:
-        unsuscribe_url = default_unsub.format(base_url,delivered[0],campaign)
+        unsuscribe_url =  "<div style='text-align: center'><a href='{}unsubscribe_mail/{}/{}'>Unsubscribe</a></div>".format(base_url,delivered[0],campaign)
         url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1' hidden=true>".format(base_url,digit,campaign_message_id,user)
         soup = BeautifulSoup(message,"lxml")
         for data in soup.find_all('a', href=True):
