@@ -287,7 +287,8 @@ def campaign_start_mail(campaign):
             else:
                 for data in ids:
                     final_ids.append(ObjectId(data))
-                ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
+                ret = mongo.db.campaign_users.update({ "_id" : { "$in": final_ids }, "unsubscribe_status" : False },
+                {
                     "$set":{
                         "mail_cron":False
                     }
