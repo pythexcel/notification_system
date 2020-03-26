@@ -129,6 +129,7 @@ def list_campaign():
         ret = mongo.db.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         total_unsub = mongo.db.unsubscribed_users.find({})
+        total_unsub = [serialize_doc(doc) for doc in total_unsub]
         totalUnsub = 0
         if total_unsub:
             totalUnsub = len(total_unsub)
