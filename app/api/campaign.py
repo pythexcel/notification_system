@@ -286,8 +286,13 @@ def campaign_start_mail(campaign):
         
             else:
                 for data in ids:
-                    final_ids.append(ObjectId(data))
-                ret = mongo.db.campaign_users.update({ "_id" : { "$in": final_ids }, "unsubscribe_status" : False },
+                    unsub_detail =  mongo.db.campaign_users.find_one({"_id": ObjectId(data)})
+                    if unsub_detail['unsubscribe_status'] is False:
+                        final_ids.append(ObjectId(data))
+                        ids.remove(data)
+                print(ids,"IDS")
+                print(final_ids,"FINAL IDS")
+                ret = mongo.db.campaign_users.update({  "_id" : { "$in": final_ids }},
                 {
                     "$set":{
                         "mail_cron":False

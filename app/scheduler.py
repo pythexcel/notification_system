@@ -33,7 +33,7 @@ def campaign_mail():
                         if message_detail['count'] == highest_count_message['count']:
                             message_subject_details.append(message_detail)
                     
-            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id']})
+            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'], "unsubscribe_status" : False})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
             total_users = 0
             for user in campaign_users:
