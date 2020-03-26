@@ -355,7 +355,7 @@ def mails_status():
 def unsub():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
-    ret = mongo.db.unsubscribed_users.find({}).skip(skip).limit(limit)
+    ret = mongo.db.unsubscribed_users.find({}).sort('unsubscribe_at',-1).skip(skip).limit(limit)
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
