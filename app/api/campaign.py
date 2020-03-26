@@ -352,7 +352,7 @@ def mails_status():
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
-bp.route("/unsub_status",methods=["GET"])
+@bp.route("/unsub_status",methods=["GET"])
 #@token.admin_required
 def unsub():
     limit = request.args.get('limit',default=0, type=int)
