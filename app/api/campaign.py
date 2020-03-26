@@ -137,7 +137,7 @@ def list_campaign():
             "unsubUsers" : total_unsub,
             "listCampaign" : ret
         }
-        return jsonify(ret), 200
+        return jsonify(responseData), 200
 
 @bp.route('/update_campaign/<string:Id>', methods=["POST"])
 @bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
