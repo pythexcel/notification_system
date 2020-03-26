@@ -134,7 +134,7 @@ def list_campaign():
         if total_unsub:
             totalUnsub = len(total_unsub)
         responseData = {
-            "unsubUsers" : total_unsub,
+            "unsubUsers" : totalUnsub,
             "listCampaign" : ret
         }
         return jsonify(responseData), 200
