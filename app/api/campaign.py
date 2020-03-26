@@ -204,6 +204,11 @@ def add_user_campaign():
             data['send_status'] = False
             data['campaign'] = campaign
             data['block'] = False
+            unsub_status = mongo.db.unsubscribed_users.find_one({"email":data['email']})
+            if unsub_status is not None:
+                data['unsubscribe_status'] = True
+            else:
+                data['unsubscribe_status'] = False
         mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
         try:
             ret = mongo.db.campaign_users.insert_many(users)
@@ -401,5 +406,5 @@ def unsubscribe_mail(unsubscribe_mail,campaign_id):
             "email": unsubscribe_mail
         }
     },upsert = True)
-    
+
     return "unsubscribed successfully"
