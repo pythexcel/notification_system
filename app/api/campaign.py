@@ -128,6 +128,14 @@ def delete_campaign(Id):
 def list_campaign():
         ret = mongo.db.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
+        total_unsub = mongo.db.unsubscribed_users.find({})
+        totalUnsub = 0
+        if total_unsub:
+            totalUnsub = len(total_unsub)
+        responseData = {
+            "unsubUsers" : total_unsub,
+            "listCampaign" : ret
+        }
         return jsonify(ret), 200
 
 @bp.route('/update_campaign/<string:Id>', methods=["POST"])
@@ -342,6 +350,16 @@ def mails_status():
     ret = mongo.db.mail_status.find({}).skip(skip).limit(limit)
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
+
+bp.route("/unsub_status",methods=["GET"])
+#@token.admin_required
+def unsub():
+    limit = request.args.get('limit',default=0, type=int)
+    skip = request.args.get('skip',default=0, type=int)         
+    ret = mongo.db.unsubscribed_users.find({}).skip(skip).limit(limit)
+    ret = [serialize_doc(doc) for doc in ret]        
+    return jsonify(ret), 200
+
 
 @bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
 def hit_rate(variable,campaign_message,user):
