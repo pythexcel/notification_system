@@ -361,7 +361,7 @@ def campaign_details():
     campaigns = [serialize_doc(doc) for doc in campaigns]
     for campaign in campaigns:
         if campaign is not None:
-            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id']})
+            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"unsubscribe_status" : False})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
             seen_users = mongo.db.mail_status.find({"campaign":campaign['_id'],"seen": True})
             seen_users = [serialize_doc(doc) for doc in seen_users]
