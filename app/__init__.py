@@ -148,7 +148,7 @@ def create_app(test_config=None):
         update_completion_time_scheduler.start()
 
         campaign_details_update_scheduler = BackgroundScheduler()
-        campaign_details_update_scheduler.add_job(campaign_details, trigger='interval', seconds=5)
+        campaign_details_update_scheduler.add_job(campaign_details, trigger='interval', seconds=2)
         campaign_details_update_scheduler.start()
 
         try:
