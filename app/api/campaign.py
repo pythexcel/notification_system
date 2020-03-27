@@ -356,7 +356,7 @@ def unsub():
         "list" : ret,
         "totalUnsub" : totalUnsub
     }        
-    return jsonify(ret), 200
+    return jsonify( responseData ), 200
 
 
 @bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
