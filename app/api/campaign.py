@@ -122,6 +122,8 @@ def pause_campaign(Id,status):
 #@token.admin_required
 def delete_campaign(Id):
     ret = mongo.db.campaigns.remove({"_id":ObjectId(Id)})
+    user = mongo.db.campaign_users.remove({ "campaign": Id })
+    status = mongo.db.mail_status.remove({ "campaign": Id })
     return jsonify({"message":"Campaign deleted"}),200
 
 @bp.route('/list_campaign', methods=["GET"])
@@ -358,6 +360,11 @@ def unsub():
     }        
     return jsonify( responseData ), 200
 
+@bp.route("/delete_unsub_status/<string:Id>",methods=["GET"])
+#@token.admin_required
+def delete_unsub(Id):        
+    ret = mongo.db.unsubscribed_users.remove({_id : ObjectId(Id)})
+    return jsonify( "message" :"user removed from unsub" ), 200
 
 @bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
 def hit_rate(variable,campaign_message,user):
