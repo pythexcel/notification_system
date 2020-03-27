@@ -417,8 +417,7 @@ def unsubscribe_mail(unsubscribe_mail,campaign_id):
     unsubscribe = mongo.db.campaign_users.find_one_and_update({"campaign": campaign_id , "email":unsubscribe_mail },
     {
         "$set":{
-            "unsubscribe_at": datetime.datetime.utcnow(),
-            "unsubscribe": True
+            "unsubscribe_status": True
         }
     },return_document = ReturnDocument.AFTER)
     name = unsubscribe.get('name','NO Name')
