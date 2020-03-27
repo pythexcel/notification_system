@@ -407,14 +407,13 @@ def validate_details():
 
 @bp.route("/unsubscribe_mail/<string:unsubscribe_mail>/<string:campaign_id>",methods=['GET'])
 def unsubscribe_mail(unsubscribe_mail,campaign_id):
-    unsubscribe = mongo.db.campaign_users.update({"campaign": campaign_id , "email":unsubscribe_mail },
+    unsubscribe = mongo.db.campaign_users.find_one_and_update({"campaign": campaign_id , "email":unsubscribe_mail },
     {
         "$set":{
             "unsubscribe_at": datetime.datetime.utcnow(),
             "unsubscribe": True
         }
-    },ReturnDocument.AFTER)
-    unsubscribe = [serialize_doc(doc) for doc in unsubscribe]
+    },return_document = ReturnDocument.AFTER)
     print(unsubscribe)
     unsubscribe_details = mongo.db.unsubscribed_users.update({ "email" : unsubscribe_mail },
     {
