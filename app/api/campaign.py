@@ -413,6 +413,8 @@ def unsubscribe_mail(unsubscribe_mail,campaign_id):
             "unsubscribe": True
         }
     },ReturnDocument.AFTER)
+    unsubscribe = [serialize_doc(doc) for doc in unsubscribe]
+    print(unsubscribe)
     unsubscribe_details = mongo.db.unsubscribed_users.update({ "email" : unsubscribe_mail },
     {
         "$set":{
