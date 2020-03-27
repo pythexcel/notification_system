@@ -128,16 +128,7 @@ def delete_campaign(Id):
 def list_campaign():
         ret = mongo.db.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
-        total_unsub = mongo.db.unsubscribed_users.find({})
-        total_unsub = [serialize_doc(doc) for doc in total_unsub]
-        totalUnsub = 0
-        if total_unsub:
-            totalUnsub = len(total_unsub)
-        responseData = {
-            "unsubUsers" : totalUnsub,
-            "listCampaign" : ret
-        }
-        return jsonify(responseData), 200
+        return jsonify(ret), 200
 
 @bp.route('/update_campaign/<string:Id>', methods=["POST"])
 @bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
@@ -421,7 +412,7 @@ def unsubscribe_mail(unsubscribe_mail,campaign_id):
             "unsubscribe_at": datetime.datetime.utcnow(),
             "unsubscribe": True
         }
-    })
+    },ReturnDocument.AFTER)
     unsubscribe_details = mongo.db.unsubscribed_users.update({ "email" : unsubscribe_mail },
     {
         "$set":{
