@@ -348,7 +348,14 @@ def unsub():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
     ret = mongo.db.unsubscribed_users.find({}).sort('unsubscribe_at',-1).skip(skip).limit(limit)
-    ret = [serialize_doc(doc) for doc in ret]        
+    ret = [serialize_doc(doc) for doc in ret]
+    totalUnsub = 0
+    if ret:
+        totalUnsub = len(ret)
+    responseData = {
+        "list" : ret,
+        "totalUnsub" : totalUnsub
+    }        
     return jsonify(ret), 200
 
 
