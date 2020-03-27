@@ -306,7 +306,7 @@ def mails():
                 "date": datetime.datetime.now()
             }},upsert=True)
         if smtp_email is not None:
-            mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email)})
+            mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
             if mail_details is None:
                 return jsonify({"status":False,"Message": "Smtp not available in db"})
         else:

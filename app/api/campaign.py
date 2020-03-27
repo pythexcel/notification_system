@@ -15,6 +15,7 @@ from flask_jwt_extended import (
 )
 from app.mail_util import send_email,validate_smtp_counts,validate_smtp
 import smtplib
+from pymongo.collection import ReturnDocument
 from app.config import smtp_counts
 from werkzeug import secure_filename
 import uuid
@@ -204,6 +205,11 @@ def add_user_campaign():
             data['send_status'] = False
             data['campaign'] = campaign
             data['block'] = False
+            unsub_status = mongo.db.unsubscribed_users.find_one({"email":data['email']})
+            if unsub_status is not None:
+                data['unsubscribe_status'] = True
+            else:
+                data['unsubscribe_status'] = False
         mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
         try:
             ret = mongo.db.campaign_users.insert_many(users)
@@ -214,6 +220,7 @@ def add_user_campaign():
 @bp.route('/user_delete_campaign/<string:campaign_id>/<string:user_id>',methods=["DELETE"])
 def delete_user_campaign(campaign_id,user_id):
     ret = mongo.db.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
+    vet = mongo.db.mail_status.remove({"user_id":user_id,"campaign":campaign_id})
     return jsonify({"message":"User deleted from campaign"}), 200
         
           
@@ -280,8 +287,12 @@ def campaign_start_mail(campaign):
         
             else:
                 for data in ids:
-                    final_ids.append(ObjectId(data))
-                ret = mongo.db.campaign_users.update({"_id":{ "$in": final_ids}},{
+                    unsub_detail =  mongo.db.campaign_users.find_one({"_id": ObjectId(data)})
+                    if unsub_detail['unsubscribe_status'] is False:
+                        final_ids.append(ObjectId(data))
+                        ids.remove(data)
+                ret = mongo.db.campaign_users.update({  "_id" : { "$in": final_ids }},
+                {
                     "$set":{
                         "mail_cron":False
                     }
@@ -330,6 +341,23 @@ def mails_status():
     ret = mongo.db.mail_status.find({}).skip(skip).limit(limit)
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
+
+@bp.route("/unsub_status",methods=["GET"])
+#@token.admin_required
+def unsub():
+    limit = request.args.get('limit',default=0, type=int)
+    skip = request.args.get('skip',default=0, type=int)         
+    ret = mongo.db.unsubscribed_users.find({}).sort('unsubscribe_at',-1).skip(skip).limit(limit)
+    ret = [serialize_doc(doc) for doc in ret]
+    totalUnsub = 0
+    if ret:
+        totalUnsub = len(ret)
+    responseData = {
+        "list" : ret,
+        "totalUnsub" : totalUnsub
+    }        
+    return jsonify( responseData ), 200
+
 
 @bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
 def hit_rate(variable,campaign_message,user):
@@ -383,3 +411,24 @@ def validate_details():
     ret = mongo.db.smtp_count_validate.find({}).skip(skip).limit(limit)
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
+
+@bp.route("/unsubscribe_mail/<string:unsubscribe_mail>/<string:campaign_id>",methods=['GET'])
+def unsubscribe_mail(unsubscribe_mail,campaign_id):
+    unsubscribe = mongo.db.campaign_users.find_one_and_update({"campaign": campaign_id , "email":unsubscribe_mail },
+    {
+        "$set":{
+            "unsubscribe_at": datetime.datetime.utcnow(),
+            "unsubscribe": True
+        }
+    },return_document = ReturnDocument.AFTER)
+    name = unsubscribe.get('name','NO Name')
+    unsubscribe_details = mongo.db.unsubscribed_users.update({ "email" : unsubscribe_mail },
+    {
+        "$set":{
+            "unsubscribe_at" : datetime.datetime.utcnow(),
+            "email" : unsubscribe_mail,
+            "name" : name
+        }
+    },upsert = True)
+
+    return "unsubscribed successfully"
