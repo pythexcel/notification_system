@@ -198,7 +198,7 @@ def smtp_priority(Id,position):
 @bp.route('/update_settings/<string:origin>/<string:id>', methods=["PUT"])
 #@token.admin_required
 def update_smtp(id,origin):
-    new_password = request.json.get('new_password')
+    new_password = request.json.get('new_password',"password")
     mail_details = mongo.db.mail_settings.find_one({"_id": ObjectId(str(id))})
     if mail_details is None:
         return jsonify({"message": "No smtp exists"}),400
@@ -214,9 +214,8 @@ def update_smtp(id,origin):
             email = mail_from
         else:
             email = username 
-
         try:
-            send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=username,sending_password=password,sending_port=port,sending_server=mail_server)
+            send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=username,sending_password=new_password,sending_port=port,sending_server=mail_server)
         except smtplib.SMTPServerDisconnected:
             return jsonify({"message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
