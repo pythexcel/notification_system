@@ -361,30 +361,33 @@ def campaign_details():
     campaigns = [serialize_doc(doc) for doc in campaigns]
     for campaign in campaigns:
         if campaign is not None:
-            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"unsubscribe_status" : False})
+            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"already_unsub" : False})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
-            seen_users = mongo.db.mail_status.find({"campaign":campaign['_id'],"seen": True})
-            seen_users = [serialize_doc(doc) for doc in seen_users]
-            seen_rate = 0
-            if seen_users:
-                seen_rate = len(seen_users) * 100 / len(campaign_users)
-            clicked_user = mongo.db.mail_status.find({"campaign":campaign['_id'],"clicked": True})
-            clicked_user = [serialize_doc(doc) for doc in clicked_user]
-            clicked_rate = 0
-            if clicked_user:
-                clicked_rate = len(clicked_user) * 100 / len(campaign_users)
-            unsubscribe_users =  mongo.db.campaign_users.find({"campaign":campaign['_id'],"unsubscribe_status" : True})
-            unsubscribe_users = [serialize_doc(doc) for doc in unsubscribe_users]
-            unsub = 0
-            if unsubscribe_users:
-                unsub = len(unsubscribe_users) 
-            campaign_update = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
-                "$set": {
-                    "open_rate" : clicked_rate,
-                    "seen_rate" : seen_rate,
-                    "unsubscribed_users" : unsub
-                }
-            })
+            if campaign_users:
+                seen_users = mongo.db.mail_status.find({"campaign":campaign['_id'],"seen": True})
+                seen_users = [serialize_doc(doc) for doc in seen_users]
+                seen_rate = 0
+                if seen_users:
+                    seen_rate = len(seen_users) * 100 / len(campaign_users)
+                clicked_user = mongo.db.mail_status.find({"campaign":campaign['_id'],"clicked": True})
+                clicked_user = [serialize_doc(doc) for doc in clicked_user]
+                clicked_rate = 0
+                if clicked_user:
+                    clicked_rate = len(clicked_user) * 100 / len(campaign_users)
+                unsubscribe_users =  mongo.db.campaign_users.find({"campaign":campaign['_id'],"unsubscribe_status" : True})
+                unsubscribe_users = [serialize_doc(doc) for doc in unsubscribe_users]
+                unsub = 0
+                if unsubscribe_users:
+                    unsub = len(unsubscribe_users) 
+                campaign_update = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
+                    "$set": {
+                        "open_rate" : clicked_rate,
+                        "seen_rate" : seen_rate,
+                        "unsubscribed_users" : unsub
+                    }
+                })
+            else:
+                pass
 
 
 

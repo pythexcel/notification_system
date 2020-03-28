@@ -210,8 +210,10 @@ def add_user_campaign():
             unsub_status = mongo.db.unsubscribed_users.find_one({"email":data['email']})
             if unsub_status is not None:
                 data['unsubscribe_status'] = True
+                data['already_unsub'] = True
             else:
                 data['unsubscribe_status'] = False
+                data['already_unsub'] = False
         mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
         try:
             ret = mongo.db.campaign_users.insert_many(users)
