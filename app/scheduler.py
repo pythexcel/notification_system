@@ -41,7 +41,7 @@ def campaign_mail():
                     status = mongo.db.campaign_users.find_one({"_id":ObjectId(user['_id'])})
                     print(status,"1")
                     if status['block'] is False:
-                        if status['mail_cron'] is False:
+                        if 'mail_cron' in status and status['mail_cron'] is False:
                             try:
                                 validate = validate_smtp_counts(campaign['smtps'])
                             except Exception as error:
