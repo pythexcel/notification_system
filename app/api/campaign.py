@@ -290,6 +290,7 @@ def campaign_start_mail(campaign):
                 return jsonify({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"message": "Something went wrong with smtp"}), 400
         
             else:
+                print(ids)
                 for data in ids:
                     print(data)
                     unsub_detail =  mongo.db.campaign_users.find_one({"_id": ObjectId(data)})
