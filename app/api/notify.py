@@ -284,7 +284,7 @@ def mails():
         full_domain = re.search("@[\w.]+", email)
         domain = full_domain.group().split(".")
         if domain[0] == "@excellencetechnologies":
-            final.append(data)
+            final.append(email)
         else:
             final.append("conversation_mail@mailinator.com")
     message = request.json.get("message",None)
