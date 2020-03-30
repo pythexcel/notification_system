@@ -39,7 +39,6 @@ def campaign_mail():
             for user in campaign_users:
                 if user is not None: 
                     status = mongo.db.campaign_users.find_one({"_id":ObjectId(user['_id'])})
-                    print(status,"1")
                     if status['block'] is False:
                         if 'mail_cron' in status and status['mail_cron'] is False:
                             try:
@@ -53,7 +52,6 @@ def campaign_mail():
                                         })
                                 return None
                             else:
-                                print(status,"2")
                                 mail_server = validate['mail_server']
                                 mail_port = validate['mail_port']
                                 mail_username = validate['mail_username']
@@ -116,7 +114,6 @@ def campaign_mail():
                                             if "#" + detail == element['name'] and element['value'] is not None:
                                                 rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
                                                 message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
-                                print(status,"3")
                                 digit = str(uuid.uuid4())
                                 to = []
                                 to.append(mail)
@@ -157,7 +154,6 @@ def campaign_mail():
                                         })
                                     working_status = False   
                                 else:  
-                                    print(status,"4")
                                     mail_data = mongo.db.mail_status.insert_one({
                                         "user_mail": user['email'],
                                         "user_id": str(user['_id']),
@@ -198,7 +194,6 @@ def campaign_mail():
                                                 }
                                             }
                                         })
-                                    print(status,"5")
                                     # finding if campaign have no user left which mail is needed to be send mark it as completed
                                     user_available = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":campaign['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
                                     user_available = [serialize_doc(doc) for doc in user_available]
@@ -217,7 +212,6 @@ def campaign_mail():
                                                     })
                                             else:
                                                 pass
-                                    print("ending")
                                     time.sleep(campaign['delay'])
                         else:
                             pass
