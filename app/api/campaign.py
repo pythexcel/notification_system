@@ -297,7 +297,6 @@ def campaign_start_mail(campaign):
                     if unsub_detail['unsubscribe_status'] is False:
                         print(data)
                         final_ids.append(ObjectId(data))
-                        ids.remove(data)
                 
                 ret = mongo.db.campaign_users.update({  "_id" : { "$in": final_ids }},
                 {
