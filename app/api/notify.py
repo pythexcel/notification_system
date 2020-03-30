@@ -279,13 +279,21 @@ def mails():
     else:
         if app.config['ENV'] == 'production':
             MAIL_SEND_TO = request.json.get("to",None)
+    final = []
+    for email in MAIL_SEND_TO:
+        full_domain = re.search("@[\w.]+", email)
+        domain = full_domain.group().split(".")
+        if domain[0] == "@excellencetechnologies":
+            final.append(data)
+        else:
+            final.append("conversation_mail@mailinator.com")
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)
     filelink = request.json.get("filelink",None)
     is_reminder = request.json.get("is_reminder",True)
     smtp_email = request.json.get("smtp_email",None)
-    if not MAIL_SEND_TO and message:
+    if not final and message:
         return jsonify({"status":False,"Message": "Invalid Request"}), 400
     bcc = None
     if 'bcc' in request.json:
@@ -295,8 +303,8 @@ def mails():
         cc = request.json['cc'] 
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
-    if MAIL_SEND_TO is not None:
-        for mail_store in MAIL_SEND_TO:
+    if final is not None:
+        for mail_store in final:
             id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
             "$set":{
                 "message": message,
@@ -314,7 +322,7 @@ def mails():
             if mail_details is None:
                 return jsonify({"status":False,"Message": "No smtp active in DB"})
         try:
-            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
+            send_email(message=message,recipients=final,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
             return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username']}),200 
         except smtplib.SMTPServerDisconnected:
             return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
