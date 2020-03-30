@@ -295,12 +295,15 @@ def campaign_start_mail(campaign):
                     if unsub_detail['unsubscribe_status'] is False:
                         final_ids.append(ObjectId(data))
                         ids.remove(data)
+                
                 ret = mongo.db.campaign_users.update({  "_id" : { "$in": final_ids }},
                 {
                     "$set":{
                         "mail_cron":False
                     }
                 },multi=True)
+                print(ids,"IDSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
+                print(final_ids,"FINAL IDSSSSSSSSSSSSSSSSSSSSSSSSSSS")
                 smtp_count_value = []
                 for smtp in smtps:
                     smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
@@ -309,7 +312,7 @@ def campaign_start_mail(campaign):
                             if key == smtp_detail['mail_server']:
                                 smtp_count_value.append(value)
 
-                total_time = (float(len(ids))* delay / float(len(smtp_count_value)))
+                total_time = (float(len(final_ids))* delay / float(len(smtp_count_value)))
                 if total_time <= 60:
                     total_time = round(total_time,2)
                     total_expected_time = "{} second".format(total_time)
