@@ -291,6 +291,7 @@ def campaign_start_mail(campaign):
         
             else:
                 for data in ids:
+                    print(data)
                     unsub_detail =  mongo.db.campaign_users.find_one({"_id": ObjectId(data)})
                     if unsub_detail['unsubscribe_status'] is False:
                         print(data)
