@@ -84,6 +84,7 @@ def send_mails():
     Message = request.json.get("message",None)
     Subject = request.json.get("subject",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+    smtp_email = request.json.get("smtp_email",None)
     if message_detail is not None:
         if Message is not None:
             message_detail['message'] = Message
@@ -257,7 +258,8 @@ def send_mails():
             'rejection_time': request.json['data']['rejection_time'],
             'send_status': False,
             'message': message_str,
-            'subject': message_subject
+            'subject': message_subject,
+            'smtp_email': smtp_email
             }).inserted_id  
             return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:

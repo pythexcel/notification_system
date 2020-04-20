@@ -190,7 +190,7 @@ def smtp_priority(Id,position):
 
 @bp.route('/update_settings/<string:origin>/<string:id>', methods=["PUT"])
 #@token.admin_required
-def update_smtp(id,origin):
+def update_smtp(origin,id):
     new_password = request.json.get('new_password',"password")
     mail_details = mongo.db.mail_settings.find_one({"_id": ObjectId(str(id))})
     if mail_details is None:
