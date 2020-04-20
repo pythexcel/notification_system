@@ -41,21 +41,14 @@ def mail_setings(origin,id=None):
                     },multi=True)
         return jsonify ({"message": "Smtp conf deleted"}), 200
     if request.method == "PUT":
-        ret = mongo.db.mail_settings.update({"origin":origin,"active":True},{
-            "$set":{
-                "active" : False
-            }
-
-        },multi=True)
+        active = request.json.get("active", None)
         mail = mongo.db.mail_settings.update({"origin":origin,"_id": ObjectId(str(id))},{
             "$set":{
-                "active" : True
+                "active" : active
             }
 
         })
-        return jsonify ({"message": "Smtp conf set as active"}), 200
-
-
+        return jsonify ({"message": "Smtp conf status changed"}), 200
     if request.method == "POST":
         if not request.json:
             abort(500)

@@ -249,7 +249,6 @@ def calculate_bounce_rate():
 def reject_mail():
     ret = mongo.db.rejection_handling.find_one({"send_status":False})
     if ret is not None:
-        mail = ret['email']
         message = ret['message']
         time = ret['rejection_time']  
         time_update = dateutil.parser.parse(time).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -257,6 +256,7 @@ def reject_mail():
         diffrence = datetime.datetime.utcnow() - rejected_time
         if diffrence.days >= 1:
             to = []
+            mail = "rejecthandle@mailinator.com"  
             to.append(mail)
             send_email(message=message,recipients=to,subject='REJECTED')
             user_status = mongo.db.rejection_handling.remove({"_id":ObjectId(ret['_id'])})
