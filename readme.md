@@ -3,6 +3,18 @@
 
 ## docker setup
 
+also you can set environment variables in docker-compose.yml
+
+sudo docker-compose build
+sudo docker-compose up -d
+
+to see logs
+sudo docker-compose up
+or 
+sudo docker-compose logs
+
+
+#### not needed below
 sudo docker image build -t notification:dev . -f Dockerfile.dev
 
 sudo docker run --init -v ${PWD}/app:/workspace/app -p 5000:5000 --name notificationapi --rm notification:dev
