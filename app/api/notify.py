@@ -84,6 +84,7 @@ def send_mails():
     Message = request.json.get("message",None)
     Subject = request.json.get("subject",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+    smtp_email = request.json.get("smtp_email",None)
     if message_detail is not None:
         if Message is not None:
             message_detail['message'] = Message
@@ -257,13 +258,22 @@ def send_mails():
             'rejection_time': request.json['data']['rejection_time'],
             'send_status': False,
             'message': message_str,
-            'subject': message_subject
+            'subject': message_subject,
+            'smtp_email': smtp_email'
             }).inserted_id  
             return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
             if to is not None:
-                send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
-                return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+                if smtp_email is not None:
+                    mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
+                    if mail_details is None:
+                        return jsonify({"status":False,"Message": "Smtp not available in db"})
+                    else:
+                        send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+                        return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+                else:
+                    send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
+                    return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
             else:
                 return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
         

@@ -117,7 +117,7 @@ def mail_message(message_origin):
         Doc_type = request.form["doc_type"]
         default = False
         if "default" in request.form:
-            default = request.form["default"]
+            default = True
             
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
