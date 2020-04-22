@@ -1,7 +1,8 @@
 # Notification settings
 
 
-## docker setup
+## docker setup for development
+
 
 also you can set environment variables in docker-compose.yml
 
@@ -20,11 +21,17 @@ and run
 flask seed_recruit
 to import initial seed data for the recruit system
 
-#### not needed below
-sudo docker image build -t notification:dev . -f Dockerfile.dev
+when need to push development to server
 
-sudo docker run --init -v ${PWD}/app:/workspace/app -p 5000:5000 --name notificationapi --rm notification:dev
+sudo docker-compose push
 
+
+## docker setup for production
+you need to do below to push ur work, only then on production server i can take pull from docker and run it.
+
+sudo docker-compose -f docker-compose-prod.yml build
+sudo docker-compose -f docker-compose-prod.yml up -d
+sudo docker-compose -f docker-compose-prod.yml push
 
 
 ## Project Setup
