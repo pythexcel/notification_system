@@ -271,7 +271,7 @@ def send_mails():
                     if domain[0] == "@excellencetechnologies":
                         final.append(email)
                     else:
-                        final.append("testingattach0@gmail.com")
+                        final.append("recruit_testing@mailinator.com")
                 if smtp_email is not None:
                     mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
                     if mail_details is None:
@@ -304,7 +304,7 @@ def mails():
         if domain[0] == "@excellencetechnologies":
             final.append(email)
         else:
-            final.append("testingattach0@gmail.com")
+            final.append("recruit_testing@mailinator.com")
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)

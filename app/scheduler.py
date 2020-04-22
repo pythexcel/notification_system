@@ -257,7 +257,7 @@ def reject_mail():
             diffrence = datetime.datetime.utcnow() - rejected_time
             if diffrence.days >= 1:
                 to = []
-                mail = "rejecthandle@mailinator.com"  
+                mail = "recruit_testing@mailinator.com"  
                 to.append(mail)
                 mail_details = mongo.db.mail_settings.find_one({"mail_username":str(ret['smtp_email']),"origin": "RECRUIT"})
                 if mail_details is not None:
