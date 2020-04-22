@@ -13,6 +13,12 @@ sudo docker-compose up
 or 
 sudo docker-compose logs
 
+on the docker container is running
+for the first time setup login into the container using
+sudo docker exec -it notifyapi bash
+and run
+flask seed_recruit
+to import initial seed data for the recruit system
 
 #### not needed below
 sudo docker image build -t notification:dev . -f Dockerfile.dev

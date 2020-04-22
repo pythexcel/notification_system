@@ -12,7 +12,11 @@ services:
         ports: 
             - "5000:5000"
         environment: 
-            - database=mongodb://mongodb:27017/notify
-            - base_url= https://notify.exweb.in
+            - database=mongodb://mongodb_notify:27017/notify
+            - base_url= https://notifyapi.exweb.in
             - origin=recruit
+
+    mongo:
+        image: mongo
+        container_name: mongodb_notify
 
