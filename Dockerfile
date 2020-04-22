@@ -25,6 +25,8 @@ RUN apt-get update && \
     apt-get -y autoclean && \
 	rm -rf /var/cache/apk/*
 
+RUN mkdir /workspace/logs
+
 COPY ./docker/supervisor/conf.d/notify.conf /etc/supervisor/conf.d/notify.conf
 
 CMD ["/usr/bin/supervisord"]
