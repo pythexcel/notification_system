@@ -1,5 +1,14 @@
 # Notification settings
 
+
+## docker setup
+
+sudo docker image build -t notification:dev . -f Dockerfile.dev
+
+sudo docker run --init -v ${PWD}/app:/workspace/app -p 5000:5000 --name notificationapi --rm notification:dev
+
+
+
 ## Project Setup
 
 First install python 3.6+ on your system

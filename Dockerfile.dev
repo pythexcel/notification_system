@@ -1,0 +1,23 @@
+FROM python:3.6
+
+WORKDIR /workspace
+
+VOLUME [ "/workspace/app" ]
+
+
+COPY .env /workspace
+COPY mail_templates.py /workspace
+COPY mail_variables.py /workspace
+COPY recruit_slack.py /workspace
+COPY recruit_templates.py /workspace
+COPY slack_messages.py /workspace
+COPY requirements.txt /workspace
+
+RUN pip install -r requirements.txt
+
+
+
+ENV FLASK_APP=app
+ENV FLASK_ENV=development
+
+CMD ["gunicorn", "app:create_app()", "--bind=0.0.0.0:5000"]
