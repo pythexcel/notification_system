@@ -63,6 +63,10 @@ def create_app(test_config=None):
     @app.errorhandler(400)
     def not_found(error):
         return make_response(jsonify(error='Not found'), 400)
+
+    @app.route('/')
+    def base():
+        return "Notification system is online", 200
     
     @app.route('/images/<path:path>')
     def send_file(path):
@@ -161,6 +165,7 @@ def create_app(test_config=None):
             calculate_bounce_rate_scheduler.shutdown()
             bounced_mail_scheduler.shutdown()
             update_completion_time_scheduler.shutdown()
+            campaign_details_update_scheduler.shutdown()
     
 @click.command("seed_hr")
 @with_appcontext

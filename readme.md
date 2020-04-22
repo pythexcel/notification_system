@@ -1,5 +1,39 @@
 # Notification settings
 
+
+## docker setup for development
+
+
+also you can set environment variables in docker-compose.yml
+
+sudo docker-compose build
+sudo docker-compose up -d
+
+to see logs
+sudo docker-compose up
+or 
+sudo docker-compose logs
+
+on the docker container is running
+for the first time setup login into the container using
+sudo docker exec -it notifyapi bash
+and run
+flask seed_recruit
+to import initial seed data for the recruit system
+
+when need to push development to server
+
+sudo docker-compose push
+
+
+## docker setup for production
+you need to do below to push ur work, only then on production server i can take pull from docker and run it.
+
+sudo docker-compose -f docker-compose-prod.yml build
+sudo docker-compose -f docker-compose-prod.yml up -d
+sudo docker-compose -f docker-compose-prod.yml push
+
+
 ## Project Setup
 
 First install python 3.6+ on your system

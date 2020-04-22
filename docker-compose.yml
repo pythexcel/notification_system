@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+    notifyapi:
+        container_name: notifyapi
+        image: xrecruit/notifyapi:dev
+        build: 
+            context: .
+            dockerfile: Dockerfile.dev
+        volumes: 
+            - ./app:/workspace/app
+        ports: 
+            - "5000:5000"
+        environment: 
+            - database=mongodb://mongodb_notify:27017/notify
+            - base_url= https://notifyapi.exweb.in
+            - origin=recruit
+
+    mongo:
+        image: mongo
+        container_name: mongodb_notify
+
