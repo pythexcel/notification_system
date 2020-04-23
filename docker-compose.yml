@@ -10,10 +10,10 @@ services:
         volumes: 
             - ./app:/workspace/app
         ports: 
-            - "8005:5000"
+            - "8012:5000"
         environment: 
             - database=mongodb+srv://xmage:xmage@cluster0-xooqb.mongodb.net/slack_settings_test?retryWrites=true
-            - base_url=http://176.9.137.77:8005/
+            - base_url=http://176.9.137.77:8012/
             - origin=recruit
 
     mongo:

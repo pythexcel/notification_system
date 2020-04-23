@@ -259,7 +259,7 @@ def send_mails():
             'send_status': False,
             'message': message_str,
             'subject': message_subject,
-            'smtp_email': smtp_email'
+            'smtp_email': smtp_email
             }).inserted_id  
             return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
