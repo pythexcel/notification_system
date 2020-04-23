@@ -21,10 +21,12 @@ and run
 flask seed_recruit
 to import initial seed data for the recruit system
 
-when need to push development to server
+## docker setup for staging
 
-sudo docker-compose push
-
+# for staging docker
+sudo docker-compose -f docker-compose-staging.yml build
+sudo docker-compose -f docker-compose-staging.yml up
+sudo docker-compose -f docker-compose-staging.yml push
 
 ## docker setup for production
 you need to do below to push ur work, only then on production server i can take pull from docker and run it.
