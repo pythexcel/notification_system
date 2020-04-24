@@ -10,7 +10,7 @@ from flask_jwt_extended import (
 )
 from flask import current_app as app
 from bson import ObjectId
-from app.mail_util import send_email
+from app.mail_util import send_email,validate_smtp
 import smtplib
 import datetime
 
@@ -228,5 +228,16 @@ def update_smtp(origin,id):
             })
             return jsonify({"message": "Smtp password updated"}), 200
 
-
-
+@bp.route('/validate_smtp', methods=["POST"])
+#@token.admin_required
+def update_smtp(email):
+    email = request.json.get('email')
+    password = request.json.get('password'))
+    if email is None:
+        return jsonify({"message": "please enter a email"}), 400
+    try:
+        validate_smtp(username=email,password=password,port=465,smtp="smtp.gmail.com")
+    except Exception:
+            return jsonify({"message": "smtp login and password failed"}), 400
+    else:
+        return jsonify({"message": "login succesfull"}), 200
