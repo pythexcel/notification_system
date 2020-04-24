@@ -232,7 +232,7 @@ def update_smtp(origin,id):
 #@token.admin_required
 def update_smtp(email):
     email = request.json.get('email')
-    password = request.json.get('password'))
+    password = request.json.get('password')
     if email is None:
         return jsonify({"message": "please enter a email"}), 400
     try:
