@@ -15,7 +15,8 @@ services:
             - database=mongodb+srv://xmage:xmage@cluster0-xooqb.mongodb.net/slack_settings_test?retryWrites=true
             - base_url=http://176.9.137.77:8012/
             - origin=recruit
-
+            - ENVIRONMENT=production
+            
     mongo:
         image: mongo
         container_name: mongodb_notify
