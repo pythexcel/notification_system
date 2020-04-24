@@ -276,7 +276,9 @@ def send_mails():
                     return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
             else:
                 return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
-        
+    else:
+        return jsonify({"status":False ,"Message" : "Template not exist"})
+
             
 @bp.route('/send_mail', methods=["POST"])
 #@token.admin_required
