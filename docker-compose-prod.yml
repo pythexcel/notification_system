@@ -10,10 +10,10 @@ services:
         volumes: 
             - /var/log/notify:/workspace/logs
         ports: 
-            - "8012:5000"
+            - "8006:5000"
         environment: 
-            - database=mongodb+srv://xmage:xmage@cluster0-xooqb.mongodb.net/slack_settings_test?retryWrites=true
-            - base_url=http://176.9.137.77:8012/
+            - database=mongodb://notify_staging:notify_staging@127.0.0.1:27017/notify_staging
+            - base_url=http://176.9.137.77:8006/
             - origin=recruit
             - ENVIRONMENT=production
             
