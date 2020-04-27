@@ -214,7 +214,13 @@ def send_mails():
         cc = None
         if app.config['ENV'] == 'development':
             if 'to' in request.json:
-                to = [app.config['to']]
+                for email in request.json.get('to'):
+                    full_domain = re.search("@[\w.]+", email)  
+                    domain = full_domain.group().split(".")
+                    if domain[0] == "@excellencetechnologies":
+                        to = [email]
+                    else:
+                        to = [app.config['to']]
                 bcc = [app.config['bcc']]
                 cc = [app.config['cc']]
             else:
@@ -252,7 +258,13 @@ def send_mails():
                     return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
                 if app.config['ENV'] == 'development':
-                    reject_mail = [app.config['to']]   
+                    for email in request.json.get('to'):
+                        full_domain = re.search("@[\w.]+", email)  
+                        domain = full_domain.group().split(".")
+                        if domain[0] == "@excellencetechnologies":
+                            reject_mail = [email]
+                        else:
+                            reject_mail = [app.config['to']]   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": reject_mail,
             'rejection_time': request.json['data']['rejection_time'],
@@ -287,7 +299,13 @@ def mails():
         abort(500) 
     MAIL_SEND_TO = None     
     if app.config['ENV'] == 'development':
-        MAIL_SEND_TO = [app.config['to']]
+        for email in request.json.get('to'):
+            full_domain = re.search("@[\w.]+", email)  
+            domain = full_domain.group().split(".")
+            if domain[0] == "@excellencetechnologies":
+                MAIL_SEND_TO = [email]
+            else:
+                MAIL_SEND_TO = [app.config['to']]
     else:
         if app.config['ENV'] == 'production':
             MAIL_SEND_TO = request.json.get("to",None)
@@ -338,7 +356,6 @@ def mails():
             return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
         except Exception:
             return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
-
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
 
