@@ -262,9 +262,9 @@ def send_mails():
                         full_domain = re.search("@[\w.]+", email)  
                         domain = full_domain.group().split(".")
                         if domain[0] == "@excellencetechnologies":
-                            reject_mail = [email]
+                            reject_mail = email
                         else:
-                            reject_mail = [app.config['to']]   
+                            reject_mail = app.config['to']   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": reject_mail,
             'rejection_time': request.json['data']['rejection_time'],
