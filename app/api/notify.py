@@ -258,13 +258,13 @@ def send_mails():
                     return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
                 if app.config['ENV'] == 'development':
-                    for email in request.json.get('to'):
-                        full_domain = re.search("@[\w.]+", email)  
-                        domain = full_domain.group().split(".")
-                        if domain[0] == "@excellencetechnologies":
-                            reject_mail = email
-                        else:
-                            reject_mail = app.config['to']   
+                    email = request.json['data']['email']
+                    full_domain = re.search("@[\w.]+", email)  
+                    domain = full_domain.group().split(".")
+                    if domain[0] == "@excellencetechnologies":
+                        reject_mail = email
+                    else:
+                        reject_mail = app.config['to']   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": reject_mail,
             'rejection_time': request.json['data']['rejection_time'],
