@@ -110,7 +110,7 @@ def mail_message(message_origin):
         MSG_SUBJECT = request.form["message_subject"]
         for_detail = None
         if 'for_detail' in request.form:
-            for_detail = request.form["for"]
+            for_detail = request.form["for_detail"]
         recruit_details = None
         if 'recruit_details' in request.form:
             recruit_details = request.form["recruit_details"]
@@ -175,7 +175,6 @@ def mail_message(message_origin):
         
         else:
             ret = mongo.db.mail_template.insert_one({
-                "message_key": MSG_KEY,
                 "message": MSG,
                 "message_key": MSG_KEY,
                 "working": working,
