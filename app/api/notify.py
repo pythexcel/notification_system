@@ -254,7 +254,7 @@ def send_mails():
                 if app.config['ENV'] == 'development':
                     reject_mail = [app.config['to']]   
             reject_handling = mongo.db.rejection_handling.insert_one({
-            "email": request.json['data']['email'],
+            "email": reject_mail,
             'rejection_time': request.json['data']['rejection_time'],
             'send_status': False,
             'message': message_str,

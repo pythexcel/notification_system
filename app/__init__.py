@@ -206,6 +206,13 @@ def seed_recruit():
         notification_message = mongo.db.notification_msg.insert_many(rec_message)
     else:
         notification_message = mongo.db.notification_msg.insert_many(rec_message)
+    mail_variable_exist = mongo.db.mail_variables.find({})
+    if mail_variable_exist:
+        mongo.db.mail_variables.remove({})
+        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
+    else:
+        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
+    
 
 @click.command("seed_system")
 @with_appcontext
