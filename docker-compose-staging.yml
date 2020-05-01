@@ -16,7 +16,7 @@ services:
             - base_url=http://176.9.137.77:8006/
             - origin=recruit
             - ENVIRONMENT=development 
-            - to=recruit_testing@mailinator.com 
+            - to=testingattach0@gmail.com
             - bcc=bcc_testing_recruit@mailinator.com
             - cc=cc_testing_recruit@mailinator.com
 
