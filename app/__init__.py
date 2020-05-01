@@ -47,6 +47,10 @@ def create_app(test_config=None):
     app.config['cc'] = os.getenv('cc')
     app.config['bcc'] = os.getenv('bcc')
     app.config['origin'] = os.getenv('origin')
+    app.config['service'] = os.getenv('service')
+    app.config['localtextkey'] = os.getenv('localtextkey')
+    app.config['twilioSid'] = os.getenv('twilioSid')
+    app.config['twilioToken'] = os.getenv('twilioToken')
     
     if test_config is None:
         # load the instance config, if it exists, when not testing

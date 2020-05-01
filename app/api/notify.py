@@ -23,11 +23,45 @@ import bson
 import dateutil.parser
 import datetime
 import smtplib
+import urllib.request
+import urllib.parse
+from twilio.rest import Client
 
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
+@bp.route('/send_sms', methods = ["POST"])
+#@token.authentication
+def dispatch_sms():
+    message = request.json.get("message", None)
+    number = request.json.get("number", None)
+    from_no = request.json.get("from",None)
+    if message and number is None:
+        return jsonify({ "message" : "Please provide a message and mobile number"}), 400
+    if app.config['service'] == "textlocal":
+        data =  urllib.parse.urlencode({'apikey': app.config['localtextkey'] , 'numbers': number,'message' : message})
+        data = data.encode('utf-8')
+        request = urllib.request.Request("https://api.textlocal.in/send/?")
+        response = urllib.request.urlopen(request, data)
+        response_data = response.read().decode('utf-8')
+        if response_data['status'] == "success":
+            return jsonify ({ "message": "sms sended", "status": True}), 200
+        else:
+            return jsonify ({ "message": "unable to send sms", "status": False}), 200
+    elif app.config['service'] == "twilio":
+        account_sid = app.config['twilioSid']
+        auth_token = app.config['twilioToken']
+        client = Client(account_sid, auth_token)
+        message = client.messages.create( body=message, from_= from_no, to=number)
+        response = message.sid
+        if response['error_code'] == None:
+            return jsonify ({ "message": "sms sended", "status": True}), 200
+        else:
+            return jsonify ({ "message": "unable to send sms", "status": False}), 200
+    else:
+        return jsonify ({ "message": "No service is added in env", "status": False}), 400
 
+        
 @bp.route('/dispatch', methods=["POST"])
 #@token.authentication
 def dispatch():
