@@ -159,7 +159,7 @@ def send_mails():
             mob_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
             for elem in mobile_message:
                 mob_varb = re.split(mob_rex, elem)
-                mobile_variables.append(varb[0])
+                mobile_variables.append(mob_varb[0])
             mobile_message_str = message_detail['mobile_message']
             for detail in mobile_variables:
                 if detail in request.json['data']:
