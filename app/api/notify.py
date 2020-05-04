@@ -257,12 +257,11 @@ def send_mails():
                     domain = full_domain.group().split(".")
                     if domain[0] == "@excellencetechnologies":
                         to = [email]
-                    else:
-                        to = [app.config['to']]
-                bcc = [app.config['bcc']]
-                cc = [app.config['cc']]
             else:
-                pass    
+                to = [app.config['to']]
+            bcc = [app.config['bcc']]
+            cc = [app.config['cc']]
+
         else:
             if app.config['ENV'] == 'production':
                 if 'to' in request.json:
