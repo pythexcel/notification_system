@@ -41,8 +41,8 @@ def dispatch_sms():
     if app.config['service'] == "textlocal":
         data =  urllib.parse.urlencode({'apikey': app.config['localtextkey'] , 'numbers': number,'message' : message})
         data = data.encode('utf-8')
-        request = urllib.request.Request("https://api.textlocal.in/send/?")
-        response = urllib.request.urlopen(request, data)
+        request_api = urllib.request.Request("https://api.textlocal.in/send/?")
+        response = urllib.request.urlopen(request_api, data)
         response_data = response.read().decode('utf-8')
         if response_data['status'] == "success":
             return jsonify ({ "message": "sms sended", "status": True}), 200
