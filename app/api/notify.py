@@ -5,6 +5,7 @@ from app.mail_util import send_email
 from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
 from app.config import message_needs,dates_converter
 from app.slack_util import slack_message,slack_id
+from app.sms_util import dispatch_sms
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
@@ -23,44 +24,8 @@ import bson
 import dateutil.parser
 import datetime
 import smtplib
-import urllib.request
-import urllib.parse
-from twilio.rest import Client
-
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
-
-@bp.route('/send_sms', methods = ["POST"])
-#@token.authentication
-def dispatch_sms():
-    message = request.json.get("message", None)
-    number = request.json.get("number", None)
-    from_no = request.json.get("from",None)
-    if message and number is None:
-        return jsonify({ "message" : "Please provide a message and mobile number"}), 400
-    if app.config['service'] == "textlocal":
-        data =  urllib.parse.urlencode({'apikey': app.config['localtextkey'] , 'numbers': number,'message' : message})
-        data = data.encode('utf-8')
-        request_api = urllib.request.Request("https://api.textlocal.in/send/?")
-        response = urllib.request.urlopen(request_api, data)
-        response_data = response.read().decode('utf-8')
-        if response_data['status'] == "success":
-            return jsonify ({ "message": "sms sended", "status": True}), 200
-        else:
-            return jsonify ({ "message": "unable to send sms", "status": False}), 200
-    elif app.config['service'] == "twilio":
-        account_sid = app.config['twilioSid']
-        auth_token = app.config['twilioToken']
-        client = Client(account_sid, auth_token)
-        message = client.messages.create( body=message, from_= from_no, to=number)
-        response = message.sid
-        if response['error_code'] == None:
-            return jsonify ({ "message": "sms sended", "status": True}), 200
-        else:
-            return jsonify ({ "message": "unable to send sms", "status": False}), 200
-    else:
-        return jsonify ({ "message": "No service is added in env", "status": False}), 400
-
         
 @bp.route('/dispatch', methods=["POST"])
 #@token.authentication
@@ -119,6 +84,8 @@ def send_mails():
     Subject = request.json.get("subject",None)
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     smtp_email = request.json.get("smtp_email",None)
+    phone = request.json.get("phone", None)
+    phone_message = request.json.get("phone_message",None)
     if message_detail is not None:
         if Message is not None:
             message_detail['message'] = Message
@@ -184,6 +151,27 @@ def send_mails():
             missing_data = re.split(missing_rex, elem)
             missing_payload.append({"key": missing_data[0] , "type": "date" if missing_data[0] in dates_converter else "text"})
 
+        mobile_message_str = None
+        if 'mobile_message' in message_detail:
+            mobile_variables = []
+            mobile_message = message_detail['mobile_message'].split('#')
+            del message[0]
+            mob_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
+            for elem in mobile_message:
+                mob_varb = re.split(mob_rex, elem)
+                message_variables.append(varb[0])
+            mobile_message_str = message_detail['mobile_message']
+            for detail in message_variables:
+                if detail in request.json['data']:
+                    if request.json['data'][detail] is not None:
+                        rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
+                        mobile_message_str = re.sub(rexWithString, str(request.json['data'][detail]), mobile_message_str)
+                else:
+                    for element in system_variable:
+                        if "#" + detail == element['name'] and element['value'] is not None:
+                            rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
+                            mobile_message_str = re.sub(rexWithSystem, str(element['value']), mobile_message_str)    
+
         subject_variables = []
         message_sub = message_detail['message_subject'].split('#')
         del message_sub[0]
@@ -220,6 +208,22 @@ def send_mails():
             if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
                 if request.json['data']['fromDate'] == request.json['data']['toDate']:
                     message_subject = message_subject.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
+
+        phone_status = False
+        phone_issue = False
+        phone_issue_message = None
+        if phone and phone_message is not None:
+            try:
+                if app.config['service'] == "textlocal":
+                    req_sms = dispatch_sms(source="textlocal",apikey=app.config['localtextkey'],number=phone,message=phone_message)
+                    phone_status = req_sms
+                elif app.config['service'] == "twilio":
+                    req_sms = dispatch_sms(source="twilio",auth_token = app.config['twilioToken'],account_sid = app.config['twilioSid'],number=phone,message=phone_message,from_v= app.config['twilio_number'])
+                    phone_status = req_sms
+            except Exception as e:
+                phone_issue_message = repr(e)
+                phone_status = False
+                phone_issue = True
 
         
         download_pdf = "#letter_head #content #letter_foot"
@@ -316,12 +320,12 @@ def send_mails():
                         return jsonify({"status":False,"Message": "Smtp not available in db"})
                     else:
                         send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
-                        return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+                        return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
                 else:
                     send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
-                    return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+                    return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str,"phone_status" : phone_status, "phone_issue": phone_issue}),200
             else:
-                return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload}),200
+                return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str, "phone_status" : phone_status, "phone_issue": phone_issue}),200
     else:
         return jsonify({"status":False ,"Message" : "Template not exist"})
 
@@ -349,6 +353,8 @@ def mails():
     filelink = request.json.get("filelink",None)
     is_reminder = request.json.get("is_reminder",True)
     smtp_email = request.json.get("smtp_email",None)
+    phone = request.json.get("phone", None)
+    phone_message = request.json.get("phone_message",None)
     if not MAIL_SEND_TO and message:
         return jsonify({"status":False,"Message": "Invalid Request"}), 400
     bcc = None
@@ -359,10 +365,29 @@ def mails():
         cc = request.json['cc'] 
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
+    phone_status = False
+    phone_issue = False
+    phone_issue_message = None
+    if phone and phone_message is not None:
+        try:
+            if app.config['service'] == "textlocal":
+                req_sms = dispatch_sms(source="textlocal",apikey=app.config['localtextkey'],number=phone,message=phone_message)
+                phone_status = req_sms
+            elif app.config['service'] == "twilio":
+                req_sms = dispatch_sms(source="twilio",auth_token = app.config['twilioToken'],account_sid = app.config['twilioSid'],number=phone,message=phone_message,from_v= app.config['twilio_number'])
+                phone_status = req_sms
+        except Exception as e:
+            phone_issue_message = repr(e)
+            phone_status = False
+            phone_issue = True
+
     if MAIL_SEND_TO is not None:
         for mail_store in MAIL_SEND_TO:
             id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
             "$set":{
+                "phone":phone,
+                "phone_message": phone_message,
+                "phone_issue": phone_issue_message,
                 "message": message,
                 "subject": subject,
                 "to":mail_store,
@@ -379,7 +404,7 @@ def mails():
                 return jsonify({"status":False,"Message": "No smtp active in DB"})
         try:
             send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
-            return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username']}),200 
+            return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username'],"phone_status" : phone_status, "phone_issue": phone_issue}),200 
         except smtplib.SMTPServerDisconnected:
             return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
