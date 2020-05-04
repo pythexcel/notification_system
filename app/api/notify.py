@@ -155,7 +155,7 @@ def send_mails():
         if 'mobile_message' in message_detail:
             mobile_variables = []
             mobile_message = message_detail['mobile_message'].split('#')
-            del message[0]
+            del mobile_message[0]
             mob_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
             for elem in mobile_message:
                 mob_varb = re.split(mob_rex, elem)
