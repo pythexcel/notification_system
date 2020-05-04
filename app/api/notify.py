@@ -150,7 +150,7 @@ def send_mails():
         for elem in missing:
             missing_data = re.split(missing_rex, elem)
             missing_payload.append({"key": missing_data[0] , "type": "date" if missing_data[0] in dates_converter else "text"})
-
+        
         mobile_message_str = None
         if 'mobile_message' in message_detail:
             mobile_variables = []
@@ -159,9 +159,9 @@ def send_mails():
             mob_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
             for elem in mobile_message:
                 mob_varb = re.split(mob_rex, elem)
-                message_variables.append(varb[0])
+                mobile_variables.append(varb[0])
             mobile_message_str = message_detail['mobile_message']
-            for detail in message_variables:
+            for detail in mobile_variables:
                 if detail in request.json['data']:
                     if request.json['data'][detail] is not None:
                         rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
@@ -257,8 +257,8 @@ def send_mails():
                     domain = full_domain.group().split(".")
                     if domain[0] == "@excellencetechnologies":
                         to = [email]
-            else:
-                to = [app.config['to']]
+                    else:
+                        to = [app.config['to']]
             bcc = [app.config['bcc']]
             cc = [app.config['cc']]
 
