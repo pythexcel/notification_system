@@ -85,7 +85,6 @@ def send_mails():
     message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     smtp_email = request.json.get("smtp_email",None)
     phone = request.json.get("phone", None)
-    phone_message = request.json.get("phone_message",None)
     if message_detail is not None:
         if Message is not None:
             message_detail['message'] = Message
@@ -212,13 +211,13 @@ def send_mails():
         phone_status = False
         phone_issue = False
         phone_issue_message = None
-        if phone and phone_message is not None:
+        if phone is not None:
             try:
                 if app.config['service'] == "textlocal":
-                    req_sms = dispatch_sms(source="textlocal",apikey=app.config['localtextkey'],number=phone,message=phone_message)
+                    req_sms = dispatch_sms(source="textlocal",apikey=app.config['localtextkey'],number=phone,message=mobile_message_str)
                     phone_status = req_sms
                 elif app.config['service'] == "twilio":
-                    req_sms = dispatch_sms(source="twilio",auth_token = app.config['twilioToken'],account_sid = app.config['twilioSid'],number=phone,message=phone_message,from_v= app.config['twilio_number'])
+                    req_sms = dispatch_sms(source="twilio",auth_token = app.config['twilioToken'],account_sid = app.config['twilioSid'],number=phone,message=mobile_message_str,from_v= app.config['twilio_number'])
                     phone_status = req_sms
             except Exception as e:
                 phone_issue_message = repr(e)
