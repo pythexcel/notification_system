@@ -31,6 +31,8 @@ soft_bounce_status = ["5.2.0","5.2.1","5.2.2","5.3.1","5.4.5","5.5.3"]
 dates_converter = [
     "dateofjoining",
     "dob",
+    "date",
+    "interview_date",
     "training_completion_date",
     "termination_date",
     "next_increment_date",
