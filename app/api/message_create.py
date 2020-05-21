@@ -67,7 +67,7 @@ def notification_message(message_origin):
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
 #@token.authentication
-@token.admin_required
+#@token.admin_required
 def special_var():
     if request.method == "GET":
         ret = mongo.db.mail_variables.find({})
