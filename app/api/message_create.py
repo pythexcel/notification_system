@@ -104,6 +104,7 @@ def mail_message(message_origin):
     if request.method == "PUT":
         MSG = request.form["message"]
         MSG_KEY = request.form["message_key"]
+        mobile_message = request.form["mobile_message"]
         working = True
         if "working" in request.form:
             working = request.form["working"]
@@ -138,6 +139,7 @@ def mail_message(message_origin):
                     "message": MSG,
                     "message_key": MSG_KEY,
                     "working": working,
+                    "mobile_message" : mobile_message,
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
                     "version": version,
@@ -178,6 +180,7 @@ def mail_message(message_origin):
                 "message": MSG,
                 "message_key": MSG_KEY,
                 "working": working,
+                "mobile_message" : mobile_message,
                 "message_origin": message_origin,
                 "message_subject": MSG_SUBJECT,
                 "version": 1,
@@ -270,3 +273,19 @@ def slack_channel_test():
     })
     slack_message(channel=[channel],message="Your slack account is integrated")
     return jsonify({"message": "Sended","status":True}), 200
+
+@bp.route('/triggers',methods=["GET"])
+#@token.admin_required
+def get_triggers():
+    duplicate = []
+    triggers = []
+
+    ret = mongo.db.mail_template.find({"message_origin": "RECRUIT"})
+    ret = [serialize_doc(doc) for doc in ret]
+    if ret:
+        for data in ret:
+            duplicate.append(data['for'])
+    for elem in duplicate:
+        if elem not in triggers:
+            triggers.append(elem)
+    return jsonify({"triggers": triggers}), 200
