@@ -350,7 +350,7 @@ def reminder_details():
             sum +=details[-1]['total']
         return jsonify ({'total': sum}), 200
     else:
-        return jsonify ({'total': sum}), 200
+        return jsonify ({'total': 0}), 200
 
 @bp.route('/send_mail', methods=["POST"])
 #@token.admin_required
