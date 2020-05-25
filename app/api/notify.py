@@ -334,7 +334,7 @@ def send_mails():
 
 @bp.route('/reminder_details', methods=["GET"])
 def reminder_details():
-    let details = mongo.db.reminder_details.aggregate([{
+    details = mongo.db.reminder_details.aggregate([{
         '$group' : {
             '_id' : {
                 '$dateToString': { 'format': "%Y-%m-%d", 'date': "$date" }} , 'total' : { '$sum' : 1}
