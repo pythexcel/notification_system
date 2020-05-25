@@ -341,15 +341,16 @@ def reminder_details():
         }},
         { '$sort': { '_id': 1 } }
         ])
+    details =[serialize_doc(doc) for doc in details]
     if (details):
         sum = 0
         if (len(details) > 1):
             sum += details[-1]['total'] + details[-2]['total'] 
         else :
             sum +=details[-1]['total']
-        return jsonify ({'total': sum})
+        return jsonify ({'total': sum}), 200
     else:
-        return jsonify ({'total': sum})
+        return jsonify ({'total': sum}), 200
 
 @bp.route('/send_mail', methods=["POST"])
 #@token.admin_required
