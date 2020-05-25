@@ -246,6 +246,11 @@ def send_mails():
                     attachment_file = os.getcwd() + '/attached_documents/' + filename
                 else:
                     pass
+        if message_detail['message_key'] == "Interview Reminder":
+            reminder_details = mongo.db.reminder_details.insert({
+                'date': datetime.datetime.now(),
+                'message_key': "Interview Reminder"
+            })
         to = None
         bcc = None
         cc = None
@@ -327,7 +332,25 @@ def send_mails():
     else:
         return jsonify({"status":False ,"Message" : "Template not exist"})
 
-            
+@bp.route('/reminder_details', methods=["GET"])
+def reminder_details():
+    let details = mongo.db.reminder_details.aggregate([{
+        '$group' : {
+            '_id' : {
+                '$dateToString': { 'format': "%Y-%m-%d", 'date': "$date" }} , 'total' : { '$sum' : 1}
+        }},
+        { '$sort': { '_id': 1 } }
+        ])
+    if (details):
+        sum = 0
+        if (len(details) > 1):
+            sum += details[-1]['total'] + details[-2]['total'] 
+        else :
+            sum +=details[-1]['total']
+        return jsonify ({'total': sum})
+    else:
+        return jsonify ({'total': sum})
+
 @bp.route('/send_mail', methods=["POST"])
 #@token.admin_required
 def mails():
