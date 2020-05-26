@@ -23,6 +23,7 @@ import base64
 import bson
 import dateutil.parser
 import datetime
+from datetime import timedelta
 import smtplib
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
@@ -334,7 +335,13 @@ def send_mails():
 
 @bp.route('/reminder_details', methods=["GET"])
 def reminder_details():
-    details = mongo.db.reminder_details.aggregate([{
+    date = (datetime.datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+    before_date = dateutil.parser.parse(date)
+    details = mongo.db.reminder_details.aggregate([
+        { '$match' : {
+            'date': { '$gte' : before_date }
+        }},
+	{
         '$group' : {
             '_id' : {
                 '$dateToString': { 'format': "%Y-%m-%d", 'date': "$date" }} , 'total' : { '$sum' : 1}
