@@ -1,7 +1,7 @@
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,redirect)
 from app.util import serialize_doc
-from app.config import slack_redirect_url
+from app.config import slack_redirect_url,oauth_url,client_id,client_secret,client_redirect_uri
 from app import token
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
@@ -9,6 +9,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 verify_jwt_in_request)
 
 import datetime
+import requests
 
 bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
 
@@ -33,13 +34,29 @@ def slack_seting():
 @bp.route('/redirect', methods=["GET"])
 #@token.admin_required
 def slack_redirect():
-    code= request.args.get("code")
-    ret = mongo.db.code.insert(
-        {
+    code = request.args.get("code")
+    state = request.args.get("state")
+    state_save = mongo.db.app_state.insert(
+        {   
+            'state': state
             'code': code,
-            'date': datetime.datetime.now()
+            'installed_on': datetime.datetime.now()
         }
     )
+    oauth_details = {
+        'code': code,
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'redirect_uri': client_redirect_uri
+    }
+    token = request.post(oauth_url,data=oauth_details)
+    print(token)
+    token_resp = token.get('access_token') 
+    save_token = mongo.db.slack_settings.update({}, {
+        "$set": {
+            "slack_token": slack_token
+        }
+    },upsert=True)
     return redirect(slack_redirect_url), 302
 
     

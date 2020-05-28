@@ -20,8 +20,10 @@ smtp_counts = {
     'smtp.mail.me.com' : 1000
 }
 
-#bounced_mail_since = '1-Jan-2020'
-#remind_mail_since = '1-Jan-2020'
+oauth_url = 'https://slack.com/api/oauth.v2.access'
+client_id = '124720392913.862592480496'
+client_secret = '0405e4f1150a7a9dcbaa4442e3aeea4f'
+client_redirect_uri = 'http://176.9.137.77:8012/slack/redirect'
 
 slack_redirect_url = 'http://176.9.137.77:81/dashboard/jobs-overview'
 
