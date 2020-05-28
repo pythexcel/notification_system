@@ -50,11 +50,10 @@ def slack_redirect():
         'redirect_uri': client_redirect_uri
     }
     token = Request.post(oauth_url,data=oauth_details)
-    print(token)
-    token_resp = token.get('access_token') 
+    token_resp = token.json().get('access_token') 
     save_token = mongo.db.slack_settings.update({}, {
         "$set": {
-            "slack_token": slack_token
+            "slack_token": token_resp
         }
     },upsert=True)
     return redirect(slack_redirect_url), 302
