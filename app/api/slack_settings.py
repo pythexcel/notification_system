@@ -38,7 +38,7 @@ def slack_redirect():
     state = request.args.get("state")
     state_save = mongo.db.app_state.insert(
         {   
-            'state': state
+            'state': state,
             'code': code,
             'installed_on': datetime.datetime.now()
         }
