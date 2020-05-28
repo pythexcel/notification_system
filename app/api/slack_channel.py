@@ -36,6 +36,7 @@ def slack():
         for chnl in element:
             inner.append({'value': chnl['id'], 'text': chnl['name']})
         total = inner + channel
+        print(total)
         result = []
         # Below in Total some channels have some duplicate channels remove them 
         for elem in total:
@@ -46,6 +47,7 @@ def slack():
                     notSame = False
             if (notSame):
                 result.append(elem)
+        print(result)
         # Below finding only public channels and putting in diffrent array to diffrentiate         
         public_chnl = []        
         public_channel = sl_public_list['channels']

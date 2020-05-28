@@ -32,10 +32,10 @@ def slack_seting():
         return jsonify({"message":"upserted","status":True}), 200
 
 @bp.route('/redirect', methods=["GET"])
-#@token.admin_required
 def slack_redirect():
     code = request.args.get("code")
     state = request.args.get("state")
+    remove_previous_state = mongo.db.app_state.remove({'state': state})
     state_save = mongo.db.app_state.insert(
         {   
             'state': state,
