@@ -36,7 +36,6 @@ def slack():
         for chnl in element:
             inner.append({'value': chnl['id'], 'text': chnl['name']})
         total = inner + channel
-        print(total)
         result = []
         # Below in Total some channels have some duplicate channels remove them 
         for elem in total:
@@ -47,13 +46,12 @@ def slack():
                     notSame = False
             if (notSame):
                 result.append(elem)
-        print(result)
         # Below finding only public channels and putting in diffrent array to diffrentiate         
         public_chnl = []        
         public_channel = sl_public_list['channels']
         for details in public_channel:
             public_chnl.append({'value': details['id'], 'text': details['name']})
-        return jsonify({"Private_channel":total,"Public_channel":public_chnl}) 
+        return jsonify({"Private_channel":result,"Public_channel":public_chnl}) 
     else:
         if not request.json:
             abort(500)
