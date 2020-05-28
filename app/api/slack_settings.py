@@ -9,7 +9,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 verify_jwt_in_request)
 
 import datetime
-import requests
+import requests as Request
 
 bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
 
@@ -49,7 +49,7 @@ def slack_redirect():
         'client_secret': client_secret,
         'redirect_uri': client_redirect_uri
     }
-    token = request.post(oauth_url,data=oauth_details)
+    token = Request.post(oauth_url,data=oauth_details)
     print(token)
     token_resp = token.get('access_token') 
     save_token = mongo.db.slack_settings.update({}, {
