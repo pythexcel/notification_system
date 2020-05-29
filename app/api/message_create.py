@@ -64,6 +64,16 @@ def notification_message(message_origin):
         },upsert=True)
         return jsonify({"message": "upsert"}), 200
 
+@bp.route('/configuration/channel', methods=["PUT"])
+#@token.admin_required
+def assign_channel():
+    channel = request.json.get('channel')
+    assign = mongo.db.notification_msg.update({}, {
+        "$set": {
+            "slack_channel": channel
+        }
+    })
+    return jsonify ({'message': 'channel added'}), 200
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
 #@token.authentication
