@@ -1,13 +1,8 @@
-from app import mongo
-from flask import (Blueprint, flash, jsonify, abort, request)
-from app.util import serialize_doc
-from app import token
-from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
-                                get_jwt_identity, get_current_user,
-                                jwt_refresh_token_required,
-                                verify_jwt_in_request)
-
 import datetime
+from app import token
+from app import mongo
+from flask import (Blueprint, jsonify, request)
+from app.services.util import serialize_doc
 
 bp = Blueprint('settings', __name__, url_prefix='/')
 
@@ -20,7 +15,7 @@ def system_settings_setings():
 
     if request.method == "PUT":
         pdf_allow = request.json.get("pdf",False)
-        ret = mongo.db.system_settings.update({}, {
+        update_settings = mongo.db.system_settings.update({}, {
             "$set": {
                 "pdf": pdf_allow
             }

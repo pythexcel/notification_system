@@ -27,7 +27,9 @@ from recruit_slack import rec_message
 mongo = db.init_db()
 
 from app import token
+
 from app.scheduler import campaign_mail,reject_mail,cron_messages,recruit_cron_messages,tms_cron_messages,calculate_bounce_rate,update_completion_time,campaign_details
+
 from app.imap_util import bounced_mail,mail_reminder
 
 
@@ -116,7 +118,7 @@ def create_app(test_config=None):
     elif app.config['origin'] == "tms":
         
         tms_schduled_messages_scheduler = BackgroundScheduler()
-        tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=1)
+        tms_schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=1)
         tms_schduled_messages_scheduler.start()
         try:
             print("create app..")
@@ -127,7 +129,7 @@ def create_app(test_config=None):
             
     elif app.config['origin'] == "recruit":
         recruit_schduled_messages_scheduler = BackgroundScheduler()
-        recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
+        recruit_schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=1)
         recruit_schduled_messages_scheduler.start()
 
         reject_mail_scheduler = BackgroundScheduler()
@@ -141,11 +143,6 @@ def create_app(test_config=None):
         bounced_mail_scheduler = BackgroundScheduler()
         bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=3)
         bounced_mail_scheduler.start()
-
-
-        mail_reminder_scheduler = BackgroundScheduler()
-        #mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=13,minute=7)
-        mail_reminder_scheduler.start()
 
         calculate_bounce_rate_scheduler = BackgroundScheduler()
         calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=5)

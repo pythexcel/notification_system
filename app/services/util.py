@@ -1,14 +1,11 @@
-from app import mongo
-import requests
-from slackclient import SlackClient
-from app.mail_util import send_email
-from flask import jsonify
-import datetime
-from app.slack_util import slack_id,slack_message
-from app.mail_util import send_email
-import json
-from bson.objectid import ObjectId
 import re
+import datetime
+import json
+from app import mongo
+from app.services.sendmail_util import send_email
+from flask import jsonify
+from app.services.slack_util import slack_id
+from bson.objectid import ObjectId
 
 def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
@@ -304,10 +301,19 @@ def template_requirement(user):
     user['template_variables'] = unique_variables 
     return user              
 
-def Template_details(details):
+def Template_details( details ):
     users = 0
     Template_data = []
-    user_data = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+    user_data = mongo.db.campaign_users.aggregate([
+        { "$match" : 
+            {
+                "campaign":details['_id']
+            }
+        },
+        { 
+            "$group": { "_id": None, "count": { "$sum": 1 } } 
+        }
+    ])
     user_data = [serialize_doc(doc) for doc in user_data]
     if user_data:
         for data in user_data:
@@ -323,7 +329,7 @@ def Template_details(details):
         pass
     return details
 
-def campaign_details(user):
+def campaign_details( user ):
     name = user['campaign']
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(name)})
     if ret is not None:
@@ -332,7 +338,8 @@ def campaign_details(user):
         user['campaign'] = None
     return user   
 
-def allowed_file(filename):
+def allowed_file( filename ):
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','docx','doc'}
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        

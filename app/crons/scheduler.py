@@ -276,7 +276,7 @@ def reject_mail():
     else:
         pass
 def cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"HR"})
+    ret = mongo.db.messages_cron.find_one({"cron_status":False})
     if ret is not None:
         vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
             {
@@ -294,44 +294,6 @@ def cron_messages():
     else:
         pass 
 
-
-def tms_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"TMS"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
-
-        if ret['type'] == "email":
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
-        elif ret['type'] == "slack":
-            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
-        else:
-            pass    
-    else:
-        pass 
-
-def recruit_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"RECRUIT"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
-
-        if ret['type'] == "email":
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
-        elif ret['type'] == "slack":
-            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
-        else:
-            pass    
-    else:
-        pass 
 
 
 def update_completion_time():

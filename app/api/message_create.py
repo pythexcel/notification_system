@@ -67,7 +67,7 @@ def notification_message(message_origin):
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
 #@token.authentication
-@token.admin_required
+# @token.admin_required
 def special_var():
     if request.method == "GET":
         ret = mongo.db.mail_variables.find({})
@@ -222,6 +222,22 @@ def delete_attached_file(id,file_id):
         }
         })
     return jsonify({"message": "File deleted", "status": True}), 200
+
+@bp.route('/triggers',methods=["GET"])
+#@token.admin_required
+def get_triggers():
+    duplicate = []
+    triggers = []
+
+    ret = mongo.db.mail_template.find({})
+    ret = [serialize_doc(doc) for doc in ret]
+    if ret:
+        for data in ret:
+            duplicate.append(data['for'])
+    for elem in duplicate:
+        if elem not in triggers:
+            triggers.append(elem)
+    return jsonify({"triggers": triggers}), 200
 
 
 @bp.route('/letter_heads', methods=["GET", "PUT"])

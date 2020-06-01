@@ -1,9 +1,8 @@
-from app import mongo
 import requests
-from slackclient import SlackClient
-from app.mail_util import send_email
-from flask import jsonify
 import datetime
+from app import mongo
+from flask import jsonify
+from slackclient import SlackClient
 
 def slack_load_token():
     token = mongo.db.slack_settings.find_one({
@@ -15,8 +14,7 @@ def slack_load_token():
 def slack_id(email):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
-    sl_user_id = sc.api_call("users.lookupByEmail",
-                       email=email)
+    sl_user_id = sc.api_call("users.lookupByEmail", email=email)
     if sl_user_id['ok'] is True:                   
         return (sl_user_id['user']['id'])
     else:
@@ -65,9 +63,7 @@ def slack_message(channel, message,req_json=None,message_detail=None):
 def slack_profile(email=None):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
-    sl_user_id = sc.api_call("users.lookupByEmail",
-                       email=email)
-
+    sl_user_id = sc.api_call("users.lookupByEmail", email=email)
     if sl_user_id['ok'] is True:                   
         return (sl_user_id['user']['id'])
     else:

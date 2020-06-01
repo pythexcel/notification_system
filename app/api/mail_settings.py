@@ -22,11 +22,11 @@ bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 #@token.admin_required
 def mail_setings(origin,id=None):
     if request.method == "GET":
-       mail = mongo.db.mail_settings.find({"origin":origin},{"mail_password":0})
+       mail = mongo.db.mail_settings.find({},{"mail_password":0})
        mail = [serialize_doc(doc) for doc in mail]
        return jsonify (mail)
     if request.method == "DELETE":
-        prior = mongo.db.mail_settings.find_one({"origin":origin,"_id": ObjectId(str(id))})
+        prior = mongo.db.mail_settings.find_one({"_id": ObjectId(str(id))})
         if origin == "CAMPAIGN":
             priority = prior['priority']
         else:
@@ -42,7 +42,7 @@ def mail_setings(origin,id=None):
         return jsonify ({"message": "Smtp conf deleted"}), 200
     if request.method == "PUT":
         active = request.json.get("active", None)
-        mail = mongo.db.mail_settings.update({"origin":origin,"_id": ObjectId(str(id))},{
+        mail = mongo.db.mail_settings.update({"_id": ObjectId(str(id))},{
             "$set":{
                 "active" : active
             }

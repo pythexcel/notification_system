@@ -1,15 +1,10 @@
-from app import mongo
-from flask import (Blueprint, flash, jsonify, abort, request)
-from app.slack_util import slack_message,slack_load_token,slack_id,slack_profile
-from slackclient import SlackClient
 from app import token
+from app import mongo
+from flask import (Blueprint, jsonify, request)
+from app.services.slack_util import slack_message, slack_load_token, slack_id, slack_profile
+from slackclient import SlackClient
+
 bp = Blueprint('slack_channels', __name__, url_prefix='/')
-
-
-@bp.route('/ping', methods=["GET"])
-def ping():
-    return jsonify ("PONG and working too :)"),200
-
 
 @bp.route('/slackchannels', methods=["GET","POST"])
 def slack():
