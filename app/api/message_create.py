@@ -95,7 +95,12 @@ def special_var():
             }
         },upsert=True)
         return jsonify({"message": "upsert"}), 200
-
+@bp.route('/get_email_template', methods=["GET"])
+#@token.admin_required
+def all_mail_message():
+    ret = mongo.db.mail_template.find({})
+    ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+    return jsonify(ret), 200
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT","DELETE"])
 #@token.admin_required

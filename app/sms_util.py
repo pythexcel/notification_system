@@ -20,8 +20,8 @@ def dispatch_sms(message, number, source, apikey = None, from_v = None, auth_tok
         auth_token = auth_token
         client = Client(account_sid, auth_token)
         message = client.messages.create( body=message, from_= from_v, to=number)
-        response = message.sid
-        if response['error_code'] == None:
+        response = message.error_code
+        if response == None:
             return True
         else:
             return False

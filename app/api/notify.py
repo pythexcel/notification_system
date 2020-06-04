@@ -213,6 +213,8 @@ def send_mails():
         phone_issue = False
         phone_issue_message = None
         if phone is not None:
+            if app.config['ENV'] == 'development':
+                phone =  "+918383871788"
             try:
                 if app.config['service'] == "textlocal":
                     req_sms = dispatch_sms(source="textlocal",apikey=app.config['localtextkey'],number=phone,message=mobile_message_str)
@@ -365,7 +367,9 @@ def mails():
     if not request.json:
         abort(500) 
     MAIL_SEND_TO = None     
+    phone = request.json.get("phone", None)
     if app.config['ENV'] == 'development':
+        phone = "+918383871788"
         for email in request.json.get('to'):
             full_domain = re.search("@[\w.]+", email)  
             domain = full_domain.group().split(".")
@@ -382,7 +386,6 @@ def mails():
     filelink = request.json.get("filelink",None)
     is_reminder = request.json.get("is_reminder",True)
     smtp_email = request.json.get("smtp_email",None)
-    phone = request.json.get("phone", None)
     phone_message = request.json.get("phone_message",None)
     if not MAIL_SEND_TO and message:
         return jsonify({"status":False,"Message": "Invalid Request"}), 400
