@@ -29,7 +29,7 @@ def create_campaign():
     if request.method == "GET":
         ret = mongo.db.campaigns.aggregate([])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
-        return jsonify(ret)
+        return jsonify(ret), 200
     if request.method == "POST":
         name = request.json.get("campaign_name",None)
         description = request.json.get("campaign_description",None)
@@ -82,7 +82,7 @@ def attache_campaign(Id,message_id):
             })
             return jsonify({"message": "File attached to campaign"}), 200
         else:
-            return jsonify({"message": "Please select a file"}), 400
+            return jsonify({"message": "Please select a valid file"}), 400
     elif request.method == "DELETE":
         ret = mongo.db.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
             "$unset":{
@@ -97,25 +97,27 @@ def attache_campaign(Id,message_id):
 @bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
 #@token.admin_required
 def pause_campaign(Id,status):
-    working = None
-    if status == 1:
-        block = False
-        working = "Running"
-    elif status == 0:
-        block = True
-        working = "Paused"
+    if status == 1 or status == 0:
+        if status == 1:
+            block = False
+            working = "Running"
+        elif status == 0:
+            block = True
+            working = "Paused"
 
-    ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
-        "$set": {
-            "status": working
-        }
-    })
-    users = mongo.db.campaign_users.update({"campaign":Id},{
-        "$set": {
-            "block": block
-        }
-    },multi=True)
-    return jsonify({"message":"Campaign status changed to {}".format(working)}),200
+        ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
+            "$set": {
+                "status": working
+            }
+        })
+        users = mongo.db.campaign_users.update({"campaign":Id},{
+            "$set": {
+                "block": block
+            }
+        },multi=True)
+        return jsonify({"message":"Campaign status changed to {}".format(working)}),200
+    else:
+        return jsonify({"message":"Please choose a valid status 0 or 1"}),400
 
 
 @bp.route('/delete_campaign/<string:Id>', methods=["DELETE"])
@@ -125,6 +127,7 @@ def delete_campaign(Id):
     user = mongo.db.campaign_users.remove({ "campaign": Id })
     status = mongo.db.mail_status.remove({ "campaign": Id })
     return jsonify({"message":"Campaign deleted"}),200
+
 
 @bp.route('/list_campaign', methods=["GET"])
 #@token.admin_required
@@ -214,7 +217,7 @@ def add_user_campaign():
             else:
                 data['unsubscribe_status'] = False
                 data['already_unsub'] = False
-        mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
+        #mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
         try:
             ret = mongo.db.campaign_users.insert_many(users)
             return jsonify({"message":"Users added to campaign"}), 200
@@ -293,7 +296,6 @@ def campaign_start_mail(campaign):
                 for data in ids:
                     unsub_detail =  mongo.db.campaign_users.find_one({"_id": ObjectId(data)})
                     if unsub_detail['unsubscribe_status'] is False:
-                        print(data)
                         final_ids.append(ObjectId(data))
                 
                 ret = mongo.db.campaign_users.update({  "_id" : { "$in": final_ids }},
@@ -343,25 +345,32 @@ def campaign_start_mail(campaign):
 def mails_status():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
-    ret = mongo.db.mail_status.find({}).skip(skip).limit(limit)
-    ret = [serialize_doc(doc) for doc in ret]        
-    return jsonify(ret), 200
+    if limit and skip is not None:
+        ret = mongo.db.mail_status.find({}).skip(skip).limit(limit)
+        ret = [serialize_doc(doc) for doc in ret]        
+        return jsonify(ret), 200
+    else:
+        return jsonify({"message":"Must send data limits"}),400
+
 
 @bp.route("/unsub_status",methods=["GET"])
 #@token.admin_required
 def unsub():
     limit = request.args.get('limit',default=0, type=int)
-    skip = request.args.get('skip',default=0, type=int)         
-    ret = mongo.db.unsubscribed_users.find({}).sort('unsubscribe_at',-1).skip(skip).limit(limit)
-    ret = [serialize_doc(doc) for doc in ret]
-    totalUnsub = 0
-    if ret:
-        totalUnsub = len(ret)
-    responseData = {
-        "list" : ret,
-        "totalUnsub" : totalUnsub
-    }        
-    return jsonify( responseData ), 200
+    skip = request.args.get('skip',default=0, type=int)
+    if limit and skip is not None:
+        ret = mongo.db.unsubscribed_users.find({}).sort('unsubscribe_at',-1).skip(skip).limit(limit)
+        ret = [serialize_doc(doc) for doc in ret]
+        totalUnsub = 0
+        if ret:
+            totalUnsub = len(ret)
+        responseData = {
+            "list" : ret,
+            "totalUnsub" : totalUnsub
+        }        
+        return jsonify( responseData ), 200
+    else:
+        return jsonify({"message":"Must send data limits"}),400
 
 @bp.route("/delete_unsub_status/<string:Id>",methods=["GET"])
 #@token.admin_required
@@ -418,9 +427,13 @@ def edit_template(template_id):
 def validate_details():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
-    ret = mongo.db.smtp_count_validate.find({}).skip(skip).limit(limit)
-    ret = [serialize_doc(doc) for doc in ret]        
-    return jsonify(ret), 200
+    if limit and skip is not None:
+        ret = mongo.db.smtp_count_validate.find({}).skip(skip).limit(limit)
+        ret = [serialize_doc(doc) for doc in ret]        
+        return jsonify(ret), 200
+    else:
+        return jsonify({"message":"Must send data limits"}),400
+
 
 @bp.route("/unsubscribe_mail/<string:unsubscribe_mail>/<string:campaign_id>",methods=['GET'])
 def unsubscribe_mail(unsubscribe_mail,campaign_id):
