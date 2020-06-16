@@ -36,7 +36,7 @@ def create_campaign():
         ret = [Template_details(serialize_doc(doc)) for doc in ret] # calling function for campaign related details
         return jsonify(ret)
     # Post method for create campaign
-    if request.method == "POST":
+    if request.method == "POST":  #Here can check if not request json then aboart 500
         name = request.json.get("campaign_name",None)
         description = request.json.get("campaign_description",None)
         status = request.json.get("status","Idle")
@@ -90,7 +90,7 @@ def attache_campaign(Id,message_id):
             return jsonify({"message": "File attached to campaign"}), 200
         else:
             return jsonify({"message": "Please select a file"}), 400
-    elif request.method == "DELETE":
+    elif request.method == "DELETE": #Here method should be PUT for update not delete basically we use put for update query
         ret = mongo.db.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
             "$unset":{
                 "message_detail.$.attachment_file_name": 1,
@@ -144,7 +144,7 @@ def list_campaign():
 @bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
 #@token.admin_required
 def update_campaign(Id,message_id=None):
-    if request.method == "POST":
+    if request.method == "POST": #Here can check if not request json then aboart 500
         name = request.json.get("campaign_name")
         description = request.json.get("campaign_description")
         status = request.json.get("status")  
@@ -221,6 +221,7 @@ def add_user_campaign():
             else:
                 data['unsubscribe_status'] = False
                 data['already_unsub'] = False
+        #here create indext query should be run only once not every time.
         mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
         try:
             ret = mongo.db.campaign_users.insert_many(users)
@@ -274,7 +275,7 @@ def campaign_smtp_test():
 
 @bp.route("/campaign_mails/<string:campaign>", methods=["POST"])
 #@token.admin_required
-def campaign_start_mail(campaign):   
+def campaign_start_mail(campaign):   #Here can check if not request.json then aboart 500
     delay = request.json.get("delay",30)
     smtps = request.json.get("smtps",[])
     ids = request.json.get("ids",[])
@@ -399,8 +400,8 @@ def hit_rate(variable,campaign_message,user):
 
 @bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
 def redirectes(unique_key,campaign_id):
-    url =  request.args.get('url', type=str)
-    clicked = mongo.db.mail_status.update({"digit": unique_key},{
+    url =  request.args.get('url', type=str) #here should be default value of url if not send url in api then will not be fail.or check for url if not available return
+    clicked = mongo.db.mail_status.update({"digit": unique_key},{  
         "$set":{
             "clicked": True
         }
@@ -412,7 +413,7 @@ def redirectes(unique_key,campaign_id):
     return redirect(url), 302
 
 @bp.route('edit_templates/<string:template_id>',methods=["POST"])
-def edit_template(template_id):
+def edit_template(template_id):  #Here can check if not request json then aboart 500 
     mongo.db.mail_template.update({"_id": ObjectId(template_id)}, {
     "$set": request.json
     })

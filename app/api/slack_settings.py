@@ -20,7 +20,7 @@ def slack_seting():
         slack = mongo.db.slack_settings.find_one({},{'_id':0})
         return jsonify(slack)
 
-    if request.method == 'PUT':
+    if request.method == 'PUT':#Here can check if not request json then aboart 500
         slack_token = request.json.get('slack_token')
         if not slack_token:
             return jsonify({'message': 'Slack Token missing'}), 400

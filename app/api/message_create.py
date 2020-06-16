@@ -67,8 +67,8 @@ def notification_message(message_origin):
 @bp.route('/configuration/channel', methods=["PUT"])
 #@token.admin_required
 def assign_channel():
-    channel = request.json.get('channel')
-    assign = mongo.db.notification_msg.update({}, {
+    channel = request.json.get('channel') # Here we can check channel should not be none and can return a error msg else .
+    assign = mongo.db.notification_msg.update({}, {    #In a case it will set channel as none and no notification will go by cron.
         "$set": {
             "slack_channel": channel
         }
@@ -251,7 +251,7 @@ def letter_heads(id=None):
         ret = [serialize_doc(doc) for doc in ret]
         return jsonify(ret), 200
     if request.method == "PUT":
-        name = request.json.get("name", None)
+        name = request.json.get("name", None)# Here we should check for name should not be none and return a error msg else it will create dummy letters in db with name None
         header_value = request.json.get("header_value", None)
         footer_value = request.json.get("footer_value", None)
         Working = request.json.get("working", True)

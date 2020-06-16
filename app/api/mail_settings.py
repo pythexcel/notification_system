@@ -230,7 +230,7 @@ def update_smtp(origin,id):
 
 @bp.route('/validate_smtp', methods=["POST"])
 #@token.admin_required
-def validate_smtp_check():
+def validate_smtp_check(): #Here can check if not request json then aboart 500
     email = request.json.get('email')
     password = request.json.get('password')
     if email is None:

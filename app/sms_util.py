@@ -10,7 +10,7 @@ def dispatch_sms(message, number, source, apikey = None, from_v = None, auth_tok
         data = data.encode('utf-8')
         request_api = urllib.request.Request("https://api.textlocal.in/send/?")
         response = urllib.request.urlopen(request_api, data)
-        response_data = json.loads(response.read().decode('utf-8'))
+        response_data = json.loads(response.read().decode('utf-8'))#Here should be check if status in response_data else code will break here
         if response_data['status'] == "success":
             return True
         else:

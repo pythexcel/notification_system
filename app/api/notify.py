@@ -68,7 +68,7 @@ def dispatch():
 @bp.route('/preview', methods=["POST"])
 #@token.admin_required
 #@token.authentication
-def send_mails():
+def send_mails():   #Just a big api should use small small functions in api
     if not request.json:
         abort(500)
     for elem in dates_converter:
@@ -214,7 +214,7 @@ def send_mails():
         phone_issue_message = None
         if phone is not None:
             if app.config['ENV'] == 'development':
-                phone =  "+918383871788"
+                phone =  "+918383871788"    #Phone number not should be hard coded
             try:
                 if app.config['service'] == "textlocal":
                     req_sms = dispatch_sms(source="textlocal",apikey=app.config['localtextkey'],number=phone,message=mobile_message_str)
@@ -369,7 +369,7 @@ def mails():
     MAIL_SEND_TO = None     
     phone = request.json.get("phone", None)
     if app.config['ENV'] == 'development':
-        phone = "+918383871788"
+        phone = "+918383871788"   #Phone number not should be hardcoded
         for email in request.json.get('to'):
             full_domain = re.search("@[\w.]+", email)  
             domain = full_domain.group().split(".")

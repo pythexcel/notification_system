@@ -15,7 +15,7 @@ import uuid
 import time
 import email
 
-
+#Just a big function 
 def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
