@@ -103,9 +103,9 @@ def attache_campaign(Id,message_id):
 
 @bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
 #@token.admin_required
-def pause_campaign(Id,status):
-    working = None
-    if status == 1:
+def pause_campaign(Id,status): # Here should be a check for status that status should be only 1 or 0 .
+    working = None            #According to current condition api will go fail if someone send any other status rest 0 or 1
+    if status == 1:           # this will be fail due to In the update query line 120 this will not be get block
         block = False
         working = "Running"
     elif status == 0:
