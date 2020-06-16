@@ -23,13 +23,19 @@ import uuid
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
 
+
+
+# Api for create a campaign and return campaign list.
+
 @bp.route('/create_campaign', methods=["GET", "POST"])
 #@token.admin_required
 def create_campaign():
+    # With Get method Api will return campaigns List
     if request.method == "GET":
         ret = mongo.db.campaigns.aggregate([])
-        ret = [Template_details(serialize_doc(doc)) for doc in ret]
+        ret = [Template_details(serialize_doc(doc)) for doc in ret] # calling function for campaign related details
         return jsonify(ret)
+    # Post method for create campaign
     if request.method == "POST":
         name = request.json.get("campaign_name",None)
         description = request.json.get("campaign_description",None)
@@ -40,11 +46,12 @@ def create_campaign():
         if not name:
             return jsonify({"message": "Invalid Request"}), 400   
 
+        # checking for message creation if message and message subject available in request
         message_creation = dict()
         if message is not None and message_subject is not None:
             message_id = str(uuid.uuid4())
             message_creation.update({"message_id": message_id, "message": message,"message_subject": message_subject,"count":0})
-
+        # Create campaigns query mongo query
         ret = mongo.db.campaigns.insert_one({
                 "Campaign_name": name,
                 "creation_date": datetime.datetime.utcnow(),
@@ -52,7 +59,7 @@ def create_campaign():
                 "status":status,
                 "generated_from_recruit":generated
         }).inserted_id
-
+        # If message available then update message details in same campaign
         if message_creation is not None:
             create_campaign_message = mongo.db.campaigns.update({"_id": ObjectId(str(ret))},{
                 "$push": {
