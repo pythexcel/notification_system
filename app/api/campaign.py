@@ -222,7 +222,7 @@ def add_user_campaign():
                 data['unsubscribe_status'] = False
                 data['already_unsub'] = False
         #here create indext query should be run only once not every time.
-        mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
+        mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)  #here create indext query should be run only once not every time.
         try:
             ret = mongo.db.campaign_users.insert_many(users)
             return jsonify({"message":"Users added to campaign"}), 200
