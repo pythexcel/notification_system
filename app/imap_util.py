@@ -9,7 +9,7 @@ from bson.objectid import ObjectId
 from app.config import hard_bounce_status,soft_bounce_status
 from app import mongo
 from datetime import date
-
+from dateutil.relativedelta import relativedelta
 
 #cron for remind candidates if candidates not replied msg
 def mail_reminder():
@@ -82,7 +82,7 @@ def bounced_mail():
             imapObj.login(mail_username,mail_password)
             if imapObj is not None:
                 imapObj.select_folder('INBOX')
-                bounced_mail_date = datetime.datetime.today()
+                bounced_mail_date = datetime.datetime.today() - relativedelta(months=1)
                 bounced_mail_since = "{}-{}-{}".format(bounced_mail_date.strftime("%d"),bounced_mail_date.strftime("%b"),bounced_mail_date.strftime("%Y"))
                 print("start_log",bounced_mail_since)
                 print(daemon_mail)
@@ -121,8 +121,8 @@ def bounced_mail():
                         sendDate = datetime.datetime.combine(dt,datetime.datetime.min.time())
                         print(sendDate)
                         ret = mongo.db.mail_status.update({
-                                "user_mail": bounced_mail,
-                                "sending_time": {"$gte": sendDate}
+                                "user_mail": bounced_mail
+                                #"sending_time": {"$gte": sendDate}
                             }, {
                                 "$set": {
                                     "bounce": True,
