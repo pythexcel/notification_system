@@ -19,9 +19,76 @@ from pymongo.collection import ReturnDocument
 from app.config import smtp_counts
 from werkzeug import secure_filename
 import uuid
+from dateutil.relativedelta import relativedelta
+from app.config import hard_bounce_status,soft_bounce_status
+import imapclient
+import pyzmail
+import email
+import re
 
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
+
+
+@bp.route('/SyncBouncedMail', methods=["GET"])
+def SyncBouncedMail():
+    day = request.args.get('days',type=int)
+    mail_settings = mongo.db.mail_settings.find({"origin": "CAMPAIGN"})
+    mail_settings = [serialize_doc(doc) for doc in mail_settings]
+    for mail_setting in mail_settings:
+        try:
+            mail_username = mail_setting['mail_username']
+            mail_password = mail_setting['mail_password']
+            mail_server = mail_setting['mail_server']
+            daemon_mail = mail_setting['daemon_mail']
+            imapObj = imapclient.IMAPClient(mail_server, ssl=True)
+            imapObj.login(mail_username,mail_password)
+            if imapObj is not None:
+                imapObj.select_folder('INBOX')
+                bounced_mail_date = datetime.datetime.today() - relativedelta(days=day)
+                bounced_mail_since = "{}-{}-{}".format(bounced_mail_date.strftime("%d"),bounced_mail_date.strftime("%b"),bounced_mail_date.strftime("%Y"))
+                search_bounce_mails=imapObj.search(['SINCE',bounced_mail_since,'FROM',daemon_mail]) #searching bounced mails from a date
+                for search_bounce_mail in search_bounce_mails:
+                #fetching bounced mail info from msg body
+                    rawMessages = imapObj.fetch(search_bounce_mail,['BODY[]'])
+                    message_body = pyzmail.PyzMessage.factory(rawMessages[search_bounce_mail][b'BODY[]'])
+                    mail_subject = message_body.get_subject()
+                    mail_from =message_body.get_addresses('from')
+                    mail_to =message_body.get_addresses('to')
+                    if message_body.text_part != None:
+                        #checking if msg body have text part
+                        mail_text = message_body.text_part.get_payload().decode(message_body.text_part.charset)
+                        match = re.search(r'[\w\.-]+@[\w\.-]+', mail_text)
+                        bounced_mail = match.group(0)
+                        bounce_codes = re.findall(r"(5\.[0-9].[0-9])", mail_text)
+                        bounce_status = None
+                        bounce_type = "hard"
+                        for bounce_code in bounce_codes:
+                            if bounce_code in hard_bounce_status:
+                                bounce_status = bounce_code
+                                bounce_type = "hard"
+                                break
+                            if bounce_code in soft_bounce_status:
+                                bounce_status = bounce_code
+                                bounce_type = "soft"
+                                break
+                        ret = mongo.db.mail_status.update({
+                                "user_mail": bounced_mail
+                            }, {
+                                "$set": {
+                                    "bounce": True,
+                                    "bounce_status":bounce_status,
+                                    "bounce_type":bounce_type
+                                }})
+                    else:
+                        pass
+            else:
+                pass
+        except Exception as err:
+            print("Exception",err)
+    return jsonify({"status":"success"})
+
+
 
 @bp.route('/create_campaign', methods=["GET", "POST"])
 #@token.admin_required
