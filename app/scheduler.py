@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import uuid
 import time
 import email
-
+import requests
 
 def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -332,6 +332,40 @@ def recruit_cron_messages():
             pass    
     else:
         pass 
+
+
+def zapier_cron_messages():
+    ret = mongo.db.messages_cron.find_one({"cron_status":False,"type":"zapier"})
+    if ret is not None:
+        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
+            {
+                "$set": {
+                        "cron_status": True
+                    }
+                    })
+        hookurlDetails = webhook(data=ret)
+        if hookurlDetails is not None:
+            hookurl = hookurlDetails['webhook']
+            payload = {'slackmessage': ret['slackmessage'], "defaultmessage": ret['defaultmessage'], "recipients": ret['recipients'], "channel": ret['channel'], "phone":ret['phone'], "subject":ret['subject']}
+            response = requests.post(url=hookurl, json=payload)
+            output = response.json()
+        else:
+            pass
+    else:
+        pass
+
+
+def webhook(data=None):
+    if data is not None:
+        if 'message_detail' in data:
+            message_key = data['message_detail']['message_key']
+            ret = mongo.db.webhooks.find_one({"message_key":message_key})
+            return ret
+        else:
+            return None
+    else:
+        return None
+
 
 
 def update_completion_time():
