@@ -40,7 +40,7 @@ def notification_message(message_origin):
         for_email = request.json.get("for_email", False)
         for_slack = request.json.get("for_slack", False)
         for_phone = request.json.get("for_phone", False)
-        for_zapier = request.json.get("for_zapier",False)
+        for_zapier = request.json.get("for_zapier",False)#added a extra key for zapier 
 
         if not MSG and MSG_TYPE and MSG_KEY:
             return jsonify({"message": "Invalid Request"}), 400
