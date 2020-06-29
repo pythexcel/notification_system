@@ -25,7 +25,9 @@ import dateutil.parser
 import datetime
 from datetime import timedelta
 import smtplib
-
+from app.modules.phone_util import create_sms,Push_notification
+from app.modules.template_util import assign_letter_heads, construct_template, attach_letter_head
+from app.modules.sendmail_util import create_sender_list
 bp = Blueprint('notify', __name__, url_prefix='/notify')
         
 @bp.route('/dispatch', methods=["POST"])
@@ -83,9 +85,10 @@ def send_mails():
     Data = request.json.get("data",None)
     Message = request.json.get("message",None)
     Subject = request.json.get("subject",None)
-    message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     smtp_email = request.json.get("smtp_email",None)
     phone = request.json.get("phone", None)
+
+    message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
     if message_detail is not None:
         if Message is not None:
             message_detail['message'] = Message
@@ -116,88 +119,28 @@ def send_mails():
         header = None
         footer = None
         if 'template_head' in message_detail:        
-            var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
-            if var is not None:
-                header = var['header_value']
-                footer = var['footer_value']
-        system_variable = mongo.db.mail_variables.find({})
-        system_variable = [serialize_doc(doc) for doc in system_variable]
-    
+            letter_heads_response = assign_letter_heads(message_detail['template_head'])
+            header = letter_heads_response.get('header')
+            footer = letter_heads_response.get('footer')
+
         missing_payload = []
-        message_variables = []
-        message = message_detail['message'].split('#')
-        del message[0]
-        rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
-        for elem in message:
-            varb = re.split(rex, elem)
-            message_variables.append(varb[0])
-        message_str = message_detail['message']
-        for detail in message_variables:
-            if detail in request.json['data']:
-                if request.json['data'][detail] is not None:
-                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
-                    message_str = re.sub(rexWithString, str(request.json['data'][detail]), message_str)
-            else:
-                for element in system_variable:
-                    if "#" + detail == element['name'] and element['value'] is not None:
-                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
-                        message_str = re.sub(rexWithSystem, str(element['value']), message_str)    
-
-
-        missing = message_str.split('#')
-        del missing[0]
-        missing_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
-        for elem in missing:
-            missing_data = re.split(missing_rex, elem)
-            missing_payload.append({"key": missing_data[0] , "type": "date" if missing_data[0] in dates_converter else "text"})
-        
+        message = None
+        subject = None
         mobile_message_str = None
+
+        message_about = construct_template( req_message= message_detail['message'], request= request.json['data'] )
+        message = message_about.get('message')
+        missing_payload.extend(message_about.get('missing_payload'))
+
+        subject_about = construct_template( req_message= message_detail['message_subject'], request= request.json['data'] )
+        subject = subject_about.get('message')
+        missing_payload.extend(subject_about.get('missing_payload'))
+
         if 'mobile_message' in message_detail:
-            mobile_variables = []
-            mobile_message = message_detail['mobile_message'].split('#')
-            del mobile_message[0]
-            mob_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
-            for elem in mobile_message:
-                mob_varb = re.split(mob_rex, elem)
-                mobile_variables.append(mob_varb[0])
-            mobile_message_str = message_detail['mobile_message']
-            for detail in mobile_variables:
-                if detail in request.json['data']:
-                    if request.json['data'][detail] is not None:
-                        rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
-                        mobile_message_str = re.sub(rexWithString, str(request.json['data'][detail]), mobile_message_str)
-                else:
-                    for element in system_variable:
-                        if "#" + detail == element['name'] and element['value'] is not None:
-                            rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
-                            mobile_message_str = re.sub(rexWithSystem, str(element['value']), mobile_message_str)    
+            mobile_message_about = construct_template( req_message= message_detail['mobile_message'], request= request.json['data'] )
+            mobile_message_str = mobile_message_about.get('message')
+            missing_payload.extend(mobile_message_about.get('missing_payload'))
 
-        subject_variables = []
-        message_sub = message_detail['message_subject'].split('#')
-        del message_sub[0]
-        regex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
-        for elem in message_sub:
-            sub_varb = re.split(regex, elem)
-            subject_variables.append(sub_varb[0])
-        message_subject = message_detail['message_subject']
-        for detail in subject_variables:
-            if detail in request.json['data']:
-                if request.json['data'][detail] is not None:
-                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
-                    message_subject = re.sub(rexWithString, str(request.json['data'][detail]), message_subject)
-
-            else:
-                for element in system_variable:
-                    if "#" + detail == element['name'] and element['value'] is not None:
-                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
-                        message_subject = re.sub(rexWithSystem, str(element['value']), message_subject)  
-
-        missing_subject = message_subject.split("#")
-        del missing_subject[0]
-        missing_sub_rex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
-        for elem in missing_subject:
-            sub_varb_missing = re.split(missing_sub_rex, elem)
-            missing_payload.append({"key": sub_varb_missing[0] , "type": "date" if sub_varb_missing[0] in dates_converter else "text"})
 
         if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
             if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
@@ -213,29 +156,14 @@ def send_mails():
         phone_issue = False
         phone_issue_message = None
         if phone is not None:
-            try:
-                if app.config['service'] == "textlocal":
-                    req_sms = dispatch_sms(source="textlocal",apikey=app.config['localtextkey'],number=phone,message=mobile_message_str)
-                    phone_status = req_sms
-                elif app.config['service'] == "twilio":
-                    req_sms = dispatch_sms(source="twilio",auth_token = app.config['twilioToken'],account_sid = app.config['twilioSid'],number=phone,message=mobile_message_str,from_v= app.config['twilio_number'])
-                    phone_status = req_sms
-            except Exception as e:
-                phone_issue_message = repr(e)
-                phone_status = False
-                phone_issue = True
+            phone_sms_about = create_sms( phone= phone, mobile_message_str= mobile_message_str )
+            phone_status = phone_sms_about.get('phone_status')
+            phone_issue = phone_sms_about.get('phone_issue')
+            phone_issue_message = phone_sms_about.get('phone_issue_message')
 
-        
-        download_pdf = "#letter_head #content #letter_foot"
-        if header is not None:
-            download_pdf = download_pdf.replace("#letter_head",header)
-        else:
-            download_pdf = download_pdf.replace("#letter_head",'')
-        download_pdf = download_pdf.replace("#content",message_str)
-        if footer is not None:
-            download_pdf = download_pdf.replace("#letter_foot",footer)
-        else:
-            download_pdf = download_pdf.replace("#letter_foot",'')
+        attachtment_about = attach_letter_head(header=header, footer= footer, message= message)
+        message = attachtment_about.get('message')
+
 
         if message_detail['message_key'] == "Payslip":
             system_settings = mongo.db.system_settings.find_one({},{"_id":0})
@@ -252,45 +180,6 @@ def send_mails():
                 'date': datetime.datetime.now(),
                 'message_key': "Interview Reminder"
             })
-        to = None
-        bcc = None
-        cc = None
-        if app.config['ENV'] == 'development':
-            if 'to' in request.json:
-                for email in request.json.get('to'):
-                    full_domain = re.search("@[\w.]+", email)  
-                    domain = full_domain.group().split(".")
-                    if domain[0] == "@excellencetechnologies":
-                        to = [email]
-                    else:
-                        to = [app.config['to']]
-            bcc = [app.config['bcc']]
-            cc = [app.config['cc']]
-
-        else:
-            if app.config['ENV'] == 'production':
-                if 'to' in request.json:
-                    if not request.json['to']:
-                        to = None
-                    else:     
-                        to = request.json['to']
-                else:
-                    to = None
-                if 'bcc' in request.json:    
-                    if not request.json['bcc']:
-                        bcc = None
-                    else:
-                        bcc = request.json['bcc']
-                else:
-                    bcc = None
-                
-                if 'cc' in request.json: 
-                    if not request.json['cc']:
-                        cc = None
-                    else:
-                        cc = request.json['cc']
-                else:        
-                    cc = None            
         if message_detail['message_key'] == "interviewee_reject":
             reject_mail = None
             if app.config['ENV'] == 'production':
@@ -317,20 +206,43 @@ def send_mails():
             }).inserted_id  
             return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
         else:
-            if to is not None:
-                if smtp_email is not None:
-                    mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
-                    if mail_details is None:
-                        return jsonify({"status":False,"Message": "Smtp not available in db"})
-                    else:
-                        send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
-                        return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
+            sending_message_details = {
+                "smtp_email": smtp_email,
+                "message": message_str,
+                "subject": message_subject,
+                "files": files,
+                "single_filelink": attachment_file,
+                "single_filename": attachment_file_name
+            }
+            try:
+                sender_details = create_sender_list(request= request.json, details= sending_message_details)
+                if 'mailing_staus' in sender_details:
+                    return jsonify({ 
+                        "status": True,
+                        "*Note": "No mail will be sended!",
+                        "Subject": message_subject,
+                        "Message": message_str,
+                        "attachment_file_name": attachment_file_name,
+                        "attachment_file": attachment_file,
+                        "missing_payload": missing_payload,
+                        "mobile_message": mobile_message_str,
+                        "phone_status": phone_status,
+                        "phone_issue": phone_issue
+                    }), 200
                 else:
-                    send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
-                    return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str,"phone_status" : phone_status, "phone_issue": phone_issue}),200
-            else:
-                return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str, "phone_status" : phone_status, "phone_issue": phone_issue}),200
-    else:
+                    return jsonify({ 
+                        "status":True,
+                        "Subject": message_subject,
+                        "Message": message_str,
+                        "attachment_file_name":attachment_file_name,
+                        "attachment_file":attachment_file,
+                        "missing_payload":missing_payload,
+                        "mobile_message": mobile_message_str,
+                        "phone_status" : phone_status, 
+                        "phone_issue": phone_issue
+                        }),200
+            except Exception as error:
+                return jsonify({"status": False, "Message": str(error)})
         return jsonify({"status":False ,"Message" : "Template not exist"})
 
 @bp.route('/reminder_details', methods=["GET"])
