@@ -26,13 +26,15 @@ import datetime
 from datetime import timedelta
 import smtplib
 from app.modules.phone_util import create_sms,Push_notification
-from app.modules.template_util import assign_letter_heads, construct_template, attach_letter_head
+from app.modules.template_util import assign_letter_heads, construct_template, attach_letter_head,generate_full_template_from_string_payload
 from app.modules.sendmail_util import create_sender_list
 bp = Blueprint('notify', __name__, url_prefix='/notify')
         
+
+#dispatch was made to send particular message on slack but those message can be sended on email too
 @bp.route('/dispatch', methods=["POST"])
 #@token.authentication
-def dispatch():
+def construct_dispatch_notification():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)
@@ -67,6 +69,9 @@ def dispatch():
     else:
         return jsonify("No Message Type Available"), 400
 
+
+
+#preview is used in recruit and hr to generate message for the templates and can also be used to send email if details are provided
 @bp.route('/preview', methods=["POST"])
 #@token.admin_required
 #@token.authentication
@@ -123,24 +128,12 @@ def send_mails():
             header = letter_heads_response.get('header')
             footer = letter_heads_response.get('footer')
 
-        missing_payload = []
+        
         message = None
         subject = None
         mobile_message_str = None
-
-        message_about = construct_template( req_message= message_detail['message'], request= request.json['data'] )
-        message = message_about.get('message')
-        missing_payload.extend(message_about.get('missing_payload'))
-
-        subject_about = construct_template( req_message= message_detail['message_subject'], request= request.json['data'] )
-        subject = subject_about.get('message')
-        missing_payload.extend(subject_about.get('missing_payload'))
-
-        if 'mobile_message' in message_detail:
-            mobile_message_about = construct_template( req_message= message_detail['mobile_message'], request= request.json['data'] )
-            mobile_message_str = mobile_message_about.get('message')
-            missing_payload.extend(mobile_message_about.get('missing_payload'))
-
+        #payload going = {"req_message":"message string","request":"data variable","message_detail":"mail template"}
+        missing_payload = generate_full_template_from_string_payload(req_message= message_detail['message'], request= request.json['data'] , message_detail=message_detail)
 
         if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
             if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:

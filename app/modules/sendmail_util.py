@@ -59,7 +59,7 @@ def create_sender_list( request, details ):
             else:        
                 cc = None
     if to is None:
-        return { 'mailing_staus': False }
+        raise Exception('Recipients email is missing')
     else:
         mail_list = {
             "to": to,
@@ -68,6 +68,8 @@ def create_sender_list( request, details ):
         }
         return dispatch_mail( sending_mail_list= mail_list, details= details)
 
+#sending_mail_list = {"to": to,"bcc":bcc,"cc": cc}
+#details = {"smtp_email": ,"message": ,"subject": ,"files": ,"single_filelink": ,"single_filename": }
 
 def dispatch_mail( sending_mail_list, details ):
     smtp_email = details.get('smtp_email')
