@@ -40,12 +40,15 @@ def construct_dispatch_message_to_slack():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)
-    message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
-    status = contruct_payload_from_request(message_detail=message_detail,input=request.json)
-    if status == True:
+    try:
+        message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
+    except Exception as error:
+        return(str(error)),400
+    try:
+        contruct_payload_from_request(message_detail=message_detail,input=request.json)
         return jsonify({"status":True,"Message":"Sended"}),200 
-    else:
-        return jsonify({"status":False,"Message":"NotSended"})
+    except Exception as error:
+        return(str(error)),400
 
 
 #preview is used in recruit and hr to generate message for the templates and can also be used to send email if details are provided
