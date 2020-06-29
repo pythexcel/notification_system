@@ -28,47 +28,24 @@ import smtplib
 from app.modules.phone_util import create_sms,Push_notification
 from app.modules.template_util import assign_letter_heads, construct_template, attach_letter_head,generate_full_template_from_string_payload
 from app.modules.sendmail_util import create_sender_list
+from app.model.notification_msg import get_notification_function_by_key
+from app.util import contruct_payload_from_request
 bp = Blueprint('notify', __name__, url_prefix='/notify')
         
 
 #dispatch was made to send particular message on slack but those message can be sended on email too
 @bp.route('/dispatch', methods=["POST"])
 #@token.authentication
-def construct_dispatch_notification():
+def construct_dispatch_message_to_slack():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)
-    message_detail = mongo.db.notification_msg.find_one({"message_key": MSG_KEY})
-    if message_detail and message_detail['message_type'] is not None:   
-            message = message_detail['message']
-            missing_payload = []
-            # looping over all the needs check if my message type in that key and if found
-            for key in message_needs:
-                if message_detail['message_type'] == key:
-                    need_found_in_payload = False
-                    # LOOP OVER THE KEYS inside the need FOR REQUEST
-                    for data in message_needs[key]:
-                        need_found_in_payload = False
-                        if data in request.json:
-                            need_found_in_payload = True
-                        # REQUIREMNT DOES NOT SATISFIED RETURN INVALID REQUEST
-                        else:
-                            missing_payload.append(data)
-                            # return jsonify(data + " is missing from request"), 400
-                    # IF FOUND PROCESS THE REQUEST.JSON DATA
-                    if not missing_payload:
-                        input = request.json
-                        try:
-                            validate_message(message=message,message_detail=message_detail,req_json=input) 
-                            return jsonify({"status":True,"Message":"Sended"}),200 
-                        except Exception as error:
-                            return(repr(error)),400
-                    else:
-                        ret = ",".join(missing_payload)
-                        return jsonify(ret + " is missing from request"), 400
+    message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
+    status = contruct_payload_from_request(message_detail=message_detail,input=request.json)
+    if status == True:
+        return jsonify({"status":True,"Message":"Sended"}),200 
     else:
-        return jsonify("No Message Type Available"), 400
-
+        return jsonify({"status":False,"Message":"NotSended"})
 
 
 #preview is used in recruit and hr to generate message for the templates and can also be used to send email if details are provided
