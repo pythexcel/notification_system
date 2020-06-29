@@ -156,7 +156,7 @@ def send_mails():
 
         attachtment_about = attach_letter_head(header=header, footer= footer, message= message)
         message = attachtment_about.get('message')
-
+        #testing
 
         if message_detail['message_key'] == "Payslip":
             system_settings = mongo.db.system_settings.find_one({},{"_id":0})
