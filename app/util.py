@@ -149,47 +149,30 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     slack_user_detail = req_json
     req_json = json.loads(json.dumps(req_json))
     email_user_detail = req_json
+    req_json = json.loads(json.dumps(req_json))
+    zapier_user_detail = req_json
     slack = ""
     slack_details = None
-    if message_detail['for_email'] is False:
+    # If for_slack is true in request which coming from tms it will send notification to slack using exist slack apis functionality.
+    if message_detail['for_slack'] is True:
         if 'user' in slack_user_detail and slack_user_detail['user'] is not None:
             try:
-                slack = slack_id(slack_user_detail['user']['email'])
+                slack = slack_id(slack_user_detail['user']['email']) # Fetching user slack id by email using slack api
             except Exception:
                 slack_details = False   
+            #If there is slack id available then it will put slack it in message else will put username
             if slack_details is False:    
                 slack_user_detail['user'] = slack_user_detail['user']['name']
             else:    
                 slack_user_detail['user'] = "<@" + slack + ">"
         else:
             pass            
-        message_str = message
-        for data in message_variables:
-            if data in slack_user_detail:
-                if slack_user_detail[data] is None:
-                    slack_user_detail[data] = "N/A"
-                message_str = message_str.replace("@"+data+":", slack_user_detail[data])
-            else:
-                if data in slack_user_detail['data']:
-                    if slack_user_detail['data'][data] is None:
-                        slack_user_detail['data'][data] = "N/A"
-                    message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
-        for elem in system_require:
-            if elem in system_variable:  
-                message_str = message_str.replace("@"+elem+":", system_variable[elem])
-        channels = []          
-        if 'slack_channel' in slack_user_detail:
-            for data in slack_user_detail['slack_channel']:
-                channels.append(data)
-        else:
-            pass  
-        if message_detail['slack_channel'] is not None:
-            for elem in message_detail['slack_channel']:
-                channels.append(elem)       
-        if message_detail['sended_to'] == "private":
-            channels.append(slack)
-        else:
-            pass      
+        # I make common function for message create and replace all data @data: variables according to requested notification from tms
+        #This function will return us proper message with slack id which need to send to user.
+        message_str = MakeMessage(message_str=message,message_variables=message_variables,slack_user_detail=slack_user_detail,system_require=system_require,system_variable=system_variable)
+        #I make a common function for fetch channels from tms requests.like on which slack or personal we want to send message.
+        channels = FetchChannels(slack_user_detail=slack_user_detail,message_detail=message_detail)
+        #If channels available for send notification it will insert notification info in collection.
         if channels:                                                   
             mongo.db.messages_cron.insert_one({
                 "cron_status":False,
@@ -204,6 +187,7 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
     else:
         pass
 
+    # If for_email is true in request which coming from tms it will send notification to email using exist email functionality i didn't make any change in this.
     if message_detail['for_email'] is True:
         if 'user' in email_user_detail and email_user_detail['user'] is not None:
             username = json.loads(json.dumps(email_user_detail['user']['email']))
@@ -211,36 +195,16 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             email_user_detail['user'] = name
         else:
             pass    
-        message_str = message
-        for data in message_variables:
-            if data in email_user_detail:
-                message_str = message_str.replace("@"+data+":", email_user_detail[data])
-            else:
-                if data in email_user_detail['data']:
-                    message_str = message_str.replace("@"+data+":", email_user_detail['data'][data])
-        for elem in system_require:
-            if elem in system_variable:  
-                message_str = message_str.replace("@"+elem+":", system_variable[elem])
-
-        recipient = []
-        if 'email_group' in email_user_detail:
-            for data in email_user_detail['email_group']:
-                recipient.append(data)
-        else:
-            pass
-        if message_detail['sended_to'] == "private":
-            recipient.append(username)
-        else:
-            pass  
-
-        if message_detail['email_group'] is not None:
-            for elem in message_detail['email_group']:
-                recipient.append(elem)
-
+        # I make common function for message create and replace all data @data: variables according to requested notification from tms
+        #This function will return us proper message with username which need to send to user.
+        message_str = MakeMessage(message_str=message,message_variables=message_variables,slack_user_detail=email_user_detail,system_require=system_require,system_variable=system_variable)
+        #I make a common function for fetch recipients from tms requests.like on which email we want to send message.
+        recipient = FetchRecipient(slack_user_detail=email_user_detail,message_detail=message_detail)
         if 'subject' in email_user_detail['emailData']:
             subject = email_user_detail['emailData']['subject']
         else:
-            subject = message_detail['message_key']             
+            subject = message_detail['message_key']
+        #If channels available for send notification it will insert notification info in collection.
         if recipient:
             mongo.db.messages_cron.insert_one({
                 "cron_status":False,
@@ -253,6 +217,142 @@ def construct_message(message=None,req_json=None,message_variables=None,system_r
             pass
     else:
         pass
+    # If for_zapier is true in request which coming from tms it will send notification to zapier using webhook.
+    if message_detail['for_zapier'] is True:
+        email = ""
+        #Fetching username from tms request data.
+        if "user" in zapier_user_detail:
+            username = zapier_user_detail['user']['name']
+        else:
+            username = ""
+        #Fetching email id for send email to notification related user
+        if "work_email" in zapier_user_detail['user']:
+            email = zapier_user_detail['user']['work_email']
+        else:
+            if "email" in zapier_user_detail['user']:
+                email = zapier_user_detail['user']['email']
+            else:
+                pass
+        #If email data is available in message request like notification subject etc defined already and its available in db in message it will take subject from there 
+        #Else message key will be email subject.
+        if 'emailData' in zapier_user_detail:
+            if 'subject' in zapier_user_detail['emailData']:
+                subject = zapier_user_detail['emailData']['subject']
+            else:
+                subject = message_detail['message_key']             
+        else:
+            subject = message_detail['message_key']             
+        #For phone data if phone details availabl in request it will take phone number from there.
+        if 'PhoneData' in zapier_user_detail:
+            phone = zapier_user_detail['PhoneData']
+        else:
+            phone = ""
+
+        #Here we are making two messages one for send to slack and on for default can send any other platform.
+        #Difference between both just in slack message have slack if and in default message have username.
+        if 'user' in zapier_user_detail and zapier_user_detail['user'] is not None:
+            try:
+                slack = slack_id(zapier_user_detail['user']['email'])# Fetching user slack id by email using slack api
+            except Exception:
+                slack_details = False   
+            #If there is slack id available then it will put slack it in message else will put username
+            if slack_details is False:    
+                zapier_user_detail['user'] = zapier_user_detail['user']['name']
+            else:    
+                zapier_user_detail['user'] = "<@" + slack + ">"
+        else:
+            pass            
+        # I make common function for message create and replace all data @data: variables according to requested notification from tms
+        #This function will return us proper message with user slackid which need to send to user.
+        slackmessage = MakeMessage(message_str=message,message_variables=message_variables,slack_user_detail=zapier_user_detail,system_require=system_require,system_variable=system_variable)
+        #I make a common function for fetch channels from tms requests.like on which slack or personal we want to send message.
+        channels = FetchChannels(slack_user_detail=zapier_user_detail,message_detail=message_detail)
+
+        if slack_details is not False:
+                zapier_user_detail['user'] = username
+        else:
+            pass
+        #calling same function for make default message with username instead of slack id 
+        defaultmessage = MakeMessage(message_str=message,message_variables=message_variables,slack_user_detail=zapier_user_detail,system_require=system_require,system_variable=system_variable)
+        #I make a common function for fetch recipients from tms requests.like on which email we want to send message.
+        recipient = FetchRecipient(slack_user_detail=zapier_user_detail,message_detail=message_detail)
+        #if no default recipients available then it will take user email.
+        if not recipient:
+            recipient = [email]
+        #Will inser mesaage payload in collection from there zapier cron will take it and hit webhook
+        if channels or recipient is not None:
+            mongo.db.messages_cron.insert_one({
+                "cron_status":False,
+                "type": "zapier",
+                "slackmessage":slackmessage,
+                "defaultmessage":defaultmessage,
+                "recipients":recipient,
+                "channel":channels,
+                "phone":phone,
+                "subject": subject,
+                "req_json": zapier_user_detail,
+                "message_detail":message_detail
+            }).inserted_id
+        else:
+            pass
+    else:
+        pass
+    
+
+# Common function for fetch channels form tms request
+def FetchChannels(slack_user_detail=None,message_detail=None):
+    slack = ""
+    channels = []          
+    #It will take slack channels if slack channel available in user details
+    if 'slack_channel' in slack_user_detail:
+        for data in slack_user_detail['slack_channel']:
+            channels.append(data)
+    else:
+        pass  
+    #It will take slack channels if slack channel available in message details
+    if message_detail['slack_channel'] is not None:
+        for elem in message_detail['slack_channel']:
+            channels.append(elem)       
+    #It will take slack channels if sended status private like slack bot
+    if message_detail['sended_to'] == "private":
+        channels.append(slack)
+    else:
+        pass      
+    #will return array of slack channels
+    return channels
+
+
+#function for fetch recipients if email group email available in message request it will fetch all mails and return array
+def FetchRecipient(slack_user_detail=None,message_detail=None):
+    recipient = []
+    if 'email_group' in slack_user_detail:
+        for data in slack_user_detail['email_group']:
+            recipient.append(data)
+    else:
+        pass
+    if message_detail['email_group'] is not None:
+        for elem in message_detail['email_group']:
+            recipient.append(elem)
+    return recipient
+
+
+#function for make message from message request.
+#This function will replace all @data: valiables with requested data and will make a proper message with username or slackid as same as before nothing change in this
+def MakeMessage(message_str=None,message_variables=None,slack_user_detail=None,system_require=None,system_variable=None):
+    for data in message_variables:
+        if data in slack_user_detail:
+            if slack_user_detail[data] is None:
+                slack_user_detail[data] = "N/A"
+            message_str = message_str.replace("@"+data+":", slack_user_detail[data])
+        else:
+            if data in slack_user_detail['data']:
+                if slack_user_detail['data'][data] is None:
+                    slack_user_detail['data'][data] = "N/A"
+                message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
+    for elem in system_require:
+        if elem in system_variable:  
+            message_str = message_str.replace("@"+elem+":", system_variable[elem])
+    return message_str
     
 # this function will send back variables of html templates with variable from templates if there are None in special variables collection
 def template_requirement(user):

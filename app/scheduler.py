@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import uuid
 import time
 import email
-
+import requests
 
 def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -332,7 +332,42 @@ def recruit_cron_messages():
             pass    
     else:
         pass 
+#Zapier cron for fetch payload from collection and hit webhook
+def zapier_cron_messages():
+    ret = mongo.db.messages_cron.find_one({"cron_status":False,"type":"zapier"})
+    if ret is not None:
+        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
+            {
+                "$set": {
+                        "cron_status": True
+                    }
+                    })
+        #calling function webhook which will return avaliable webhook from db by notification message key
+        hookurlDetails = webhook(data=ret)
+        if hookurlDetails is not None:
+            hookurl = hookurlDetails['webhook']
+            payload = {'slackmessage': ret['slackmessage'], "defaultmessage": ret['defaultmessage'], "recipients": ret['recipients'], "channel": ret['channel'], "phone":ret['phone'], "subject":ret['subject']}
+            #hitting webhhok this will send notification to all integrated apps with this webhook.
+            #Like we want to send checkin notification to mail and phone number then we have integrated both apps with this webhook 
+            #this will send notification to both apps
+            response = requests.post(url=hookurl, json=payload)
+            output = response.json()
+        else:
+            pass
+    else:
+        pass
 
+#Webhook function which will return webhook by message key
+def webhook(data=None):
+    if data is not None:
+        if 'message_detail' in data:
+            message_key = data['message_detail']['message_key']
+            ret = mongo.db.webhooks.find_one({"message_key":message_key})
+            return ret
+        else:
+            return None
+    else:
+        return None
 
 def update_completion_time():
     campaigns = mongo.db.campaigns.find({"$or": [{"status": "Running"}, {"status": "Completed"}]})
