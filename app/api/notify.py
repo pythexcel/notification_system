@@ -26,9 +26,10 @@ import datetime
 from datetime import timedelta
 import smtplib
 from app.modules.phone_util import create_sms,Push_notification
-from app.model.template_util import attach_letter_head
+from app.model.template import attach_letter_head
 from app.modules.sendmail_util import create_sender_list
-from app.model.notification_msg import get_notification_function_by_key,construct_attachments_in_by_msg_details,generate_full_template_from_string_payload,fetch_msg_and_subject_by_date,fetch_interview_reminders,fetch_recipients_by_mode,update_recruit_mail_msg
+from app.modules.template_util import construct_attachments_in_by_msg_details,generate_full_template_from_string_payload,fetch_msg_and_subject_by_date,fetch_recipients_by_mode
+from app.model.notification_msg import get_notification_function_by_key,fetch_interview_reminders,update_recruit_mail_msg
 from app.util import contruct_payload_from_request,convert_dates_to_format
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
@@ -42,9 +43,6 @@ def construct_dispatch_message_to_slack():
     MSG_KEY = request.json.get("message_key", None)
     try:
         message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
-    except Exception as error:
-        return(str(error)),400
-    try:
         contruct_payload_from_request(message_detail=message_detail,input=request.json)
         return jsonify({"status":True,"Message":"Sended"}),200 
     except Exception as error:
@@ -61,74 +59,54 @@ def send_mails():
     req = request.json
     try:
         req = convert_dates_to_format(dates_converter=dates_converter,req=req) #Calling function for date convertor which will return modified json
-    except Exception as error:
-        return(str(error)),400
 
-    MSG_KEY = req.get("message_key", None)  
-    Data = req.get("data",None)
-    Message = req.get("message",None)
-    Subject = req.get("subject",None)
-    smtp_email = req.get("smtp_email",None)
-    phone = req.get("phone", None)
+        MSG_KEY = req.get("message_key", None)  
+        Data = req.get("data",None)
+        Message = req.get("message",None)
+        Subject = req.get("subject",None)
+        smtp_email = req.get("smtp_email",None)
+        phone = req.get("phone", None)
 
-    try:
         message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY) #calling function for message details by message key
+
+        if message_detail is not None:
+            if Message is not None:
+                message_detail['message'] = Message
+            else:
+                pass
+            if Subject is not None:
+                if Subject != "":
+                    message_detail['message_subject'] = Subject
+            else:
+                pass    
+
+            system_variable = mongo.db.mail_variables.find({})
+            system_variable = [serialize_doc(doc) for doc in system_variable]
+        
+            #here calling function for filter attachments,header,footer etc details from message details
+            attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(message_detail=message_detail,req=req)
+
+            #Here calling function for filter message,mobile message,subject and any missing payload value
+            message_str,message_subject,mobile_message_str,missing_payload = generate_full_template_from_string_payload(message_detail= message_detail['message'], request= req['data'],system_variable=system_variable)
+
+            #here calling function for filter out message and subject using date if available else will return existing message and subject from up
+            message_str,message_subject = fetch_msg_and_subject_by_date(request=req,message_str=message_str,message_subject=message_subject)
+
+            phone_status = False
+            phone_issue = False
+            phone_issue_message = None
+            #Here calling function for phone status info etc if phone available 
+            if phone is not None:
+                phone_status,phone_issue,phone_issue_message = create_sms( phone= phone, mobile_message_str= mobile_message_str )
+
+            #function calling for create message with header footer
+        
+            message_str = attach_letter_head(header=header, footer= footer, message= message_str)
+
     except Exception as error:
         return(str(error)),400
 
-    if message_detail is not None:
-        if Message is not None:
-            message_detail['message'] = Message
-        else:
-            pass
-        if Subject is not None:
-            if Subject != "":
-                message_detail['message_subject'] = Subject
-        else:
-            pass    
-
-        system_variable = mongo.db.mail_variables.find({})
-        system_variable = [serialize_doc(doc) for doc in system_variable]
-        
-        #here calling function for filter attachments,header,footer etc details from message details
-        try:
-            attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(message_detail=message_detail,req=req)
-        except Exception as error:
-            return(str(error)),400
-
-        #Here calling function for filter message,mobile message,subject and any missing payload value
-        try:
-            template_data = generate_full_template_from_string_payload(message_detail= message_detail['message'], request= req['data'],system_variable=system_variable)
-            message_str = template_data.get('message')
-            mobile_message_str = template_data.get('mobile_message_str')
-            message_subject = template_data.get('message_subject')
-            missing_payload = template_data.get('missing_payload')
-        except Exception as error:
-            return(str(error)),400
-
-        #here calling function for filter out message and subject using date if available else will return existing message and subject from up
-        try:
-            message_str,message_subject = fetch_msg_and_subject_by_date(request=req,message_str=message_str,message_subject=message_subject)
-        except Exception as error:
-            return(str(error)),400
-
-        phone_status = False
-        phone_issue = False
-        phone_issue_message = None
-        #Here calling function for phone status info etc if phone available 
-        if phone is not None:
-            phone_sms_about = create_sms( phone= phone, mobile_message_str= mobile_message_str )
-            phone_status = phone_sms_about.get('phone_status')
-            phone_issue = phone_sms_about.get('phone_issue')
-            phone_issue_message = phone_sms_about.get('phone_issue_message')
-
-        #function calling for create message with header footer
-        try:
-            attachtment_about = attach_letter_head(header=header, footer= footer, message= message_str)
-            message_str = attachtment_about.get('message')
-        except Exception as error:
-            return(str(error)),400
-
+    else:
         if message_detail['message_key'] == "Payslip":
             system_settings = mongo.db.system_settings.find_one({},{"_id":0})
             if system_settings is not None:
@@ -220,17 +198,17 @@ def reminder_details():
     before_date = dateutil.parser.parse(date)
     try:
         details = fetch_interview_reminders(date=before_date) #Here calling function for fetch interview reminder records from db by date
+        if (details):
+            sum = 0
+            if (len(details) > 1):
+                sum += details[-1]['total'] + details[-2]['total'] 
+            else :
+                sum +=details[-1]['total']
+            return jsonify ({'total': sum}), 200
+        else:
+            return jsonify ({'total': 0}), 200
     except Exception as error:
         return(str(error)),400
-    if (details):
-        sum = 0
-        if (len(details) > 1):
-            sum += details[-1]['total'] + details[-2]['total'] 
-        else :
-            sum +=details[-1]['total']
-        return jsonify ({'total': sum}), 200
-    else:
-        return jsonify ({'total': 0}), 200
 
 
 
@@ -274,10 +252,7 @@ def mails():
     phone_issue = False
     phone_issue_message = None
     if phone and phone_message is not None:
-        phone_sms_about = create_sms( phone= phone, mobile_message_str= phone_message )
-        phone_status = phone_sms_about.get('phone_status')
-        phone_issue = phone_sms_about.get('phone_issue')
-        phone_issue_message = phone_sms_about.get('phone_issue_message')
+        phone_status,phone_issue,phone_issue_message = create_sms( phone= phone, mobile_message_str= phone_message )
 
 
     if MAIL_SEND_TO is not None:

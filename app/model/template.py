@@ -1,6 +1,8 @@
 from app import mongo
 from bson.objectid import ObjectId
 
+
+
 def assign_letter_heads( letterhead_id ):
     letter_head_details = mongo.db.letter_heads.find_one({ "_id": ObjectId(letterhead_id) })
     if letter_head_details is not None:
@@ -21,7 +23,7 @@ def attach_letter_head( header, footer, message):
         download_pdf = download_pdf.replace("#letter_foot", footer)
     else:
         download_pdf = download_pdf.replace("#letter_foot", '')
-    return { 'message': download_pdf }
+    return download_pdf
 
 
 

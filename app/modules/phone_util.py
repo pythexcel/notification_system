@@ -33,12 +33,12 @@ def create_sms( phone=None, mobile_message_str=None ):
         elif os.getenv('service') == "twilio":
             req_sms = dispatch_sms(source="twilio",auth_token = os.getenv('twilioToken'),account_sid = os.getenv('twilioSid'),number=phone,message=mobile_message_str,from_v= os.getenv('twilio_number'))
             phone_status = req_sms
-        return { 'phone_status': phone_status, 'phone_issue': phone_issue, 'phone_issue_message': phone_issue_message }
+        return phone_status,phone_issue,phone_issue_message
     except Exception as error:
         phone_issue_message = str(error)
         phone_status = False
         phone_issue = True
-        return { 'phone_status': phone_status, 'phone_issue': phone_issue, 'phone_issue_message': phone_issue_message }
+        return phone_status,phone_issue,phone_issue_message
 
 
 def dispatch_sms( message, number, source, apikey = None, from_v = None, auth_token = None, account_sid = None ):
