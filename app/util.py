@@ -10,6 +10,7 @@ import json
 from bson.objectid import ObjectId
 from app.config import message_needs
 import re
+import dateutil.parser
 
 def serialize_doc(doc):
     doc["_id"] = str(doc["_id"])
@@ -372,3 +373,16 @@ def contruct_payload_from_request(message_detail=None,input=None):
             raise Exception("Message not available in message details")
     else:
         raise Exception("MessageDetails and input not should be None")
+
+
+def convert_dates_to_format(dates_converter=None,req=None):
+    if dates_converter is not None:
+        for elem in dates_converter:
+            if elem in req['data']:
+                if req['data'][elem] is not None:
+                    if req['data'][elem] != "":
+                        if req['data'][elem] != "No Access":
+                            date_formatted = dateutil.parser.parse(req['data'][elem]).strftime("%d %b %Y")
+                            req['data'][elem] = date_formatted    
+        return req
+    raise Exception("Dates not should be none in request")

@@ -26,12 +26,12 @@ import datetime
 from datetime import timedelta
 import smtplib
 from app.modules.phone_util import create_sms,Push_notification
-from app.modules.template_util import assign_letter_heads, construct_template, attach_letter_head,generate_full_template_from_string_payload
+from app.model.template_util import attach_letter_head
 from app.modules.sendmail_util import create_sender_list
-from app.model.notification_msg import get_notification_function_by_key
-from app.util import contruct_payload_from_request
+from app.model.notification_msg import get_notification_function_by_key,construct_attachments_in_by_msg_details,generate_full_template_from_string_payload,fetch_msg_and_subject_by_date,fetch_interview_reminders,fetch_recipients_by_mode,update_recruit_mail_msg
+from app.util import contruct_payload_from_request,convert_dates_to_format
 bp = Blueprint('notify', __name__, url_prefix='/notify')
-        
+
 
 #dispatch was made to send particular message on slack but those message can be sended on email too
 @bp.route('/dispatch', methods=["POST"])
@@ -51,29 +51,31 @@ def construct_dispatch_message_to_slack():
         return(str(error)),400
 
 
-#preview is used in recruit and hr to generate message for the templates and can also be used to send email if details are provided
+#1preview is used in recruit and hr to generate message for the templates and can also be used to send email if details are provided
 @bp.route('/preview', methods=["POST"])
 #@token.admin_required
 #@token.authentication
 def send_mails():
     if not request.json:
         abort(500)
-    for elem in dates_converter:
-        if elem in request.json['data']:
-            if request.json['data'][elem] is not None:
-                if request.json['data'][elem] != "":
-                    if request.json['data'][elem] != "No Access":
-                        date_formatted = dateutil.parser.parse(request.json['data'][elem]).strftime("%d %b %Y")
-                        request.json['data'][elem] = date_formatted    
-        
-    MSG_KEY = request.json.get("message_key", None)  
-    Data = request.json.get("data",None)
-    Message = request.json.get("message",None)
-    Subject = request.json.get("subject",None)
-    smtp_email = request.json.get("smtp_email",None)
-    phone = request.json.get("phone", None)
+    req = request.json
+    try:
+        req = convert_dates_to_format(dates_converter=dates_converter,req=req) #Calling function for date convertor which will return modified json
+    except Exception as error:
+        return(str(error)),400
 
-    message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+    MSG_KEY = req.get("message_key", None)  
+    Data = req.get("data",None)
+    Message = req.get("message",None)
+    Subject = req.get("subject",None)
+    smtp_email = req.get("smtp_email",None)
+    phone = req.get("phone", None)
+
+    try:
+        message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY) #calling function for message details by message key
+    except Exception as error:
+        return(str(error)),400
+
     if message_detail is not None:
         if Message is not None:
             message_detail['message'] = Message
@@ -85,58 +87,47 @@ def send_mails():
         else:
             pass    
 
-        attachment_file = None
-        attachment_file_name = None
-        if 'attachment' in request.json:
-            if 'attachment_file' in message_detail:
-                attachment_file = message_detail['attachment_file']
-            if 'attachment_file_name' in message_detail:
-                attachment_file_name = message_detail['attachment_file_name']
-        else:
-            pass    
+        system_variable = mongo.db.mail_variables.find({})
+        system_variable = [serialize_doc(doc) for doc in system_variable]
         
-        files = None
+        #here calling function for filter attachments,header,footer etc details from message details
+        try:
+            attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(message_detail=message_detail,req=req)
+        except Exception as error:
+            return(str(error)),400
 
-        if 'attachment_files' in message_detail:
-            if message_detail['attachment_files']:
-                files = message_detail['attachment_files']
+        #Here calling function for filter message,mobile message,subject and any missing payload value
+        try:
+            template_data = generate_full_template_from_string_payload(message_detail= message_detail['message'], request= req['data'],system_variable=system_variable)
+            message_str = template_data.get('message')
+            mobile_message_str = template_data.get('mobile_message_str')
+            message_subject = template_data.get('message_subject')
+            missing_payload = template_data.get('missing_payload')
+        except Exception as error:
+            return(str(error)),400
 
-        header = None
-        footer = None
-        if 'template_head' in message_detail:        
-            letter_heads_response = assign_letter_heads(message_detail['template_head'])
-            header = letter_heads_response.get('header')
-            footer = letter_heads_response.get('footer')
-
-        
-        message = None
-        subject = None
-        mobile_message_str = None
-        #payload going = {"req_message":"message string","request":"data variable","message_detail":"mail template"}
-        missing_payload = generate_full_template_from_string_payload(req_message= message_detail['message'], request= request.json['data'] , message_detail=message_detail)
-
-        if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
-            if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
-                if request.json['data']['fromDate'] == request.json['data']['toDate']:
-                    message_str = message_str.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
-
-        if 'fromDate' in request.json['data'] and request.json['data']['fromDate'] is not None:
-            if 'toDate' in request.json['data'] and request.json['data']['toDate'] is not None:
-                if request.json['data']['fromDate'] == request.json['data']['toDate']:
-                    message_subject = message_subject.replace(request.json['data']['fromDate'] + " to " + request.json['data']['toDate'],request.json['data']['fromDate'])
+        #here calling function for filter out message and subject using date if available else will return existing message and subject from up
+        try:
+            message_str,message_subject = fetch_msg_and_subject_by_date(request=req,message_str=message_str,message_subject=message_subject)
+        except Exception as error:
+            return(str(error)),400
 
         phone_status = False
         phone_issue = False
         phone_issue_message = None
+        #Here calling function for phone status info etc if phone available 
         if phone is not None:
             phone_sms_about = create_sms( phone= phone, mobile_message_str= mobile_message_str )
             phone_status = phone_sms_about.get('phone_status')
             phone_issue = phone_sms_about.get('phone_issue')
             phone_issue_message = phone_sms_about.get('phone_issue_message')
 
-        attachtment_about = attach_letter_head(header=header, footer= footer, message= message)
-        message = attachtment_about.get('message')
-        #testing
+        #function calling for create message with header footer
+        try:
+            attachtment_about = attach_letter_head(header=header, footer= footer, message= message_str)
+            message_str = attachtment_about.get('message')
+        except Exception as error:
+            return(str(error)),400
 
         if message_detail['message_key'] == "Payslip":
             system_settings = mongo.db.system_settings.find_one({},{"_id":0})
@@ -156,13 +147,13 @@ def send_mails():
         if message_detail['message_key'] == "interviewee_reject":
             reject_mail = None
             if app.config['ENV'] == 'production':
-                if 'email' in request.json['data']:
-                    reject_mail = request.json['data']['email']
+                if 'email' in req['data']:
+                    reject_mail = req['data']['email']
                 else:
                     return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
                 if app.config['ENV'] == 'development':
-                    email = request.json['data']['email']
+                    email = req['data']['email']
                     full_domain = re.search("@[\w.]+", email)  
                     domain = full_domain.group().split(".")
                     if domain[0] == "@excellencetechnologies":
@@ -171,7 +162,7 @@ def send_mails():
                         reject_mail = app.config['to']   
             reject_handling = mongo.db.rejection_handling.insert_one({
             "email": reject_mail,
-            'rejection_time': request.json['data']['rejection_time'],
+            'rejection_time': req['data']['rejection_time'],
             'send_status': False,
             'message': message_str,
             'subject': message_subject,
@@ -188,7 +179,7 @@ def send_mails():
                 "single_filename": attachment_file_name
             }
             try:
-                sender_details = create_sender_list(request= request.json, details= sending_message_details)
+                sender_details = create_sender_list(request= req, details= sending_message_details)
                 if 'mailing_staus' in sender_details:
                     return jsonify({ 
                         "status": True,
@@ -218,22 +209,19 @@ def send_mails():
                 return jsonify({"status": False, "Message": str(error)})
         return jsonify({"status":False ,"Message" : "Template not exist"})
 
+
+
+#Api for cound total reminders fron yesterday
+#Not sure where this api is calling and why
+#But as i read code its for return total sum of interview reminder by one day before day
 @bp.route('/reminder_details', methods=["GET"])
 def reminder_details():
     date = (datetime.datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
     before_date = dateutil.parser.parse(date)
-    details = mongo.db.reminder_details.aggregate([
-        { '$match' : {
-            'date': { '$gte' : before_date }
-        }},
-	{
-        '$group' : {
-            '_id' : {
-                '$dateToString': { 'format': "%Y-%m-%d", 'date': "$date" }} , 'total' : { '$sum' : 1}
-        }},
-        { '$sort': { '_id': 1 } }
-        ])
-    details =[serialize_doc(doc) for doc in details]
+    try:
+        details = fetch_interview_reminders(date=before_date) #Here calling function for fetch interview reminder records from db by date
+    except Exception as error:
+        return(str(error)),400
     if (details):
         sum = 0
         if (len(details) > 1):
@@ -244,23 +232,22 @@ def reminder_details():
     else:
         return jsonify ({'total': 0}), 200
 
+
+
+#Api for send mail
 @bp.route('/send_mail', methods=["POST"])
 #@token.admin_required
 def mails():
     if not request.json:
         abort(500) 
-    MAIL_SEND_TO = None     
-    if app.config['ENV'] == 'development':
-        for email in request.json.get('to'):
-            full_domain = re.search("@[\w.]+", email)  
-            domain = full_domain.group().split(".")
-            if domain[0] == "@excellencetechnologies":
-                MAIL_SEND_TO = [email]
-            else:
-                MAIL_SEND_TO = [app.config['to']]
-    else:
-        if app.config['ENV'] == 'production':
-            MAIL_SEND_TO = request.json.get("to",None)
+    #Here calling function for fetch recipients according to env 
+    # if env is developemet will return only excellence mails
+    #else return acurate requested to mail
+    try:
+        MAIL_SEND_TO = fetch_recipients_by_mode(request=request.json)
+    except Exception as error:
+        return(str(error)),400
+
     message = request.json.get("message",None)
     subject = request.json.get("subject",None)
     filename = request.json.get("filename",None)
@@ -269,8 +256,10 @@ def mails():
     smtp_email = request.json.get("smtp_email",None)
     phone = request.json.get("phone", None)
     phone_message = request.json.get("phone_message",None)
+
     if not MAIL_SEND_TO and message:
         return jsonify({"status":False,"Message": "Invalid Request"}), 400
+
     bcc = None
     if 'bcc' in request.json:
         bcc = request.json['bcc']
@@ -279,35 +268,26 @@ def mails():
         cc = request.json['cc'] 
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
+
+    #here calling same existing function which called before in preview api for phone message status
     phone_status = False
     phone_issue = False
     phone_issue_message = None
     if phone and phone_message is not None:
-        try:
-            if app.config['service'] == "textlocal":
-                req_sms = dispatch_sms(source="textlocal",apikey=app.config['localtextkey'],number=phone,message=phone_message)
-                phone_status = req_sms
-            elif app.config['service'] == "twilio":
-                req_sms = dispatch_sms(source="twilio",auth_token = app.config['twilioToken'],account_sid = app.config['twilioSid'],number=phone,message=phone_message,from_v= app.config['twilio_number'])
-                phone_status = req_sms
-        except Exception as e:
-            phone_issue_message = repr(e)
-            phone_status = False
-            phone_issue = True
+        phone_sms_about = create_sms( phone= phone, mobile_message_str= phone_message )
+        phone_status = phone_sms_about.get('phone_status')
+        phone_issue = phone_sms_about.get('phone_issue')
+        phone_issue_message = phone_sms_about.get('phone_issue_message')
+
 
     if MAIL_SEND_TO is not None:
         for mail_store in MAIL_SEND_TO:
-            id = mongo.db.recruit_mail.update({"message":message,"subject":subject,"to":mail_store},{
-            "$set":{
-                "phone":phone,
-                "phone_message": phone_message,
-                "phone_issue": phone_issue_message,
-                "message": message,
-                "subject": subject,
-                "to":mail_store,
-                "is_reminder":is_reminder,
-                "date": datetime.datetime.now()
-            }},upsert=True)
+            #Here calling function for update recruit mails into a collection
+            try:
+                update_recruit_mail_msg(phone=phone,phone_message=phone_message,phone_issue=phone_issue,message=message,subject=subject,to=mail_store,is_reminder=is_reminder)
+            except Exception as error:
+                return(str(error)),400
+
         if smtp_email is not None:
             mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
             if mail_details is None:
@@ -332,6 +312,8 @@ def mails():
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
 
+
+#Api for return email template by message key
 @bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
 #@token.admin_required
 def required_message(message_key):
@@ -343,6 +325,8 @@ def required_message(message_key):
         else:
             return jsonify ({"message": "no template exist"}), 200    
 
+
+#Api for test slack token and notifications is working or by email address
 @bp.route('/slack_test',methods=["POST"])
 #@token.authentication
 def token_test():
@@ -353,8 +337,9 @@ def token_test():
         return jsonify({"status":True,"message": "Slack Token Tested"}), 200
     except Exception:
         return jsonify({"status":False,"message": "Slack User not exist or invalid token"}), 400
-        
 
+
+#Api for test mailing service is working or not
 @bp.route('/mail_test',methods=["POST"])
 #@token.authentication
 def mail_test():

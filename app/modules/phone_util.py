@@ -22,7 +22,7 @@ def Push_notification(fcm_registration_id=None,message=None,subject=None):
     message_body = message
     result = push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body)
 
-def create_sms( phone, mobile_message_str ):
+def create_sms( phone=None, mobile_message_str=None ):
     phone_status = False
     phone_issue = False
     phone_issue_message = None
