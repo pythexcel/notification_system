@@ -8,8 +8,8 @@ def test_create_sms():
     phone = "8445679788"
     mobile_message_str = "testing"
     assert phone and mobile_message_str is not None 
-    status = create_sms(phone=phone, mobile_message_str=mobile_message_str)
-    assert status
+    phone_status,phone_issue,phone_issue_message = create_sms(phone=phone, mobile_message_str=mobile_message_str)
+    assert phone_status != False and phone_issue != True
 
 
 
