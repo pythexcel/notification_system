@@ -40,15 +40,11 @@ def construct_attachments_in_by_msg_details(message_detail=None,req=None):
 #payload going = {"message_detail":"message string","request":"data variable","system_variable":"mail template"}
 def generate_full_template_from_string_payload(message_detail=None, request=None,system_variable=None):
     missing_payload = []
-
-    message_str,missing_payload = construct_message_str(message_detail= message_detail['message'], request= request.json['data'],system_variable=system_variable)
+    message_str,missing_payload = construct_message_str(message_detail= message_detail['message'], request=request['data'],system_variable=system_variable)
     missing_payload.extend(missing_payload)
-
-    mobile_message_str = construct_mobile_message_str(message_detail=message_detail,request=request.json,system_variable=system_variable)
-
+    mobile_message_str = construct_mobile_message_str(message_detail=message_detail,request=request,system_variable=system_variable)
     message_subject,missing_payload = construct_message_subject(message_detail=message_detail,request=request,system_variable=system_variable)
     missing_payload.extend(missing_payload)
-
     return message_str,message_subject,mobile_message_str,missing_payload
 
 

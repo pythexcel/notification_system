@@ -85,10 +85,8 @@ def send_mails():
         
             #here calling function for filter attachments,header,footer etc details from message details
             attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(message_detail=message_detail,req=req)
-
             #Here calling function for filter message,mobile message,subject and any missing payload value
-            message_str,message_subject,mobile_message_str,missing_payload = generate_full_template_from_string_payload(message_detail= message_detail['message'], request= req['data'],system_variable=system_variable)
-
+            message_str,message_subject,mobile_message_str,missing_payload = generate_full_template_from_string_payload(message_detail= message_detail, request= req,system_variable=system_variable)
             #here calling function for filter out message and subject using date if available else will return existing message and subject from up
             message_str,message_subject = fetch_msg_and_subject_by_date(request=req,message_str=message_str,message_subject=message_subject)
 
