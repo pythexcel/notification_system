@@ -104,29 +104,31 @@ def construct_mobile_message_str(message_detail=None,request=None,system_variabl
 #function for filter and return message subject and missing payload by message details
 def construct_message_subject(message_detail=None,request=None,system_variable=None):
     subject_variables = []
-    message_sub = message_detail['message_subject'].split('#')
-    del message_sub[0]
-    regex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
-    for elem in message_sub:
-        sub_varb = re.split(regex, elem)
-        subject_variables.append(sub_varb[0])
-    message_subject = message_detail['message_subject']
-    for detail in subject_variables:
-        if detail in request['data']:
-            if request['data'][detail] is not None:
-                rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
-                message_subject = re.sub(rexWithString, str(request['data'][detail]), message_subject)
+    if 'message_subject' in message_detail:
+        message_sub = message_detail['message_subject'].split('#')
+        del message_sub[0]
+        regex = re.compile('!|@|\$|\%|\^|\&|\*|\:')
+        for elem in message_sub:
+            sub_varb = re.split(regex, elem)
+            subject_variables.append(sub_varb[0])
+        message_subject = message_detail['message_subject']
+        for detail in subject_variables:
+            if detail in request['data']:
+                if request['data'][detail] is not None:
+                    rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])'
+                    message_subject = re.sub(rexWithString, str(request['data'][detail]), message_subject)
 
-        else:
-            for element in system_variable:
-                if "#" + detail == element['name'] and element['value'] is not None:
-                    rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
-                    message_subject = re.sub(rexWithSystem, str(element['value']), message_subject)  
-    missing_subject = message_subject.split("#")
-    del missing_subject[0]
-    missing_payload = convert_response_to_payload(missing=missing_subject)
-    return message_subject,missing_payload
-
+            else:
+                for element in system_variable:
+                    if "#" + detail == element['name'] and element['value'] is not None:
+                        rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:])' 
+                        message_subject = re.sub(rexWithSystem, str(element['value']), message_subject)  
+        missing_subject = message_subject.split("#")
+        del missing_subject[0]
+        missing_payload = convert_response_to_payload(missing=missing_subject)
+        return message_subject,missing_payload
+    else:
+        raise Exception("message subject not available in request")
 
 #function for find missing values from payload
 def convert_response_to_payload(missing=None):

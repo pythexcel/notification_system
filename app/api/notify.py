@@ -53,7 +53,7 @@ def construct_dispatch_message_to_slack():
 @bp.route('/preview', methods=["POST"])
 #@token.admin_required
 #@token.authentication
-def send_mails():
+def send_or_preview_mail():
     if not request.json:
         abort(500)
     req = request.json

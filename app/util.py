@@ -310,14 +310,16 @@ def FetchChannels(slack_user_detail=None,message_detail=None):
     else:
         pass  
     #It will take slack channels if slack channel available in message details
-    if message_detail['slack_channel'] is not None:
-        for elem in message_detail['slack_channel']:
-            channels.append(elem)       
+    if 'slack_channel' in message_detail:
+        if message_detail['slack_channel'] is not None:
+            for elem in message_detail['slack_channel']:
+                channels.append(elem)       
     #It will take slack channels if sended status private like slack bot
-    if message_detail['sended_to'] == "private":
-        channels.append(slack)
-    else:
-        pass      
+    if 'sended_to' in message_detail:
+        if message_detail['sended_to'] == "private":
+            channels.append(slack)
+        else:
+            pass      
     #will return array of slack channels
     return channels
 
@@ -330,9 +332,12 @@ def FetchRecipient(slack_user_detail=None,message_detail=None):
             recipient.append(data)
     else:
         pass
-    if message_detail['email_group'] is not None:
-        for elem in message_detail['email_group']:
-            recipient.append(elem)
+    if 'email_group' in message_detail:
+        if message_detail['email_group'] is not None:
+            for elem in message_detail['email_group']:
+                recipient.append(elem)
+    else:
+        pass
     return recipient
 
 
@@ -345,10 +350,11 @@ def MakeMessage(message_str=None,message_variables=None,slack_user_detail=None,s
                 slack_user_detail[data] = "N/A"
             message_str = message_str.replace("@"+data+":", slack_user_detail[data])
         else:
-            if data in slack_user_detail['data']:
-                if slack_user_detail['data'][data] is None:
-                    slack_user_detail['data'][data] = "N/A"
-                message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
+            if 'data' in slack_user_detail:
+                if data in slack_user_detail['data']:
+                    if slack_user_detail['data'][data] is None:
+                        slack_user_detail['data'][data] = "N/A"
+                    message_str = message_str.replace("@"+data+":", slack_user_detail['data'][data])    
     for elem in system_require:
         if elem in system_variable:  
             message_str = message_str.replace("@"+elem+":", system_variable[elem])
@@ -436,6 +442,8 @@ def campaign_details(user):
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','docx','doc'}
+    print('.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS)
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -478,11 +486,12 @@ def contruct_payload_from_request(message_detail=None,input=None):
 def convert_dates_to_format(dates_converter=None,req=None):
     if dates_converter is not None:
         for elem in dates_converter:
-            if elem in req['data']:
-                if req['data'][elem] is not None:
-                    if req['data'][elem] != "":
-                        if req['data'][elem] != "No Access":
-                            date_formatted = dateutil.parser.parse(req['data'][elem]).strftime("%d %b %Y")
-                            req['data'][elem] = date_formatted    
+            if 'data' in req:
+                if elem in req['data']:
+                    if req['data'][elem] is not None:
+                        if req['data'][elem] != "":
+                            if req['data'][elem] != "No Access":
+                                date_formatted = dateutil.parser.parse(req['data'][elem]).strftime("%d %b %Y")
+                                req['data'][elem] = date_formatted    
         return req
     raise Exception("Dates not should be none in request")
