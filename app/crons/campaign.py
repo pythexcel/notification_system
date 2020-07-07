@@ -10,7 +10,7 @@ import dateutil.parser
 from bson.objectid import ObjectId
 from app.model.validate_smtp import validate_smtp_counts
 from app.util.validate_smtp import validate_smtp
-from app.model.sendmail import send_email
+from app.email.model.sendmail import send_email
 from flask import current_app as app
 from dotenv import load_dotenv
 import uuid

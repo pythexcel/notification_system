@@ -1,15 +1,12 @@
 from app import mongo
 import datetime
-from app.util.slack_util import slack_message,slack_id
-from app.model.sendmail import send_email
 import json
-from bson.objectid import ObjectId
 import re
 import dateutil.parser
-from app.util.make_message import MakeMessage
-from app.util.fetch_channels import FetchChannels,FetchRecipient
-from app.model.slack_notification import slack_notification
-from app.model.email_notification import email_notification
+
+from app.slack.model.slack_notification import slack_notification
+
+from app.email.model.email_notification import email_notification
 from app.model.zapier_notification import zapier_notification
 
 

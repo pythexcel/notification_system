@@ -1,4 +1,4 @@
-from app.util.template_util import construct_message_str
+from app.email.util.template_util import construct_message_str
 
 
 #Test cases for create messages

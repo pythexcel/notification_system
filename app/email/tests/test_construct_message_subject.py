@@ -1,4 +1,4 @@
-from app.util.template_util import construct_message_subject
+from app.email.util.template_util import construct_message_subject
 from bson.objectid import ObjectId
 
 
@@ -22,12 +22,11 @@ class TestConstructMessageSubject:
 
     #test case for construct message subject if message subject not available in request.
     def test_construct_message_if_subject_not_available_in_req(self):
-        with pytest.raises(Exception):
-            message_detail = {'_id': ObjectId('5ee0bd14f1e987a7106610c1'),'message_key': 'user_timesheet_entry', 'channels': 'public', 'email_group': None, 'for_email': False, 'for_phone': False, 'for_slack': False, 'for_zapier': True,"mobile_message":"you have made a entry on timesheet Date : @date: Hours: @hours:",'message': 'you have made a entry on timesheet \n Date : @date: \n Hours: @hours:', 'message_color': None, 'message_origin': 'HR', 'message_type': 'simple_message', 'sended_to': 'public', 'slack_channel': ['CHVFM6U30'], 'submission_type': 'HR', 'working': True}
-            request = {'message_key': 'user_timesheet_entry', 'message_type': 'simple_message','smtp_email': ['aayush_saini@excellencetechnologies.in'], 'to': ['aayush_saini@excellencetechnologies.in'], 'subject': 'user_timesheet_entry', 'phone': '8445679788', 'user': {'email': 'aayush_saini@excellencetechnolgies.in', 'name': 'aish'}, 'data': {'hours': '9', 'date': '05 Jun 2020'}}
-            message_subject,missing_payload=construct_message_subject(message_detail=message_detail,request=request,system_variable=self.system_variables)
-            assert len(missing_payload) == 0
-            assert message_subject is not None
+        message_detail = {'_id': ObjectId('5ee0bd14f1e987a7106610c1'),'message_key': 'user_timesheet_entry', 'channels': 'public', 'email_group': None, 'for_email': False, 'for_phone': False, 'for_slack': False, 'for_zapier': True,"mobile_message":"you have made a entry on timesheet Date : @date: Hours: @hours:",'message': 'you have made a entry on timesheet \n Date : @date: \n Hours: @hours:', 'message_color': None, 'message_origin': 'HR', 'message_type': 'simple_message', 'sended_to': 'public', 'slack_channel': ['CHVFM6U30'], 'submission_type': 'HR', 'working': True}
+        request = {'message_key': 'user_timesheet_entry', 'message_type': 'simple_message','smtp_email': ['aayush_saini@excellencetechnologies.in'], 'to': ['aayush_saini@excellencetechnologies.in'], 'subject': 'user_timesheet_entry', 'phone': '8445679788', 'user': {'email': 'aayush_saini@excellencetechnolgies.in', 'name': 'aish'}, 'data': {'hours': '9', 'date': '05 Jun 2020'}}
+        message_subject,missing_payload=construct_message_subject(message_detail=message_detail,request=request,system_variable=self.system_variables)
+        assert len(missing_payload) == 0
+        assert message_subject is not None
 
 
 

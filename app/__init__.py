@@ -87,16 +87,20 @@ def create_app(test_config=None):
     db.get_db(mongo=mongo, app=app)
     
     from app.api import notify
-    from app.api import slack_channel
-    from app.api import slack_settings
+    from app.slack.api import dispatch
+    from app.slack.api import slack_channel
+    from app.slack.api import slack_settings
+    from app.email.api import email_preview
     from app.api import mail_settings
     from app.api import message_create
     from app.api import campaign
     from app.api import settings
     
     app.register_blueprint(notify.bp)
+    app.register_blueprint(dispatch.bp)
     app.register_blueprint(slack_channel.bp)
     app.register_blueprint(slack_settings.bp)
+    app.register_blueprint(email_preview.bp)
     app.register_blueprint(mail_settings.bp)
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)

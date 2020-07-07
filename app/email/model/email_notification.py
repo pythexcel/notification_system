@@ -1,5 +1,5 @@
-from app.util.make_message import MakeMessage
-from app.util.fetch_channels import FetchRecipient
+from app.slack.util.make_message import MakeMessage
+from app.slack.util.fetch_channels import FetchRecipient
 import json
 from app import mongo
 

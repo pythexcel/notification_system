@@ -1,5 +1,5 @@
 from app import create_app as app
-from app.util.template_util import attach_letter_head
+from app.email.util.template_util import attach_letter_head
 
 
 #class for test attach letter head test cases

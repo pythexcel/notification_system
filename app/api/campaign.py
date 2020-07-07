@@ -4,7 +4,7 @@ from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory,redirect)
 from app.util.serializer import serialize_doc
 import datetime 
-from app.model.template_making import Template_details
+from app.email.model.template_making import Template_details
 from app.model.campaign import campaign_details,user_data
 from app.util.validate_files import allowed_file
 import pymongo.errors
@@ -16,7 +16,7 @@ from flask_jwt_extended import (
     get_jwt_identity, get_current_user, jwt_refresh_token_required,
     verify_jwt_in_request
 )
-from app.model.sendmail import send_email
+from app.email.model.sendmail import send_email
 from app.model.validate_smtp import validate_smtp_counts
 from app.util.validate_smtp import validate_smtp
 import smtplib

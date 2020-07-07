@@ -1,5 +1,6 @@
 from app.config import message_needs
-from app.model.validate_message import validate_message
+
+from app.slack.model.validate_message import validate_message
 
 
 

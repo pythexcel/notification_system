@@ -1,4 +1,4 @@
-from app.util.fetch_channels import FetchChannels
+from app.slack.util.fetch_channels import FetchChannels
 
 
 #test case for fetch channels from user details

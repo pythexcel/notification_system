@@ -1,6 +1,7 @@
 import datetime
 import re
-from app.model.construct_message import construct_message
+
+from app.slack.model.construct_message import construct_message
 
 
 

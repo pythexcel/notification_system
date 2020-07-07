@@ -4,8 +4,8 @@ from app.util.serializer import serialize_doc
 import datetime
 import dateutil.parser
 from bson.objectid import ObjectId
-from app.model.sendmail import send_email
-from app.util.slack_util import slack_message
+from app.email.model.sendmail import send_email
+from app.slack.util.slack_util import slack_message
 from flask import current_app as app
 import time
 import email

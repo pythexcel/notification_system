@@ -1,4 +1,4 @@
-from app.util.fetch_channels import FetchRecipient
+from app.slack.util.fetch_channels import FetchRecipient
 
 
 class TestFetchRecipient:

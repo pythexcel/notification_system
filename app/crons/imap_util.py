@@ -4,7 +4,7 @@ import email
 import datetime
 import re
 from app.util.serializer import serialize_doc
-from app.model.sendmail import send_email
+from app.email.model.sendmail import send_email
 from bson.objectid import ObjectId
 from app.config import hard_bounce_status,soft_bounce_status
 from app import mongo

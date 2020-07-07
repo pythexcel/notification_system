@@ -1,5 +1,5 @@
 import datetime
-from app.util.make_message import MakeMessage
+from app.slack.util.make_message import MakeMessage
 
 #Test cases for create slack message with replace slack id with user tag
 class TestMakeMessage:

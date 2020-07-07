@@ -8,7 +8,6 @@ from flask import jsonify
 from app.config import fcm_api_key
 from dotenv import load_dotenv
 from twilio.rest import Client
-from pyfcm import FCMNotification
 
 APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
 dotenv_path = os.path.join(APP_ROOT, '.env')

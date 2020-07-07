@@ -10,7 +10,7 @@ from flask_jwt_extended import (
 )
 from flask import current_app as app
 from bson import ObjectId
-from app.model.sendmail import send_email
+from app.email.model.sendmail import send_email
 from app.util.validate_smtp import validate_smtp
 import smtplib
 import datetime

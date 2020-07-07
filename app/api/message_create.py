@@ -5,7 +5,7 @@ from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util.serializer import serialize_doc
 from app.util.validate_files import allowed_file
-from app.model.template_making import template_requirement
+from app.email.model.template_making import template_requirement
 import datetime
 from bson.objectid import ObjectId
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
@@ -14,7 +14,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 verify_jwt_in_request)
 from werkzeug.utils import secure_filename
 from flask import current_app as app
-from app.util.slack_util import slack_message
+from app.slack.util.slack_util import slack_message
 
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
