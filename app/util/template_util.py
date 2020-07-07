@@ -1,39 +1,25 @@
 import re
 import datetime
-from app import mongo
 from app.config import dates_converter
-from app.util import serialize_doc
+from app.util.serializer import serialize_doc
 from bson.objectid import ObjectId
 from flask import current_app as app
 
 
 
-def construct_attachments_in_by_msg_details(message_detail=None,req=None):
-    attachment_file = None
-    attachment_file_name = None
-    if 'attachment' in req:
-        if 'attachment_file' in message_detail:
-            attachment_file = message_detail['attachment_file']
-        if 'attachment_file_name' in message_detail:
-            attachment_file_name = message_detail['attachment_file_name']
+
+def attach_letter_head( header, footer, message):
+    download_pdf = "#letter_head #content #letter_foot"
+    if header is not None:
+        download_pdf = download_pdf.replace("#letter_head", header)
     else:
-        pass    
-    
-    files = None
-
-    if 'attachment_files' in message_detail:
-        if message_detail['attachment_files']:
-            files = message_detail['attachment_files']
-
-    header = None
-    footer = None
-    if 'template_head' in message_detail:        
-        var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
-        if var is not None:
-            header = var['header_value']
-            footer = var['footer_value']
-    return attachment_file,attachment_file_name,files,header,footer
-
+        download_pdf = download_pdf.replace("#letter_head", '')
+    download_pdf = download_pdf.replace("#content", message)
+    if footer is not None:
+        download_pdf = download_pdf.replace("#letter_foot", footer)
+    else:
+        download_pdf = download_pdf.replace("#letter_foot", '')
+    return download_pdf
 
 
 

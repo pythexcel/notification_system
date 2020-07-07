@@ -1,11 +1,16 @@
-from app import token
+from app.auth import token
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
-from app.mail_util import send_email
-from app.util import serialize_doc,construct_message,validate_message,allowed_file,template_requirement
+from app.model.sendmail import send_email
+from app.util.serializer import serialize_doc 
+from app.util.validate_files import allowed_file
+from app.model.construct_message import construct_message
+from app.model.template_making import template_requirement
+from app.model.validate_message import validate_message
 from app.config import message_needs,dates_converter
-from app.slack_util import slack_message,slack_id
-from app.sms_util import dispatch_sms
+from app.util.slack_util import slack_message,slack_id
+from app.util.phone import dispatch_sms,create_sms
+from app.util.push_notification import Push_notification
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
@@ -14,7 +19,6 @@ import json
 import uuid
 import os 
 from weasyprint import HTML, CSS
-from app.phone_util import Push_notification
 from bson.objectid import ObjectId
 from werkzeug import secure_filename
 from flask import current_app as app
@@ -25,12 +29,16 @@ import dateutil.parser
 import datetime
 from datetime import timedelta
 import smtplib
-from app.modules.phone_util import create_sms,Push_notification
-from app.model.template import attach_letter_head
-from app.modules.sendmail_util import create_sender_list
-from app.modules.template_util import construct_attachments_in_by_msg_details,generate_full_template_from_string_payload,fetch_msg_and_subject_by_date,fetch_recipients_by_mode
-from app.model.notification_msg import get_notification_function_by_key,fetch_interview_reminders,update_recruit_mail_msg
-from app.util import contruct_payload_from_request,convert_dates_to_format
+from app.model.sender_list import create_sender_list
+from app.util.template_util import generate_full_template_from_string_payload,fetch_msg_and_subject_by_date,fetch_recipients_by_mode
+from app.model.notification_msg import get_notification_function_by_key
+from app.model.recruit_mail import update_recruit_mail_msg
+from app.model.construct_payload import contruct_payload_from_request
+from app.model.interview_reminders import fetch_interview_reminders
+from app.util.date_convertor import convert_dates_to_format
+from app.util.template_util import attach_letter_head
+from app.model.template_making import construct_attachments_in_by_msg_details
+
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
 

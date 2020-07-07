@@ -1,20 +1,24 @@
+
 import os
 import sys    
 import random
 import re
 from app import mongo
-from app.util import serialize_doc
+from app.util.serializer import serialize_doc
 import datetime
 import dateutil.parser
 from bson.objectid import ObjectId
-from app.mail_util import send_email,validate_smtp_counts,validate_smtp
-from app.slack_util import slack_message
+from app.model.validate_smtp import validate_smtp_counts
+from app.util.validate_smtp import validate_smtp
+from app.model.sendmail import send_email
 from flask import current_app as app
 from dotenv import load_dotenv
 import uuid
 import time
 import email
 import requests
+
+
 
 def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -225,215 +229,3 @@ def campaign_mail():
                     pass
         else:
             pass
-                
-def calculate_bounce_rate():
-    campaigns = mongo.db.campaigns.find({})
-    campaigns = [serialize_doc(doc) for doc in campaigns]
-    
-    for campaign in campaigns:
-        if campaign is not None:
-            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id']})
-            campaign_users = [serialize_doc(doc) for doc in campaign_users]
-            bounce_users = mongo.db.mail_status.find({"campaign":campaign['_id'],"bounce": True,"bounce_type":"hard"})
-            bounce_users = [serialize_doc(doc) for doc in bounce_users]
-            total_users = len(campaign_users)
-            if total_users != 0:
-                bounce_rate = len(bounce_users) * 100 / total_users
-                campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
-                    "$set": {
-                        "bounce_rate": bounce_rate
-                    }
-                })
-            else:
-                pass
-        else:
-            pass
-
-            
-def reject_mail():
-    ret = mongo.db.rejection_handling.find_one({"send_status":False})
-    if ret is not None:
-        if ret['smtp_email'] is not None:
-            message = ret['message']
-            time = ret['rejection_time']  
-            time_update = dateutil.parser.parse(time).strftime("%Y-%m-%dT%H:%M:%SZ")
-            rejected_time = datetime.datetime.strptime(time_update,'%Y-%m-%dT%H:%M:%SZ')
-            diffrence = datetime.datetime.utcnow() - rejected_time
-            if diffrence.days >= 1:
-                to = []
-                mail = ret['email']  
-                to.append(mail)
-                mail_details = mongo.db.mail_settings.find_one({"mail_username":str(ret['smtp_email']),"origin": "RECRUIT"})
-                if mail_details is not None:
-                    send_email(message=message,recipients=to,subject='REJECTED',sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
-                    user_status = mongo.db.rejection_handling.remove({"_id":ObjectId(ret['_id'])})
-                else:
-                    pass
-            else:
-                pass
-        else:
-            pass
-    else:
-        pass
-def cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"HR"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
-
-        if ret['type'] == "email":
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
-        elif ret['type'] == "slack":
-            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
-        else:
-            pass    
-    else:
-        pass 
-
-
-def tms_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"TMS"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
-
-        if ret['type'] == "email":
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
-        elif ret['type'] == "slack":
-            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
-        else:
-            pass    
-    else:
-        pass 
-
-def recruit_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"RECRUIT"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
-
-        if ret['type'] == "email":
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
-        elif ret['type'] == "slack":
-            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
-        else:
-            pass    
-    else:
-        pass 
-#Zapier cron for fetch payload from collection and hit webhook
-def zapier_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"type":"zapier"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
-        #calling function webhook which will return avaliable webhook from db by notification message key
-        hookurlDetails = webhook(data=ret)
-        if hookurlDetails is not None:
-            hookurl = hookurlDetails['webhook']
-            payload = {'slackmessage': ret['slackmessage'], "defaultmessage": ret['defaultmessage'], "recipients": ret['recipients'], "channel": ret['channel'], "phone":ret['phone'], "subject":ret['subject']}
-            #hitting webhhok this will send notification to all integrated apps with this webhook.
-            #Like we want to send checkin notification to mail and phone number then we have integrated both apps with this webhook 
-            #this will send notification to both apps
-            response = requests.post(url=hookurl, json=payload)
-            output = response.json()
-        else:
-            pass
-    else:
-        pass
-
-#Webhook function which will return webhook by message key
-def webhook(data=None):
-    if data is not None:
-        if 'message_detail' in data:
-            message_key = data['message_detail']['message_key']
-            ret = mongo.db.webhooks.find_one({"message_key":message_key})
-            return ret
-        else:
-            return None
-    else:
-        return None
-
-def update_completion_time():
-    campaigns = mongo.db.campaigns.find({"$or": [{"status": "Running"}, {"status": "Completed"}]})
-    campaigns = [serialize_doc(doc) for doc in campaigns]
-    for campaign in campaigns:
-        delay= campaign['delay']
-        smtp = campaign['smtps']
-        campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"send_status": False})
-        campaign_users = [serialize_doc(doc) for doc in campaign_users]
-        ids = len(campaign_users)
-        total_time = (float(ids)* delay / float(len(smtp)))
-        if total_time <= 60:
-            total_time = round(total_time,2)
-            total_expected_time = "{} second".format(total_time)
-        elif total_time>60 and total_time<=3600:
-            total_time = total_time/60
-            total_time = round(total_time,1)
-            total_expected_time = "{} minutes".format(total_time)
-        elif total_time>3600 and total_time<=86400:
-            total_time = total_time/3600
-            total_time = round(total_time,1)
-            total_expected_time = "{} hours".format(total_time)
-        else:
-            total_time = total_time/86400
-            total_time = round(total_time,1)
-            total_expected_time = "{} days".format(total_time)
-        campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
-            "$set": {
-                "total_expected_time_of_completion": total_expected_time
-            }
-        })
-
-
-def campaign_details():
-    campaigns = mongo.db.campaigns.find({})
-    campaigns = [serialize_doc(doc) for doc in campaigns]
-    for campaign in campaigns:
-        if campaign is not None:
-            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"already_unsub" : False})
-            campaign_users = [serialize_doc(doc) for doc in campaign_users]
-            if campaign_users:
-                seen_users = mongo.db.mail_status.find({"campaign":campaign['_id'],"seen": True})
-                seen_users = [serialize_doc(doc) for doc in seen_users]
-                seen_rate = 0
-                if seen_users:
-                    seen_rate = len(seen_users) * 100 / len(campaign_users)
-                clicked_user = mongo.db.mail_status.find({"campaign":campaign['_id'],"clicked": True})
-                clicked_user = [serialize_doc(doc) for doc in clicked_user]
-                clicked_rate = 0
-                if clicked_user:
-                    clicked_rate = len(clicked_user) * 100 / len(campaign_users)
-                unsubscribe_users =  mongo.db.campaign_users.find({"campaign":campaign['_id'],"unsubscribe_status" : True})
-                unsubscribe_users = [serialize_doc(doc) for doc in unsubscribe_users]
-                unsub = 0
-                if unsubscribe_users:
-                    unsub = len(unsubscribe_users) 
-                campaign_update = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
-                    "$set": {
-                        "open_rate" : clicked_rate,
-                        "seen_rate" : seen_rate,
-                        "unsubscribed_users" : unsub
-                    }
-                })
-            else:
-                pass
-
-
-
-

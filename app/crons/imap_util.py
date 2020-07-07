@@ -3,8 +3,8 @@ import pyzmail
 import email
 import datetime
 import re
-from app.util import serialize_doc
-from app.mail_util import send_email
+from app.util.serializer import serialize_doc
+from app.model.sendmail import send_email
 from bson.objectid import ObjectId
 from app.config import hard_bounce_status,soft_bounce_status
 from app import mongo
@@ -13,6 +13,7 @@ from datetime import date
 
 #cron for remind candidates if candidates not replied msg
 def mail_reminder():
+    remind_mail_since = ""
     mail_settings = mongo.db.imap_settings.find({"active":True})
     mail_settings = [serialize_doc(doc) for doc in mail_settings]
     for mail_setting in mail_settings:

@@ -26,10 +26,14 @@ from recruit_slack import rec_message
 
 mongo = db.init_db()
 
-from app import token
-from app.scheduler import campaign_mail,reject_mail,cron_messages,recruit_cron_messages,tms_cron_messages,calculate_bounce_rate,update_completion_time,campaign_details,zapier_cron_messages
-from app.imap_util import bounced_mail,mail_reminder
+from app.auth import token
 
+from app.crons.campaign import campaign_mail
+from app.crons.reject_mail import reject_mail
+from app.crons.send_notification import cron_messages,recruit_cron_messages,tms_cron_messages,zapier_cron_messages
+from app.crons.calculatebounces import calculate_bounce_rate
+from app.crons.imap_util import bounced_mail
+from app.crons.campaigns_details import update_completion_time,campaign_details
 
 def create_app(test_config=None):
     # create and configure the app

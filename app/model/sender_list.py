@@ -60,13 +60,12 @@ def create_sender_list( request, details ):
                 cc = None
     if to is None:
         raise Exception('Recipients email is missing')
-    else:
-        mail_list = {
-            "to": to,
-            "bcc":bcc,
-            "cc": cc
-        }
-        return dispatch_mail( sending_mail_list= mail_list, details= details)
+    mail_list = {
+        "to": to,
+        "bcc":bcc,
+        "cc": cc
+    }
+    return dispatch_mail( sending_mail_list= mail_list, details= details)
 
 #sending_mail_list = {"to": to,"bcc":bcc,"cc": cc}
 #details = {"smtp_email": ,"message": ,"subject": ,"files": ,"single_filelink": ,"single_filename": }
@@ -75,30 +74,20 @@ def dispatch_mail( sending_mail_list, details ):
     smtp_email = details.get('smtp_email')
     if smtp_email is not None:
         smtp_details = mongo.db.mail_settings.find_one({ "mail_username": smtp_email }, { "_id": 0 })
-        if smtp_details is not None:
-            details['username'] = smtp_details['mail_username']
-            details['password'] = smtp_details['mail_password']
-            details['port'] = smtp_details['mail_port']
-            details['smtp_server'] = smtp_details['mail_server']
-            details['mail_from'] = None
-            if 'mail_from' in smtp_details:
-                details['mail_from'] = smtp_details['mail_from']
-        else:
-            raise Exception('No smtp conf avialable with the provide smtp email')
     else:
         smtp_details = mongo.db.mail_settings.find_one({}, { "_id": 0 })
-        if smtp_details is not None:
-            details['username'] = smtp_details['mail_username']
-            details['password'] = smtp_details['mail_password']
-            details['port'] = smtp_details['mail_port']
-            details['smtp_server'] = smtp_details['mail_server']
-            details['mail_from'] = None
-            if 'mail_from' in smtp_details:
-                details['mail_from'] = smtp_details['mail_from']
-        else:
-            raise Exception('No smtp conf avialable in the system currently')
+    if smtp_details is not None:
+        details['username'] = smtp_details['mail_username']
+        details['password'] = smtp_details['mail_password']
+        details['port'] = smtp_details['mail_port']
+        details['smtp_server'] = smtp_details['mail_server']
+        details['mail_from'] = None
+        if 'mail_from' in smtp_details:
+            details['mail_from'] = smtp_details['mail_from']
+    else:
+        raise Exception('No smtp conf avialable in the system currently')
     send_email( email_list=sending_mail_list, details=details )
-    return { 'message': 'mail_sended'}
+    return "mail_sended" #{'message':'mail_sended'}
 
 
 def send_email( email_list, details ):
@@ -199,3 +188,5 @@ def send_email( email_list, details ):
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 
     mail.quit()
+
+

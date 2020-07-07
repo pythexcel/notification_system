@@ -1,8 +1,8 @@
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.slack_util import slack_message,slack_load_token,slack_id,slack_profile
+from app.util.slack_util import slack_message,slack_id,slack_load_token,slack_profile
 from slackclient import SlackClient
-from app import token
+from app.auth import token
 bp = Blueprint('slack_channels', __name__, url_prefix='/')
 
 

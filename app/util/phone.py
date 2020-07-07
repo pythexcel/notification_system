@@ -4,7 +4,6 @@ import requests
 import datetime
 import urllib.request
 import urllib.parse
-from app import mongo
 from flask import jsonify
 from app.config import fcm_api_key
 from dotenv import load_dotenv
@@ -15,12 +14,6 @@ APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
 dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
-def Push_notification(fcm_registration_id=None,message=None,subject=None):
-    push_service = FCMNotification(api_key=fcm_api_key)
-    registration_id = fcm_registration_id
-    message_title = subject
-    message_body = message
-    result = push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body)
 
 def create_sms( phone=None, mobile_message_str=None ):
     phone_status = False
