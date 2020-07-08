@@ -17,9 +17,9 @@ class TestAttachLetterHead:
 
     #Test case with header footer message is none data
     def test_attach_none_letter_head(self):
-        header=None
-        footer=None
-        message=None
+        header=""
+        footer=""
+        message=""
 
         template = attach_letter_head(header,footer,message)
         assert template

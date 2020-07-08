@@ -14,12 +14,6 @@ class TestConstructMobileMessage:
         mobile_message_str = construct_mobile_message_str(message_detail = message_detail,request=request,system_variable=self.system_variables)
         assert mobile_message_str is not None
 
-    #Test case for if message is not available in message details request
-    def test_construct_mobile_message_is_not_available(self):
-        message_detail = {'_id': ObjectId('5ee0bd14f1e987a7106610c1'), 'message_key': 'user_timesheet_entry', 'channels': 'public', 'email_group': None, 'for_email': False, 'for_phone': False, 'for_slack': False, 'for_zapier': True, 'message_color': None, 'message_origin': 'HR', 'message_type': 'simple_message', 'sended_to': 'public', 'slack_channel': ['CHVFM6U30'], 'submission_type': 'HR', 'working': True, 'message_subject': 'user_timesheet_entry'}
-        request = {'message_key': 'user_timesheet_entry', 'message_type': 'simple_message','smtp_email': ['aayush_saini@excellencetechnologies.in'], 'to': ['aayush_saini@excellencetechnologies.in'], 'subject': 'user_timesheet_entry', 'phone': '8445679788', 'user': {'email': 'aayush_saini@excellencetechnolgies.in', 'name': 'aish'}, 'data': {'hours': '9', 'date': '05 Jun 2020'}}
-        mobile_message_str = construct_mobile_message_str(message_detail = message_detail,request=request,system_variable=self.system_variables)
-        assert mobile_message_str is not None
 
     #Test case for if message data variables not proper
     def test_construct_mobile_message_data_variables(self):
