@@ -221,6 +221,7 @@ def seed_recruit():
 @click.command("seed_system")
 @with_appcontext
 def seed_system():
+    mail_variable_exist = mongo.db.mail_variables.find({})
     if mail_variable_exist:
         mongo.db.mail_variables.remove({})
         mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
