@@ -7,7 +7,7 @@ import dateutil.parser
 from app.slack.model.slack_notification import slack_notification
 
 from app.email.model.email_notification import email_notification
-from app.model.zapier_notification import zapier_notification
+from app.zapier.model.zapier_notification import zapier_notification
 
 
 

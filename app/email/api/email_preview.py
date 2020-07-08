@@ -7,8 +7,8 @@ from app.email.model.template_making import template_requirement
 from app.slack.model.validate_message import validate_message
 from app.config import message_needs,dates_converter
 from app.slack.model.slack_util import slack_message,slack_id
-from app.util.phone import dispatch_sms,create_sms
-from app.util.push_notification import Push_notification
+from app.phone.util.phone import dispatch_sms,create_sms
+from app.push_notification.util.push_notification import Push_notification
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
