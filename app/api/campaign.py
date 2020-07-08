@@ -371,7 +371,7 @@ def unsub():
 @bp.route("/delete_unsub_status/<string:Id>",methods=["GET"])
 #@token.admin_required
 def delete_unsub(Id):        
-    ret = mongo.db.unsubscribed_users.remove({_id : ObjectId(Id)})
+    ret = mongo.db.unsubscribed_users.remove({"_id" : ObjectId(Id)})
     return jsonify({ "message" :"user removed from unsub" }), 200
 
 @bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
