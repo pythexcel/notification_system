@@ -24,9 +24,21 @@ from pymongo.collection import ReturnDocument
 from app.config import smtp_counts
 from werkzeug import secure_filename
 import uuid
+from app.imap_util import bounced_mail
 
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
+
+
+@bp.route('/SyncBouncedMail', methods=["GET"])
+def SyncBouncedMail():
+    day = request.args.get('days',default=None,type=int)
+    if day is not None:
+        checkbounces = bounced_mail(day=day)
+        return jsonify({"status":"success"})
+    else:
+        return jsonify({"status":"Number of days is null"})
+
 
 @bp.route('/create_campaign', methods=["GET", "POST"])
 #@token.admin_required
