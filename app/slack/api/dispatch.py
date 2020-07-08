@@ -11,7 +11,7 @@ import json
 from flask import current_app as app
 from app.slack.model.construct_payload import contruct_payload_from_request
 from app.slack.model.notification_msg import get_notification_function_by_key
-from app.module import notify_system
+from app.notification import notify_system
 
 bp = Blueprint('dispatch', __name__, url_prefix='/notify')
 
