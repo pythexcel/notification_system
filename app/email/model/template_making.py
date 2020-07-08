@@ -10,7 +10,7 @@ from app.config import message_needs
 import re
 import dateutil.parser
 from app.util.serializer import serialize_doc
-
+from flask import current_app as app
 
 def construct_attachments_in_by_msg_details(message_detail=None,req=None):
     attachment_file = None
