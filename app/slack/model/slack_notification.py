@@ -8,6 +8,7 @@ from app import mongo
 
 def slack_notification(user_detail,message,message_detail,message_variables,system_require,system_variable):
     if 'user' in user_detail and user_detail['user'] is not None:
+        slack_details = True
         try:
             slack = slack_id(user_detail['user']['email']) # Fetching user slack id by email using slack api
         except Exception:

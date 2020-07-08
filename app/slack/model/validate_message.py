@@ -5,7 +5,7 @@ from app.slack.model.construct_message import construct_message
 
 
 
-def validate_message(user=None,message=None,req_json=None,message_detail=None):
+def validate_message(message=None,req_json=None,message_detail=None):
     system_variable ={"Date":datetime.datetime.utcnow().strftime("%d-%B-%Y")}
     message_special = message.split()
     message_variables = []
@@ -35,8 +35,9 @@ def validate_message(user=None,message=None,req_json=None,message_detail=None):
             else:
                 missing_payload.append(data)
     if not missing_payload:
-        construct_message(message=message,message_variables=message_variables,
-                        req_json=req_json,system_require=system_require,message_detail=message_detail)             
+        #construct_message(message=message,message_variables=message_variables,
+        #                req_json=req_json,system_require=system_require,message_detail=message_detail)             
+        return message,message_variables,req_json,system_require,message_detail
     else:
         ret = ",".join(missing_payload)
         raise Exception("These data are missing from payload: " + ret)      

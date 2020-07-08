@@ -11,10 +11,11 @@ import json
 from flask import current_app as app
 from app.slack.model.construct_payload import contruct_payload_from_request
 from app.slack.model.notification_msg import get_notification_function_by_key
+from app.module import notify_system
 
 bp = Blueprint('dispatch', __name__, url_prefix='/notify')
 
-
+"""
 #dispatch was made to send particular message on slack but those message can be sended on email too
 @bp.route('/dispatch', methods=["POST"])
 #@token.authentication
@@ -25,6 +26,22 @@ def construct_dispatch_message_to_slack():
     try:
         message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
         contruct_payload_from_request(message_detail=message_detail,input=request.json)
+        return jsonify({"status":True,"Message":"Sended"}),200 
+    except Exception as error:
+        return(str(error)),400
+"""
+#dispatch was made to send particular message on slack but those message can be sended on email too
+@bp.route('/dispatch', methods=["POST"])
+#@token.authentication
+def construct_dispatch_message_to_slack():
+    if not request.json:
+        abort(500)
+    MSG_KEY = request.json.get("message_key", None)
+    try:
+        message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
+        notify = notify_system()
+        notify.make_payload_from_request(message_detail,request.json)
+        #a=notify.make_payload_from_request(message_detail,input)
         return jsonify({"status":True,"Message":"Sended"}),200 
     except Exception as error:
         return(str(error)),400
