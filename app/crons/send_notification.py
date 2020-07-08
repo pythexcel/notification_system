@@ -5,7 +5,7 @@ import datetime
 import dateutil.parser
 from bson.objectid import ObjectId
 from app.email.model.sendmail import send_email
-from app.slack.util.slack_util import slack_message
+from app.slack.model.slack_util import slack_message
 from flask import current_app as app
 import time
 import email

@@ -6,7 +6,7 @@ from app.util.serializer import serialize_doc
 from app.email.model.template_making import template_requirement
 from app.slack.model.validate_message import validate_message
 from app.config import message_needs,dates_converter
-from app.slack.util.slack_util import slack_message,slack_id
+from app.slack.model.slack_util import slack_message,slack_id
 from app.util.phone import dispatch_sms,create_sms
 from app.util.push_notification import Push_notification
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
@@ -28,8 +28,8 @@ import datetime
 from datetime import timedelta
 import smtplib
 from app.email.model.sender_list import create_sender_list
-from app.email.util.template_util import generate_full_template_from_string_payload,fetch_msg_and_subject_by_date,fetch_recipients_by_mode
-
+from app.email.util.template_util import generate_full_template_from_string_payload,fetch_msg_and_subject_by_date
+from app.email.model.template_making import fetch_recipients_by_mode
 from app.email.model.recruit_mail import update_recruit_mail_msg
 from app.slack.model.construct_payload import contruct_payload_from_request
 from app.model.interview_reminders import fetch_interview_reminders

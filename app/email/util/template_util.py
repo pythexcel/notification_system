@@ -140,21 +140,3 @@ def fetch_msg_and_subject_by_date(request=None,message_str=None,message_subject=
     return message_str,message_subject
 
 
-#Here function for fetch recipients according to env
-def fetch_recipients_by_mode(request=None):
-    if request is not None:
-        MAIL_SEND_TO = None     
-        if app.config['ENV'] == 'development':
-            for email in request.get('to'):
-                full_domain = re.search("@[\w.]+", email)
-                domain = full_domain.group().split(".")
-                if domain[0] == "@excellencetechnologies":
-                    MAIL_SEND_TO = [email]
-                else:
-                    MAIL_SEND_TO = [app.config['to']]
-        else:
-            if app.config['ENV'] == 'production':
-                MAIL_SEND_TO = request.get("to",None)
-        return MAIL_SEND_TO
-    else:
-        raise Exception("Request not should be None")

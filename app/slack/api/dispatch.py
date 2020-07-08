@@ -2,7 +2,7 @@ from app.auth import token
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.util.serializer import serialize_doc
-from app.slack.util.slack_util import slack_message,slack_id
+from app.slack.model.slack_util import slack_message,slack_id
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,

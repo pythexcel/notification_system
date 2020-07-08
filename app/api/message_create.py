@@ -14,7 +14,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 verify_jwt_in_request)
 from werkzeug.utils import secure_filename
 from flask import current_app as app
-from app.slack.util.slack_util import slack_message
+from app.slack.model.slack_util import slack_message
 
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
