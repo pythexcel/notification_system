@@ -24,7 +24,7 @@ from pymongo.collection import ReturnDocument
 from app.config import smtp_counts
 from werkzeug import secure_filename
 import uuid
-from app.imap_util import bounced_mail
+from app.crons.imap_util import bounced_mail
 
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')

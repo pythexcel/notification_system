@@ -52,7 +52,7 @@ def slack():
         public_channel = sl_public_list['channels']
         for details in public_channel:
             public_chnl.append({'value': details['id'], 'text': details['name']})
-        return jsonify({"Private_channel":total,"Public_channel":public_chnl}) 
+        return jsonify({"Private_channel":result,"Public_channel":public_chnl}) 
     else:
         if not request.json:
             abort(500)

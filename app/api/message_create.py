@@ -293,3 +293,24 @@ def get_triggers():
         if elem not in triggers:
             triggers.append(elem)
     return jsonify({"triggers": triggers}), 200
+
+
+#Api for update channel code for all messages.
+@bp.route('/configuration/channel', methods=["PUT"])
+#@token.admin_required
+def assign_channel():
+    channel = request.json.get('channel')
+    assign = mongo.db.notification_msg.update({}, {
+        "$set": {
+            "slack_channel": channel
+        }
+    })
+    return jsonify ({'message': 'channel added'}), 200
+
+#Api for get email template
+@bp.route('/get_email_template', methods=["GET"])
+#@token.admin_required
+def all_mail_message():
+    ret = mongo.db.mail_template.find({})
+    ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+    return jsonify(ret), 200

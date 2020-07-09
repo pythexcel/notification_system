@@ -55,7 +55,8 @@ def create_app(test_config=None):
     app.config['localtextkey'] = os.getenv('localtextkey')
     app.config['twilioSid'] = os.getenv('twilioSid')
     app.config['twilioToken'] = os.getenv('twilioToken')
-    
+    app.config['twilio_number'] = os.getenv('twilio_number')
+
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
