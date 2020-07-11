@@ -14,14 +14,6 @@ def slack_load_token():
 
 
 
-def slack_user_load_token():
-    token = mongo.db.slack_settings.find_one({
-        "slack_user_token": {"$exists": True}
-    }, {"slack_user_token": 1, '_id': 0})
-    sl_token = token['slack_user_token']
-    return sl_token
-
-
 def slack_id(email):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
