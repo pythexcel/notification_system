@@ -30,14 +30,6 @@ from app.crons.imap_util import bounced_mail
 bp = Blueprint('campaigns', __name__, url_prefix='/')
 
 
-@bp.route('/SyncBouncedMail', methods=["GET"])
-def SyncBouncedMail():
-    day = request.args.get('days',default=None,type=int)
-    if day is not None:
-        checkbounces = bounced_mail(day=day)
-        return jsonify({"status":"success"})
-    else:
-        return jsonify({"status":"Number of days is null"})
 
 
 @bp.route('/create_campaign', methods=["GET", "POST"])
@@ -80,6 +72,7 @@ def create_campaign():
             pass
     
         return jsonify({"campaign_id":str(ret),"message_id":message_id}),200
+
 
 @bp.route('/attached_file/<string:Id>/<string:message_id>', methods=["POST","DELETE"])
 #@token.admin_required
