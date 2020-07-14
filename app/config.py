@@ -14,6 +14,8 @@ client_id = '124720392913.862592480496'
 client_secret = '0405e4f1150a7a9dcbaa4442e3aeea4f'
 client_redirect_uri = 'http://176.9.137.77:8012/slack/redirect'
 
+MONGO_URI = "mongodb+srv://xmage:xmage@cluster0-xooqb.mongodb.net/slack_settings_test?retryWrites=true"
+
 base_url = os.getenv("base_url")
 if os.getenv("origin") == "recruit":
     if base_url is None:
