@@ -11,6 +11,7 @@ import datetime
 
 bp = Blueprint('settings', __name__, url_prefix='/')
 
+
 @bp.route('/settings', methods=["PUT", "GET"])
 #@token.admin_required
 def system_settings_setings():

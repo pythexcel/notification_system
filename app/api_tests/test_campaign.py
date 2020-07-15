@@ -22,7 +22,7 @@ class AllTestCampaignApis(unittest.TestCase):
     #common function for convert bytes to json
     def json_of_response(self, response):
         return json.loads(response.data.decode('utf8'))
-
+"""
     #common function for create a dummy campaign for testing
     def create_campaign(self):
         payload = json.dumps({
@@ -307,3 +307,4 @@ class AllTestCampaignApis(unittest.TestCase):
         #assert
         self.assertEqual(response.status_code, 200)
         self.assertIn("sended",response.get_data(as_text=True))
+"""

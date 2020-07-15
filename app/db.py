@@ -4,8 +4,15 @@ from flask_pymongo import PyMongo
 from pymongo_inmemory import MongoClient
 
 def init_db():
-    mongo = PyMongo()
-    return mongo
+    APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
+    dotenv_path = os.path.join(APP_ROOT, '.env')
+    load_dotenv(dotenv_path)
+    if os.getenv('database'):
+        mongo = PyMongo()
+        return mongo
+    else:
+        client = MongoClient()  # No need to provide host
+        return client
 
 
 def get_db(app, mongo):
@@ -13,21 +20,8 @@ def get_db(app, mongo):
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
     if os.getenv('database'):
-        print("envvvvvvvvvvvvvvvvvvvvvv")
         app.config["MONGO_URI"] = os.getenv('database')    
+        mongo.init_app(app)
     else:
-        print("not envvvvvvvvvvvvvvvvvvvvvvvvvv")
-        client = MongoClient()  # No need to provide host
-        db = client['testdb']
-        collection = db['test-collection']
-        # etc., etc.
-        client.close()
+        return mongo
 
-        # Also usable with context manager
-        with MongoClient() as client:
-            print(client)
-            print(db)
-            print(collection)
-            # do stuff
-            app.config["MONGO_URI"] = client
-    mongo.init_app(app)

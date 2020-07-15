@@ -5,8 +5,8 @@ from requests.exceptions import ConnectionError
 import json
 from app.api_tests.test_message_create_apis import app
 from bson import ObjectId
-
-
+from app import mongo
+import datetime
 
 class AllTestReminderApis(unittest.TestCase):
 
@@ -22,6 +22,8 @@ class AllTestReminderApis(unittest.TestCase):
 
     #testing reminder details api
     def test_reminder_details(self):
+        payload = {"date":datetime.datetime.today(),"message_key":"Interview Reminder"}
+        mongo.db.reminder_details.insert_one(payload)
 
         #act
         response = self.app.get('/notify/reminder_details')
