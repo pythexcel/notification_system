@@ -24,6 +24,7 @@ class AllTestslackchannelApis(unittest.TestCase):
         payload = {"slack_token":"xoxb-124720392913-1244423145729-ZE16yLy2zyA8GfRXD5P70g4G"}
         mongo.db.slack_settings.insert_one(payload) 
 
+    """
     #testing slack channels get api
     def test_slack_channel_test_api(self):
         #making data
@@ -57,7 +58,7 @@ class AllTestslackchannelApis(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertGreater(len(jsonResponse),0)
 
-
+    """
     #testing slack get user profile  api
     def test_get_slack_user_profile_api(self):
         #data making
