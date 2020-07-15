@@ -1,4 +1,5 @@
 import os 
+import sys
 import re
 import uuid
 import datetime
@@ -21,43 +22,50 @@ def create_sender_list( request, details ):
     to = None
     bcc = None
     cc = None
-    current_environment = os.getenv('ENVIRONMENT')
-    if current_environment == "development":
+    if "pytest" in sys.modules:
         if 'to' in request:
             for email in request.get('to'):
-                full_domain = re.search("@[\w.]+", email)  
-                domain = full_domain.group().split(".")
-                if domain[0] == "@excellencetechnologies":
-                    to = [email]
-                else:
-                    to = [os.getenv('to')]
-        bcc = [os.getenv('bcc')]
-        cc = [os.getenv('cc')]
-
+                to = [email]
+        bcc="bcc_testing_recruit@mailinator.com"
+        cc="cc_testing_recruit@mailinator.com"
     else:
-        if current_environment == 'production':
+        current_environment = os.getenv('ENVIRONMENT')
+        if current_environment == "development":
             if 'to' in request:
-                if not request.get('to'):
+                for email in request.get('to'):
+                    full_domain = re.search("@[\w.]+", email)  
+                    domain = full_domain.group().split(".")
+                    if domain[0] == "@excellencetechnologies":
+                        to = [email]
+                    else:
+                        to = [os.getenv('to')]
+            bcc = [os.getenv('bcc')]
+            cc = [os.getenv('cc')]
+
+        else:
+            if current_environment == 'production':
+                if 'to' in request:
+                    if not request.get('to'):
+                        to = None
+                    else:     
+                        to = request.get('to')
+                else:
                     to = None
-                else:     
-                    to = request.get('to')
-            else:
-                to = None
-            if 'bcc' in request:    
-                if not request.get('bcc'):
+                if 'bcc' in request:    
+                    if not request.get('bcc'):
+                        bcc = None
+                    else:
+                        bcc = request.get('bcc')
+                else:
                     bcc = None
-                else:
-                    bcc = request.get('bcc')
-            else:
-                bcc = None
-            
-            if 'cc' in request: 
-                if not request.get('cc'):
+                
+                if 'cc' in request: 
+                    if not request.get('cc'):
+                        cc = None
+                    else:
+                        cc = request.get('cc')
+                else:        
                     cc = None
-                else:
-                    cc = request.get('cc')
-            else:        
-                cc = None
     if to is None:
         raise Exception('Recipients email is missing')
     mail_list = {

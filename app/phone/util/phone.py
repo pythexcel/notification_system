@@ -19,12 +19,15 @@ def create_sms( phone=None, mobile_message_str=None ):
     phone_issue = False
     phone_issue_message = None
     try:
-        if os.getenv('service') == "textlocal":
-            req_sms = dispatch_sms(source="textlocal",apikey=os.getenv('localtextkey'),number=phone,message=mobile_message_str)
-            phone_status = req_sms
-        elif os.getenv('service') == "twilio":
-            req_sms = dispatch_sms(source="twilio",auth_token = os.getenv('twilioToken'),account_sid = os.getenv('twilioSid'),number=phone,message=mobile_message_str,from_v= os.getenv('twilio_number'))
-            phone_status = req_sms
+        if "pytest" in sys.modules:
+            pass
+        else:
+            if os.getenv('service') == "textlocal":
+                req_sms = dispatch_sms(source="textlocal",apikey=os.getenv('localtextkey'),number=phone,message=mobile_message_str)
+                phone_status = req_sms
+            elif os.getenv('service') == "twilio":
+                req_sms = dispatch_sms(source="twilio",auth_token = os.getenv('twilioToken'),account_sid = os.getenv('twilioSid'),number=phone,message=mobile_message_str,from_v= os.getenv('twilio_number'))
+                phone_status = req_sms
         return phone_status,phone_issue,phone_issue_message
     except Exception as error:
         phone_issue_message = str(error)

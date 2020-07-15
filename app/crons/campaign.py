@@ -63,13 +63,17 @@ def campaign_mail():
                                 count_details = validate['count_details']
                                 final_message = random.choice(message_subject_details)
                                 mail = user['email']
-                                if os.getenv('ENVIRONMENT') == "development":
-                                    full_domain = re.search("@[\w.]+", mail)  
-                                    domain = full_domain.group().split(".")
-                                    if domain[0] == "@excellencetechnologies":
-                                        mail = mail
-                                    else:
-                                        mail = os.getenv('to')
+                                if "pytest" in sys.modules:
+                                    mail = mail
+                                else:
+                                    if os.getenv('ENVIRONMENT') == "development":
+                                        full_domain = re.search("@[\w.]+", mail)  
+                                        domain = full_domain.group().split(".")
+                                        if domain[0] == "@excellencetechnologies":
+                                            mail = mail
+                                        else:
+                                            mail = os.getenv('to')
+                                
                                 unique = str(user['_id'])
                                 filelink = None
                                 if 'attachment_file_name' in final_message:

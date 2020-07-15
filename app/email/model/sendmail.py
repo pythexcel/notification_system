@@ -21,11 +21,16 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
-    # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
-    if os.getenv('origin') == "hr":
+    if "pytest" in sys.modules:
         mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
-    elif os.getenv('origin') == "recruit":    
-        mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True},{"_id":0})
+    else:
+        # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
+        if os.getenv('origin') == "hr":
+            mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
+        elif os.getenv('origin') == "recruit":    
+            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True},{"_id":0})
+
+
     username = None
     if sending_mail is None:    
         username = mail_details["mail_username"]

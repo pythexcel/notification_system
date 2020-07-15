@@ -48,16 +48,29 @@ def create_app(test_config=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
-    app.config['ENV'] = os.getenv('ENVIRONMENT')
-    app.config['to'] = os.getenv('to')
-    app.config['cc'] = os.getenv('cc')
-    app.config['bcc'] = os.getenv('bcc')
-    app.config['origin'] = os.getenv('origin')
-    app.config['service'] = os.getenv('service')
-    app.config['localtextkey'] = os.getenv('localtextkey')
-    app.config['twilioSid'] = os.getenv('twilioSid')
-    app.config['twilioToken'] = os.getenv('twilioToken')
-    app.config['twilio_number'] = os.getenv('twilio_number')
+    if "pytest" in sys.modules:
+        app.config['ENV'] = "production"
+        app.config['to'] = "testingattach0@gmail.com"
+        app.config['cc'] = "cc_testing_recruit@mailinator.com"
+        app.config['bcc'] = "bcc_testing_recruit@mailinator.com"
+        app.config['origin'] = "hr"
+        app.config['service'] = None
+        app.config['localtextkey'] = None
+        app.config['twilioSid'] = None
+        app.config['twilioToken'] = None
+        app.config['twilio_number'] = None
+
+    else:
+        app.config['ENV'] = os.getenv('ENVIRONMENT')
+        app.config['to'] = os.getenv('to')
+        app.config['cc'] = os.getenv('cc')
+        app.config['bcc'] = os.getenv('bcc')
+        app.config['origin'] = os.getenv('origin')
+        app.config['service'] = os.getenv('service')
+        app.config['localtextkey'] = os.getenv('localtextkey')
+        app.config['twilioSid'] = os.getenv('twilioSid')
+        app.config['twilioToken'] = os.getenv('twilioToken')
+        app.config['twilio_number'] = os.getenv('twilio_number')
 
     if test_config is None:
         # load the instance config, if it exists, when not testing

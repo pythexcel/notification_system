@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 
 APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -14,10 +15,13 @@ client_id = '124720392913.862592480496'
 client_secret = '0405e4f1150a7a9dcbaa4442e3aeea4f'
 client_redirect_uri = 'http://176.9.137.77:8012/slack/redirect'
 
-base_url = os.getenv("base_url")
-if os.getenv("origin") == "recruit":
-    if base_url is None:
-        raise Exception ('missing base url')
+if "pytest" in sys.modules:
+    base_url = "http://127.0.0.1:5000/"
+else:
+    base_url = os.getenv("base_url")
+    if os.getenv("origin") == "recruit":
+        if base_url is None:
+            raise Exception ('missing base url')
 
 smtp_counts = {
     'smtp.gmail.com' : 100,
