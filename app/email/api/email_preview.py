@@ -274,7 +274,7 @@ def mail_test():
     email = None
     if app.config['ENV']=='development':
         email = app.config['to']
-    else:    
+    else:
         email = request.json.get('email')
     try:
         send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")

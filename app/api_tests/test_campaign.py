@@ -165,3 +165,145 @@ class AllTestCampaignApis(unittest.TestCase):
             self.assertIn('message_detail', jsonResponse)
 
 
+    #Test delete campaign api
+    def test_user_delete_campaign(self):
+        #calling create campaign function
+        campaign_id = "5ef48f8619b4326a7ece8c8f"
+        user_id = "5ef48fc019b4326a7ece8c91"
+        # testing delete campaign api 
+        response = self.app.delete(f'/user_delete_campaign/'+campaign_id+'/'+user_id)
+
+        # assert conditions checking
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("User deleted from campaign",response.get_data(as_text=True))
+
+
+    #Test campaign details api
+    def test_campaign_deatils(self):
+        #calling campaign details function
+        campaign_id = "5ef48f8619b4326a7ece8c8f"
+        # testing campaign details api 
+        response = self.app.get(f'/campaign_detail/'+campaign_id)
+        jsonResponses = self.json_of_response(response)
+    
+        # assert conditions checking
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Campaign_description",jsonResponses)
+        self.assertIn("Campaign_name",jsonResponses)
+        self.assertIn("_id",jsonResponses)
+        self.assertIn("clicking_details",jsonResponses)
+        self.assertIn("creation_date",jsonResponses)
+        self.assertIn("delay",jsonResponses)
+        self.assertIn("message_detail",jsonResponses)
+        self.assertIn("smtps",jsonResponses)
+        self.assertIn("status",jsonResponses)
+        self.assertIn("users",jsonResponses)
+        self.assertIn("total_expected_time_of_completion",jsonResponses)
+        self.assertIn("unsubscribed_users",jsonResponses)
+        self.assertIn("seen_rate",jsonResponses)
+        self.assertIn("open_rate",jsonResponses)
+        self.assertIn("generated_from_recruit",jsonResponses)
+        self.assertIn("bounce_rate",jsonResponses)
+
+
+    #Test campaign details api
+    def test_mails_status(self):
+        skip = "0"
+        limit = "100"
+        # testing campaign details api 
+        response = self.app.get(f'/mails_status?skip='+skip+'&'+'limit='+limit)
+        jsonResponse = self.json_of_response(response)
+            
+        # assert conditions checking
+        self.assertEqual(response.status_code, 200)
+        for jsonResponses in jsonResponse:
+            self.assertIn("_id",jsonResponses)
+            self.assertIn("bounce",jsonResponses)
+            self.assertIn("bounce_type",jsonResponses)
+            self.assertIn("campaign",jsonResponses)
+            self.assertIn("clicked",jsonResponses)
+            self.assertIn("digit",jsonResponses)
+            self.assertIn("mail_sended_status",jsonResponses)
+            self.assertIn("message",jsonResponses)
+            self.assertIn("recipients",jsonResponses)
+            self.assertIn("seen",jsonResponses)
+            self.assertIn("sending_mail",jsonResponses)
+            self.assertIn("sending_password",jsonResponses)
+            self.assertIn("sending_port",jsonResponses)
+            self.assertIn("sending_server",jsonResponses)
+            self.assertIn("sending_time",jsonResponses)
+            self.assertIn("user_mail",jsonResponses)
+            
+
+    #Test unsubscriber status api
+    def test_unsubscribers_status(self):
+        skip = "0"
+        limit = "100"
+        # testing campaign details api 
+        response = self.app.get(f'/unsub_status?skip='+skip+'&'+'limit='+limit)
+        jsonResponse = self.json_of_response(response)
+            
+        # assert conditions checking
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("list",jsonResponse)
+        self.assertIn("totalUnsub",jsonResponse)
+
+
+
+    #Test unsubscriber status api
+    def test_unsubscribe_user(self):
+        Id = "5ea80fc4ea89f8d6cade3976"
+        # testing campaign details api 
+        response = self.app.get(f'/delete_unsub_status/'+Id)
+            
+        # assert conditions checking
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("user removed from unsub",response.get_data(as_text=True))
+
+
+    def test_edit_template(self):
+        payload = json.dumps({
+            "message": "created_campaign_for_testing",
+            "message_key": "Idel",
+            "message_origin": "test_message",
+            "message_subject": "test_subject",
+            "recruit_details":True
+        })
+        template_id = "5dea40490356855a0b3200a7"
+        # act
+        response = self.app.post('edit_templates/'+template_id,headers={"Content-Type": "application/json"}, data=payload)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Template Updated",response.get_data(as_text=True))
+
+
+    #Test daily_validate status api
+    def test_daily_validate_details(self):
+        skip = "0"
+        limit = "100"
+        # testing campaign details api 
+        response = self.app.get(f'/daily_validate_details?skip='+skip+'&'+'limit='+limit)
+        jsonResponse = self.json_of_response(response)
+        # assert conditions checking
+        self.assertEqual(response.status_code, 200)
+        for jsonResponses in jsonResponse:
+            self.assertIn("_id",jsonResponses)
+            self.assertIn("count",jsonResponses)
+            self.assertIn("created_at",jsonResponses)
+            self.assertIn("email",jsonResponses)
+            self.assertIn("smtp",jsonResponses)
+
+    #test campaign_smtp_test
+    def test_campaign_smtp_test(self):
+        payload = json.dumps({
+            "email":"aayush_saini@excellencetechnologies.in",
+            "message":"testing message",
+            "message_subject":"testing"
+            })
+
+        # act
+        response = self.app.post('/campaign_smtp_test',headers={"Content-Type": "application/json"}, data=payload)
+
+        #assert
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("sended",response.get_data(as_text=True))
