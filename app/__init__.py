@@ -12,6 +12,8 @@ from app import db
 
 import click
 
+import sys
+
 from dotenv import load_dotenv
 
 from mail_templates import templates
@@ -110,6 +112,9 @@ def create_app(test_config=None):
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
     app.cli.add_command(seed_system)
+
+    if "pytest" in sys.modules:
+        return app
 
     if app.config['origin'] == "hr":
         
