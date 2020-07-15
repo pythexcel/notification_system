@@ -1,0 +1,38 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ function_refactors ]
+  pull_request:
+    branches: [ function_refactors ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  create-envfile:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - name: Make envfile
+      uses: actions/checkout@v2
+      with:
+        envkey_ENVIRONMENT: "production"
+        envkey_to: "testingattach0@gmail.com"
+        envkey_bcc: "bcc_testing_recruit@mailinator.com"
+        envkey_cc: "cc_testing_recruit@mailinator.com"
+        envkey_origin: "hr"
+        envkey_base_url: "http://127.0.0.1:5000/"       
+        file_name: .env
+    
+
+  
+ 
+    
+ 
+        
