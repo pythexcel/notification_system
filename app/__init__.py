@@ -177,7 +177,7 @@ def create_app(test_config=None):
 
 
         mail_reminder_scheduler = BackgroundScheduler()
-        mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=13,minute=7)
+        #mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=13,minute=7)
         mail_reminder_scheduler.start()
 
         calculate_bounce_rate_scheduler = BackgroundScheduler()
