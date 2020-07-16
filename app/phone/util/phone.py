@@ -20,6 +20,7 @@ def create_sms( phone=None, mobile_message_str=None ):
     phone_issue = False
     phone_issue_message = None
     try:
+        #just pass for now
         if "pytest" in sys.modules:
             pass
         else:

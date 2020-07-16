@@ -48,6 +48,7 @@ def create_app(test_config=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
+    #This condition will run only if pytest cammand will run
     if "pytest" in sys.modules:
         app.config['ENV'] = "production"
         app.config['to'] = "testingattach0@gmail.com"
@@ -176,7 +177,7 @@ def create_app(test_config=None):
 
 
         mail_reminder_scheduler = BackgroundScheduler()
-        #mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=13,minute=7)
+        mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=13,minute=7)
         mail_reminder_scheduler.start()
 
         calculate_bounce_rate_scheduler = BackgroundScheduler()

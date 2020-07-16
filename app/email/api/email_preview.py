@@ -75,11 +75,13 @@ def send_or_preview_mail():
 
             system_variable = mongo.db.mail_variables.find({})
             system_variable = [serialize_doc(doc) for doc in system_variable]
-        
+
             #here calling function for filter attachments,header,footer etc details from message details
             attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(message_detail=message_detail,req=req)
+            
             #Here calling function for filter message,mobile message,subject and any missing payload value
             message_str,message_subject,mobile_message_str,missing_payload = generate_full_template_from_string_payload(message_detail= message_detail, request= req,system_variable=system_variable)
+            
             #here calling function for filter out message and subject using date if available else will return existing message and subject from up
             message_str,message_subject = fetch_msg_and_subject_by_date(request=req,message_str=message_str,message_subject=message_subject)
 
@@ -93,7 +95,6 @@ def send_or_preview_mail():
             #function calling for create message with header footer
         
             message_str = attach_letter_head(header=header, footer= footer, message= message_str)
-
     except Exception as error:
         return(str(error)),400
 
@@ -147,6 +148,7 @@ def send_or_preview_mail():
                 "single_filelink": attachment_file,
                 "single_filename": attachment_file_name
             }
+            
             try:
                 sender_details = create_sender_list(request= req, details= sending_message_details)
                 if 'mailing_staus' in sender_details:

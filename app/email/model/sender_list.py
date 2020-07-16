@@ -114,9 +114,8 @@ def send_email( email_list, details ):
     username = details.get('username')
     password = details.get('password')
     port = details.get('port')
-    mail_server = details.get('mail_server')
+    mail_server = details.get('smtp_server')
     mail_from = details.get('mail_from')
-  
     context = ssl.create_default_context() 
     if port == 587:       
         mail = smtplib.SMTP(str(mail_server), port)
@@ -150,7 +149,6 @@ def send_email( email_list, details ):
     msg['From'] = username
     msg['To'] = ','.join(recipients) 
     msg['Cc'] = cc
-
     if files is not None:
         for file_detail in files:
             file_path = open(file_detail['file'],'rb')
@@ -160,7 +158,6 @@ def send_email( email_list, details ):
             msg.attach(attachment)
     else:
         pass
-
     if filelink is not None:
         fo=open(filelink,'rb')
         file = email.mime.application.MIMEApplication(fo.read())
@@ -169,7 +166,6 @@ def send_email( email_list, details ):
         msg.attach(file)
     else:
         pass
-
     if user is not None:
         unsuscribe_url =  default_unsubscribe_html.format(base_url,delivered[0],campaign)
         url = "<img src= '{}template_hit_rate/{}/{}/{}?hit_rate=1' hidden=true>".format(base_url,digit,campaign_message_id,user)
@@ -180,7 +176,6 @@ def send_email( email_list, details ):
                 message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}?url={}'.format(digit,campaign,required_url[0]) )
             else:
                 message = message.replace(required_url[0],base_url+'campaign_redirect/'+ '{}/{}'.format(digit,campaign))
-        
         unsub_expression = re.compile('#unsub')
         unsub_exist = False
         if re.search(unsub_expression, message):
@@ -191,7 +186,6 @@ def send_email( email_list, details ):
             message = message + url 
         else:
             message = message + url + unsuscribe_url 
-
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 

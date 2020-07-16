@@ -15,6 +15,7 @@ client_id = '124720392913.862592480496'
 client_secret = '0405e4f1150a7a9dcbaa4442e3aeea4f'
 client_redirect_uri = 'http://176.9.137.77:8012/slack/redirect'
 
+#this is base url for pytest
 if "pytest" in sys.modules:
     base_url = "http://127.0.0.1:5000/"
 else:
