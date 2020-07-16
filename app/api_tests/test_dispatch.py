@@ -5,7 +5,7 @@ from requests.exceptions import ConnectionError
 import json
 from app.api_tests.test_message_create_apis import app
 from bson import ObjectId
-
+from app import mongo
 
 
 class AllTestMailsettingApis(unittest.TestCase):
@@ -19,10 +19,17 @@ class AllTestMailsettingApis(unittest.TestCase):
 
     def json_of_response(self, response):
         return json.loads(response.data.decode('utf8'))
+    #Note: commented this test case because can't upload slack token on git it will expire
+    """
+    def create_slack_setting(self):
+        payload = {"slack_token":""}
+        mongo.db.slack_settings.insert_one(payload) 
 
-"""
     #testing slack token test api
     def test_slack_token_test_api(self):
+        #making data
+        self.create_slack_setting()
+
         payload = json.dumps({
                 "email":"aayush_saini@excellencetechnologies.in"
                 })
@@ -34,7 +41,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Slack Token Tested',response.get_data(as_text=True))
         self.assertIn('true',response.get_data(as_text=True))
-
+    """
 
     #testing slack token test api with invalid payload
     def test_slack_token_test_api_if_token_not_valid(self):
@@ -54,6 +61,10 @@ class AllTestMailsettingApis(unittest.TestCase):
 
     #testing slack dispatch notification api
     def test_slack_dispatch_notification_api(self):
+        notfication_msg={"message_key":"user_timesheet_entry","channels":"public","email_group":None,"for_email":False,"for_phone":False,"for_slack":False,"for_zapier":True,"message":"you have made a entry on timesheet \n Date : @date: \n Hours: @hours:","message_color":None,"message_origin":"HR","message_type":"simple_message","sended_to":"public","slack_channel":["CHVFM6U30"],"submission_type":"HR","working":True}
+        mongo.db.notification_msg.insert_one(notfication_msg)
+
+
         payload = json.dumps({
                             "message_key": "user_timesheet_entry",
                             "message_type": "simple_message",
@@ -85,6 +96,8 @@ class AllTestMailsettingApis(unittest.TestCase):
 
     #testing slack dispatch notification api invalid payload
     def test_slack_dispatch_notification_api_with_invalid_payload(self):
+        notfication_msg={"message_key":"user_timesheet_entry","channels":"public","email_group":None,"for_email":False,"for_phone":False,"for_slack":False,"for_zapier":True,"message":"you have made a entry on timesheet \n Date : @date: \n Hours: @hours:","message_color":None,"message_origin":"HR","message_type":"simple_message","sended_to":"public","slack_channel":["CHVFM6U30"],"submission_type":"HR","working":True}
+        mongo.db.notification_msg.insert_one(notfication_msg)
         payload = json.dumps({
                             "message_key": "user_timesheet_entry",
                             "message_type": "simple_message",
@@ -100,4 +113,3 @@ class AllTestMailsettingApis(unittest.TestCase):
 
         # assert
         self.assertEqual(response.status_code,400)
-"""

@@ -5,7 +5,8 @@ from requests.exceptions import ConnectionError
 import json
 from app.api_tests.test_message_create_apis import app
 from bson import ObjectId
-
+from app import mongo
+import datetime
 
 #class for all campaign test cases
 class AllTestCampaignApis(unittest.TestCase):
@@ -22,7 +23,7 @@ class AllTestCampaignApis(unittest.TestCase):
     #common function for convert bytes to json
     def json_of_response(self, response):
         return json.loads(response.data.decode('utf8'))
-"""
+
     #common function for create a dummy campaign for testing
     def create_campaign(self):
         payload = json.dumps({
@@ -53,9 +54,6 @@ class AllTestCampaignApis(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('campaign_id',jsonResponse)
         self.assertIn('message_id',jsonResponse)
-        #deleting campaign
-        id = jsonResponse['campaign_id']
-        self.delete_campaign(id)
 
 
 
@@ -100,11 +98,16 @@ class AllTestCampaignApis(unittest.TestCase):
 
     #Test case for get campaign api
     def test_get_campaign(self):
+        payload = {"Campaign_name":"testing","Campaign_description":"test","status":"Completed","generated_from_recruit":False,"message_detail":[{"message_id":"20918026-54e1-497f-8033-770943ac3bb7","message":"testing","message_subject":"testing","count":1}],"bounce_rate":0,"open_rate":0,"seen_rate":0,"unsubscribed_users":0,"delay":3,"smtps":["5eec4fd1796cd69227faa4a0"],"total_expected_time_of_completion":"0.0 second","creation_date":1593085830234}
+        id = mongo.db.campaigns.insert_one(payload).inserted_id
+        campign_payload = {"name":"aayush","email":"aayush_saini@excellencetechnologies.in","send_status":True,"campaign":str(id),"block":False,"unsubscribe_status":False,"already_unsub":False,"mail_cron":True,"error_message":"SMTPDataError(550, b'5.4.5 Daily user sending quota exceeded. v4sm16752194wro.26 - gsmtp')","error_time":1593105790535,"successful":True,"mail_message":[{"sended_message_details":"5c1cbb41-361f-441e-a365-44179fd673da","campaign":str(id)}],"sended_date":1593569827965}
+        idd = mongo.db.campaign_users.insert_one(campign_payload).inserted_id
+        template_payload = {"Doc_type":"email","for":"Interviwee Hold","message":"<p>Dear Applicant<br/>Hope you are doing good!<br/>This is to inform you that with respect your application and subsequent interview with #company: your candidature has been put on hold for a while due to unavoidable circumstance.<br/>We will surely get back to you once the position re-opens. Thank you so much for showing your pleasant interest with the company and the job.<br/>Regards<br/> #hr_signature: </p>","message_key":"interviewee_onhold","message_origin":"RECRUIT","message_subject":"interviewee put on hold","recruit_details":"Interviewee On Hold","version":1,"working":True,"template_head":str(idd)}
+        mongo.db.mail_template.insert_one(template_payload).inserted_id
 
-        # act
-        response = self.app.get(f'/create_campaign')
+        response = self.app.get('/create_campaign')
         jsonResponses = self.json_of_response(response)
-        
+
         # checking assert conditions
         self.assertEqual(response.status_code, 200)
         for jsonResponse in jsonResponses:
@@ -149,6 +152,14 @@ class AllTestCampaignApis(unittest.TestCase):
 
     #Testing list campaign api 
     def test_list_campaign(self):
+        #making data
+        jsonResponse,response = self.create_campaign()
+        id = jsonResponse['campaign_id']
+        campign_payload = {"name":"aayush","email":"aayush_saini@excellencetechnologies.in","send_status":True,"campaign":str(id),"block":False,"unsubscribe_status":False,"already_unsub":False,"mail_cron":True,"error_message":"SMTPDataError(550, b'5.4.5 Daily user sending quota exceeded. v4sm16752194wro.26 - gsmtp')","error_time":1593105790535,"successful":True,"mail_message":[{"sended_message_details":"5c1cbb41-361f-441e-a365-44179fd673da","campaign":str(id)}],"sended_date":1593569827965}
+        idd = mongo.db.campaign_users.insert_one(campign_payload).inserted_id
+        template_payload = {"Doc_type":"email","for":"Interviwee Hold","message":"<p>Dear Applicant<br/>Hope you are doing good!<br/>This is to inform you that with respect your application and subsequent interview with #company: your candidature has been put on hold for a while due to unavoidable circumstance.<br/>We will surely get back to you once the position re-opens. Thank you so much for showing your pleasant interest with the company and the job.<br/>Regards<br/> #hr_signature: </p>","message_key":"interviewee_onhold","message_origin":"RECRUIT","message_subject":"interviewee put on hold","recruit_details":"Interviewee On Hold","version":1,"working":True,"template_head":str(idd)}
+        mongo.db.mail_template.insert_one(template_payload).inserted_id
+
         # act
         response = self.app.get(f'/list_campaign')
         jsonResponses = self.json_of_response(response)
@@ -167,11 +178,15 @@ class AllTestCampaignApis(unittest.TestCase):
 
     #Test delete campaign api
     def test_user_delete_campaign(self):
-        #calling create campaign function
-        campaign_id = "5ef48f8619b4326a7ece8c8f"
-        user_id = "5ef48fc019b4326a7ece8c91"
+        #making data
+        jsonResponse,response = self.create_campaign()
+        id = jsonResponse['campaign_id']
+
+        campign_payload = {"name":"aayush","email":"aayush_saini@excellencetechnologies.in","send_status":True,"campaign":str(id),"block":False,"unsubscribe_status":False,"already_unsub":False,"mail_cron":True,"error_message":"SMTPDataError(550, b'5.4.5 Daily user sending quota exceeded. v4sm16752194wro.26 - gsmtp')","error_time":1593105790535,"successful":True,"mail_message":[{"sended_message_details":"5c1cbb41-361f-441e-a365-44179fd673da","campaign":str(id)}],"sended_date":1593569827965}
+        user_id = mongo.db.campaign_users.insert_one(campign_payload).inserted_id
+
         # testing delete campaign api 
-        response = self.app.delete(f'/user_delete_campaign/'+campaign_id+'/'+user_id)
+        response = self.app.delete(f'/user_delete_campaign/'+str(id)+'/'+str(user_id))
 
         # assert conditions checking
         self.assertEqual(response.status_code, 200)
@@ -181,7 +196,9 @@ class AllTestCampaignApis(unittest.TestCase):
     #Test campaign details api
     def test_campaign_deatils(self):
         #calling campaign details function
-        campaign_id = "5ef48f8619b4326a7ece8c8f"
+        jsonResponse,response = self.create_campaign()
+        campaign_id = jsonResponse['campaign_id'] 
+
         # testing campaign details api 
         response = self.app.get(f'/campaign_detail/'+campaign_id)
         jsonResponses = self.json_of_response(response)
@@ -193,21 +210,17 @@ class AllTestCampaignApis(unittest.TestCase):
         self.assertIn("_id",jsonResponses)
         self.assertIn("clicking_details",jsonResponses)
         self.assertIn("creation_date",jsonResponses)
-        self.assertIn("delay",jsonResponses)
         self.assertIn("message_detail",jsonResponses)
-        self.assertIn("smtps",jsonResponses)
         self.assertIn("status",jsonResponses)
         self.assertIn("users",jsonResponses)
-        self.assertIn("total_expected_time_of_completion",jsonResponses)
-        self.assertIn("unsubscribed_users",jsonResponses)
-        self.assertIn("seen_rate",jsonResponses)
-        self.assertIn("open_rate",jsonResponses)
         self.assertIn("generated_from_recruit",jsonResponses)
-        self.assertIn("bounce_rate",jsonResponses)
 
 
     #Test campaign details api
     def test_mails_status(self):
+        #making data
+        payload = {"user_mail":"aayush_saini@excellencetechnologies.in","user_id":"5ef48fa719b4326a7ece8c90","message":"testing","mail_sended_status":True,"subject":"testing","recipients":["aayush_saini@excellencetechnologies.in"],"digit":"5c1cbb41-361f-441e-a365-44179fd673da","campaign":"5ef48f8619b4326a7ece8c8f","sending_mail":"roggermanning08@gmail.com","sending_password":"guapagzobitpiskm","sending_server":"smtp.gmail.com","seen":False,"sending_port":465,"clicked":False,"bounce_type":"pending","bounce":False}
+        mongo.db.mail_status.insert_one(payload)
         skip = "0"
         limit = "100"
         # testing campaign details api 
@@ -231,14 +244,15 @@ class AllTestCampaignApis(unittest.TestCase):
             self.assertIn("sending_password",jsonResponses)
             self.assertIn("sending_port",jsonResponses)
             self.assertIn("sending_server",jsonResponses)
-            self.assertIn("sending_time",jsonResponses)
             self.assertIn("user_mail",jsonResponses)
             
 
     #Test unsubscriber status api
     def test_unsubscribers_status(self):
+        payload = {"user":"rogger","email":"roger@gmail.com","unsubscribe_at":datetime.datetime.now()}
         skip = "0"
         limit = "100"
+        mongo.db.unsubscribed_users.insert_one(payload).inserted_id
         # testing campaign details api 
         response = self.app.get(f'/unsub_status?skip='+skip+'&'+'limit='+limit)
         jsonResponse = self.json_of_response(response)
@@ -252,9 +266,10 @@ class AllTestCampaignApis(unittest.TestCase):
 
     #Test unsubscriber status api
     def test_unsubscribe_user(self):
-        Id = "5ea80fc4ea89f8d6cade3976"
+        payload = {"user":"rogger","email":"roger@gmail.com","unsubscribe_at":datetime.datetime.now()}
+        Id = mongo.db.unsubscribed_users.insert_one(payload).inserted_id
         # testing campaign details api 
-        response = self.app.get(f'/delete_unsub_status/'+Id)
+        response = self.app.get(f'/delete_unsub_status/'+str(Id))
             
         # assert conditions checking
         self.assertEqual(response.status_code, 200)
@@ -262,16 +277,24 @@ class AllTestCampaignApis(unittest.TestCase):
 
 
     def test_edit_template(self):
-        payload = json.dumps({
+        template_payload = {
             "message": "created_campaign_for_testing",
             "message_key": "Idel",
             "message_origin": "test_message",
             "message_subject": "test_subject",
             "recruit_details":True
+        }
+        template_id = mongo.db.mail_template.insert_one(template_payload).inserted_id
+        payload = json.dumps({
+            "message": "created_campaign_for_testing",
+            "message_key": "Idel",
+            "message_origin": "updated origin",
+            "message_subject": "test_subject",
+            "recruit_details":True
         })
-        template_id = "5dea40490356855a0b3200a7"
+
         # act
-        response = self.app.post('edit_templates/'+template_id,headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('edit_templates/'+str(template_id),headers={"Content-Type": "application/json"}, data=payload)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("Template Updated",response.get_data(as_text=True))
@@ -279,6 +302,8 @@ class AllTestCampaignApis(unittest.TestCase):
 
     #Test daily_validate status api
     def test_daily_validate_details(self):
+        payload = {"smtp":"smtp.gmail.com","email":"roggermanning08@gmail.com","created_at":1592566731968,"count":11}
+        mongo.db.smtp_count_validate.insert_one(payload).inserted_id
         skip = "0"
         limit = "100"
         # testing campaign details api 
@@ -293,8 +318,11 @@ class AllTestCampaignApis(unittest.TestCase):
             self.assertIn("email",jsonResponses)
             self.assertIn("smtp",jsonResponses)
 
+
     #test campaign_smtp_test
     def test_campaign_smtp_test(self):
+        mail_setting_payload = {"mail_server":"smtp.gmail.com","mail_port":465,"origin":"CAMPAIGN","mail_use_tls":True,"mail_username":"etechmusic8@gmail.com","mail_password":"dwxdfpovcucnqcms","active":True,"type":"tls","daemon_mail":"mailer-daemon@googlemail.com","priority":3,"mail_from":None,"created_at":datetime.datetime.now()}
+        mongo.db.mail_settings.insert_one(mail_setting_payload).inserted_id
         payload = json.dumps({
             "email":"aayush_saini@excellencetechnologies.in",
             "message":"testing message",
@@ -307,4 +335,3 @@ class AllTestCampaignApis(unittest.TestCase):
         #assert
         self.assertEqual(response.status_code, 200)
         self.assertIn("sended",response.get_data(as_text=True))
-"""

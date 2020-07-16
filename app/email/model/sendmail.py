@@ -22,7 +22,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
     if "pytest" in sys.modules:
-        mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
+        mail_details = mongo.db.mail_settings.find_one({"origin": "CAMPAIGN"},{"_id":0})
     else:
         # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
         if os.getenv('origin') == "hr":

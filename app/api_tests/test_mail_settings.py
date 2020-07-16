@@ -113,17 +113,14 @@ class AllTestMailsettingApis(unittest.TestCase):
 
         id = mongo.db.mail_settings.insert_one(payload).inserted_id
 
-        ID = "5f0f598fcf0234127e90643b"
-
         payload = json.dumps({
             "new_password":"test@123"
         })
 
         #act
-        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(ID),headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json"}, data=payload)
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("No smtp exists",response.get_data(as_text=True))
 
 
 
