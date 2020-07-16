@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 
 #cron for remind candidates if candidates not replied msg
 def mail_reminder():
+    remind_mail_since =""
     mail_settings = mongo.db.imap_settings.find({"active":True})
     mail_settings = [serialize_doc(doc) for doc in mail_settings]
     for mail_setting in mail_settings:
