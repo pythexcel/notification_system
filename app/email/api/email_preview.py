@@ -60,7 +60,7 @@ def send_or_preview_mail():
         smtp_email = req.get("smtp_email",None)
         phone = req.get("phone", None)
 
-        message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY) #calling function for message details by message key
+        message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY}) #calling function for message details by message key
 
         if message_detail is not None:
             if Message is not None:
