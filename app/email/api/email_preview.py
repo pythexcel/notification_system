@@ -95,6 +95,8 @@ def send_or_preview_mail():
             #function calling for create message with header footer
         
             download_pdf = attach_letter_head(header=header, footer= footer, message= message_str)
+        else:
+            raise Exception("Template not exist")
     except Exception as error:
         return(str(error)),400
 

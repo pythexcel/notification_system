@@ -7,7 +7,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
 import datetime
-from app.config import slack_redirect_url,oauth_url,client_id,client_secret,client_redirect_uri,base_url
+from app.config import slack_redirect_url,oauth_url,client_id,client_secret,base_url
 import requests 
 
 bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
@@ -66,7 +66,7 @@ def slack_redirect():
         remove_previous_state = mongo.db.app_state.remove({'code': code})
         
         #making api url
-        client_redirect_uri = base_url+'redirect'
+        client_redirect_uri = base_url+'slack/redirect'
         code_rep = oauth_url.replace("{{code}}",''+code+'')
         client_id_rep = code_rep.replace("{{client_id}}",''+client_id+'')
         client_secret_rep = client_id_rep.replace("{{client_secret}}",''+client_secret+'')

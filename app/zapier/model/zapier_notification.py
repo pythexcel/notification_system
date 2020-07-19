@@ -71,7 +71,7 @@ def zapier_notification(user_detail,message,message_detail,message_variables,sys
         #Will inser mesaage payload in collection from there zapier cron will take it and hit webhook
         if channels or recipient is not None:
             mongo.db.messages_cron.insert_one({
-                "cron_status":False,
+                "zapier_cron_status":False,
                 "type": "zapier",
                 "slackmessage":slackmessage,
                 "defaultmessage":defaultmessage,

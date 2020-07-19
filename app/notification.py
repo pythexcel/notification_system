@@ -40,8 +40,8 @@ class notify_system:
     #2.Input: jsonrequest
     #3.Output: userdetails json dump
     def get_user_details(self,message,req_json,message_variables,system_require,message_detail):
-        user_detail = fetch_user_details(req_json)
-        return self.construct_message_in_database(user_detail,message,req_json,message_variables,system_require,message_detail)
+        user_slack_details,user_email_details,user_zapier_details = fetch_user_details(req_json)
+        return self.construct_message_in_database(user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail)
 
     #1.This is the mail function which will insert message request into collection.
     #2.This function first will check for which platform message requested.
@@ -51,8 +51,8 @@ class notify_system:
     #6.If request for any off two it will insert request for both.
     #7.In these all there systems a common function used for message making "make message" it will create message by request accordingly if request for slack message will make with tag else with name
     #8.Not sure only about this function if anything need to change in this
-    def construct_message_in_database(self,user_detail,message,req_json,message_variables,system_require,message_detail):
-        return construct_message(user_detail,message,req_json,message_variables,system_require,message_detail)
+    def construct_message_in_database(self,user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail):
+        return construct_message(user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail)
 
 
 #===============This class function work only insert message request in message_cron collection according to platform.======

@@ -75,12 +75,12 @@ def recruit_cron_messages():
 
 #Zapier cron for fetch payload from collection and hit webhook
 def zapier_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"type":"zapier"})
+    ret = mongo.db.messages_cron.find_one({"zapier_cron_status":False,"type":"zapier"})
     if ret is not None:
         vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
             {
                 "$set": {
-                        "cron_status": True
+                        "zapier_cron_status": True
                     }
                     })
         #calling function webhook which will return avaliable webhook from db by notification message key
