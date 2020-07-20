@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 
 APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -7,10 +8,27 @@ load_dotenv(dotenv_path)
 
 default_unsub = "<div style='text-align: center'><a href='{}unsubscribe_mail/{}/{}'>Unsubscribe</a></div>"
 
-base_url = os.getenv("base_url")
-if os.getenv("origin") == "recruit":
-    if base_url is None:
-        raise Exception ('missing base url')
+#Sharing slack app with other workspace related urls
+slack_redirect_url = 'https://app.slack.com/'
+oauth_url = 'https://slack.com/api/oauth.v2.access'
+client_id = '124720392913.862592480496'
+client_secret = '0405e4f1150a7a9dcbaa4442e3aeea4f'
+
+#this is base url for pytest
+if "pytest" in sys.modules:
+    base_url = "http://127.0.0.1:5000/"
+else:
+    if os.getenv("origin") == "tms":
+        if os.getenv("base_url") is None:
+            raise Exception ('missing base url')
+        else:
+            base_url = os.getenv("base_url")
+        
+    if os.getenv("origin") == "recruit":
+        if os.getenv("base_url") is None:
+            raise Exception ('missing base url')
+        else:
+            base_url = os.getenv("base_url")
 
 smtp_counts = {
     'smtp.gmail.com' : 100,
@@ -28,6 +46,7 @@ hard_bounce_status = ["5.0.0","5.1.0","5.1.1","5.1.2","5.1.3","5.1.4","5.1.5","5
 soft_bounce_status = ["5.2.0","5.2.1","5.2.2","5.3.1","5.4.5","5.5.3"]
 
 
+default_unsubscribe_html = "<div style='text-align: center'><a href='{}unsubscribe_mail/{}/{}'>Unsubscribe</a></div>"
 dates_converter = [
     "dateofjoining",
     "dob",

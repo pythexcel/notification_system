@@ -12,6 +12,8 @@ from app import db
 
 import click
 
+import sys
+
 from dotenv import load_dotenv
 
 from mail_templates import templates
@@ -26,10 +28,14 @@ from recruit_slack import rec_message
 
 mongo = db.init_db()
 
-from app import token
-from app.scheduler import campaign_mail,reject_mail,cron_messages,recruit_cron_messages,tms_cron_messages,calculate_bounce_rate,update_completion_time,campaign_details
-from app.imap_util import bounced_mail,mail_reminder
+from app.auth import token
 
+from app.crons.campaign import campaign_mail
+from app.crons.reject_mail import reject_mail
+from app.crons.send_notification import cron_messages,recruit_cron_messages,tms_cron_messages,zapier_cron_messages
+from app.crons.calculatebounces import calculate_bounce_rate
+from app.crons.imap_util import bounced_mail
+from app.crons.campaigns_details import update_completion_time,campaign_details
 
 def create_app(test_config=None):
     # create and configure the app
@@ -42,16 +48,31 @@ def create_app(test_config=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
-    app.config['ENV'] = os.getenv('ENVIRONMENT')
-    app.config['to'] = os.getenv('to')
-    app.config['cc'] = os.getenv('cc')
-    app.config['bcc'] = os.getenv('bcc')
-    app.config['origin'] = os.getenv('origin')
-    app.config['service'] = os.getenv('service')
-    app.config['localtextkey'] = os.getenv('localtextkey')
-    app.config['twilioSid'] = os.getenv('twilioSid')
-    app.config['twilioToken'] = os.getenv('twilioToken')
-    
+    #This condition will run only if pytest cammand will run
+    if "pytest" in sys.modules:
+        app.config['ENV'] = "production"
+        app.config['to'] = "testingattach0@gmail.com"
+        app.config['cc'] = "cc_testing_recruit@mailinator.com"
+        app.config['bcc'] = "bcc_testing_recruit@mailinator.com"
+        app.config['origin'] = "hr"
+        app.config['service'] = None
+        app.config['localtextkey'] = None
+        app.config['twilioSid'] = None
+        app.config['twilioToken'] = None
+        app.config['twilio_number'] = None
+
+    else:
+        app.config['ENV'] = os.getenv('ENVIRONMENT')
+        app.config['to'] = os.getenv('to')
+        app.config['cc'] = os.getenv('cc')
+        app.config['bcc'] = os.getenv('bcc')
+        app.config['origin'] = os.getenv('origin')
+        app.config['service'] = os.getenv('service')
+        app.config['localtextkey'] = os.getenv('localtextkey')
+        app.config['twilioSid'] = os.getenv('twilioSid')
+        app.config['twilioToken'] = os.getenv('twilioToken')
+        app.config['twilio_number'] = os.getenv('twilio_number')
+
     if test_config is None:
         # load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
@@ -83,16 +104,20 @@ def create_app(test_config=None):
     db.get_db(mongo=mongo, app=app)
     
     from app.api import notify
-    from app.api import slack_channel
-    from app.api import slack_settings
+    from app.slack.api import dispatch
+    from app.slack.api import slack_channel
+    from app.slack.api import slack_settings
+    from app.email.api import email_preview
     from app.api import mail_settings
     from app.api import message_create
     from app.api import campaign
     from app.api import settings
     
     app.register_blueprint(notify.bp)
+    app.register_blueprint(dispatch.bp)
     app.register_blueprint(slack_channel.bp)
     app.register_blueprint(slack_settings.bp)
+    app.register_blueprint(email_preview.bp)
     app.register_blueprint(mail_settings.bp)
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)
@@ -101,6 +126,9 @@ def create_app(test_config=None):
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
     app.cli.add_command(seed_system)
+
+    if "pytest" in sys.modules:
+        return app
 
     if app.config['origin'] == "hr":
         
@@ -116,14 +144,19 @@ def create_app(test_config=None):
     elif app.config['origin'] == "tms":
         
         tms_schduled_messages_scheduler = BackgroundScheduler()
-        tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=1)
+        tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=6)
         tms_schduled_messages_scheduler.start()
+        #Added zapier cron will run in every 2 seconds
+        zapier_scheduler = BackgroundScheduler()
+        zapier_scheduler.add_job(zapier_cron_messages, trigger='interval', seconds=6)
+        zapier_scheduler.start()
+
         try:
             print("create app..")
             return app
         except:
             tms_schduled_messages_scheduler.shutdown()
-    
+            zapier_scheduler.shutdown()
             
     elif app.config['origin'] == "recruit":
         recruit_schduled_messages_scheduler = BackgroundScheduler()

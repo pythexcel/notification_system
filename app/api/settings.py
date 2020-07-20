@@ -1,7 +1,7 @@
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.util import serialize_doc
-from app import token
+from app.util.serializer import serialize_doc
+from app.auth import token
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
@@ -10,6 +10,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
 import datetime
 
 bp = Blueprint('settings', __name__, url_prefix='/')
+
 
 @bp.route('/settings', methods=["PUT", "GET"])
 #@token.admin_required

@@ -1,7 +1,6 @@
 from app import mongo
 import requests
 from slackclient import SlackClient
-from app.mail_util import send_email
 from flask import jsonify
 import datetime
 

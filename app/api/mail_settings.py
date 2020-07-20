@@ -1,7 +1,7 @@
 from app import mongo
-from app import token
+from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.util import serialize_doc
+from app.util.serializer import serialize_doc
 import json
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -10,7 +10,8 @@ from flask_jwt_extended import (
 )
 from flask import current_app as app
 from bson import ObjectId
-from app.mail_util import send_email,validate_smtp
+from app.email.model.sendmail import send_email
+from app.util.validate_smtp import validate_smtp
 import smtplib
 import datetime
 
@@ -102,11 +103,6 @@ def mail_setings(origin,id=None):
                 vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
                         "mail_password":mail_password,"origin":origin})
                 if vet is None:
-                    exist = mongo.db.mail_settings.find_one({"origin":origin,"active":True})
-                    if exist is None:
-                        active = True
-                    else:
-                        active = False    
                     ret = mongo.db.mail_settings.insert_one({
                         "mail_server": mail_server,
                             "mail_port": mail_port,
@@ -114,7 +110,7 @@ def mail_setings(origin,id=None):
                             "mail_use_tls": mail_use_tls,
                             "mail_username":mail_username,
                             "mail_password":mail_password,
-                            "active": active,
+                            "active": True,
                             "type": type_s,
                             "mail_from": mail_from
                     }).inserted_id
