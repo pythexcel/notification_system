@@ -42,8 +42,10 @@ def notification_message(message_origin):
         for_email = request.json.get("for_email", False)
         for_slack = request.json.get("for_slack", False)
         for_phone = request.json.get("for_phone", False)
-        for_zapier = request.json.get("for_zapier",False)#added a extra key for zapier 
-
+        if "for_zapier" in request.json:
+            for_zapier = request.json.get("for_zapier",False)#added a extra key for zapier 
+        else:
+            for_zapier = False
         if not MSG and MSG_TYPE and MSG_KEY:
             return jsonify({"message": "Invalid Request"}), 400
 
@@ -122,14 +124,20 @@ def mail_message(message_origin):
         Doc_type = request.form["doc_type"]
         default = False
         if "default" in request.form:
-            default = True
+            default = request.form["default"]
             
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
         
         ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
         if ver is not None:
-                 
+            forr = ver['for']
+            ret = mongo.db.mail_template.update({"for": forr}, {
+                "$set": {
+                    "default": False,
+                }
+            },multi=True)
+
             version = ver['version'] + 1
             ver_message = ver['message']
             ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
@@ -188,7 +196,7 @@ def mail_message(message_origin):
                 "message_origin": message_origin,
                 "message_subject": MSG_SUBJECT,
                 "version": 1,
-                "default": False,
+                "default": True,
                 "for": for_detail,
                 "recruit_details":recruit_details,
                 "Doc_type": Doc_type, 
