@@ -1,7 +1,7 @@
 from app import mongo
-from app import token
+from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.util import serialize_doc
+from app.util.serializer import serialize_doc
 import json
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -10,7 +10,8 @@ from flask_jwt_extended import (
 )
 from flask import current_app as app
 from bson import ObjectId
-from app.mail_util import send_email,validate_smtp
+from app.email.model.sendmail import send_email
+from app.util.validate_smtp import validate_smtp
 import smtplib
 import datetime
 

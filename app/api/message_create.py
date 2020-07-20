@@ -1,9 +1,11 @@
 import os
 import uuid
 from app import mongo
-from app import token
+from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request)
-from app.util import serialize_doc, template_requirement,allowed_file
+from app.util.serializer import serialize_doc
+from app.util.validate_files import allowed_file
+from app.email.model.template_making import template_requirement
 import datetime
 from bson.objectid import ObjectId
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
@@ -12,7 +14,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 verify_jwt_in_request)
 from werkzeug.utils import secure_filename
 from flask import current_app as app
-from app.slack_util import slack_message
+from app.slack.model.slack_util import slack_message
 
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
@@ -40,7 +42,10 @@ def notification_message(message_origin):
         for_email = request.json.get("for_email", False)
         for_slack = request.json.get("for_slack", False)
         for_phone = request.json.get("for_phone", False)
-
+        if "for_zapier" in request.json:
+            for_zapier = request.json.get("for_zapier",False)#added a extra key for zapier 
+        else:
+            for_zapier = False
         if not MSG and MSG_TYPE and MSG_KEY:
             return jsonify({"message": "Invalid Request"}), 400
 
@@ -59,7 +64,8 @@ def notification_message(message_origin):
                 "channels": channel,
                 "for_email": for_email,
                 "for_slack": for_slack,
-                "for_phone": for_phone
+                "for_phone": for_phone,
+                "for_zapier":for_zapier
             }
         },upsert=True)
         return jsonify({"message": "upsert"}), 200
@@ -133,14 +139,20 @@ def mail_message(message_origin):
         Doc_type = request.form["doc_type"]
         default = False
         if "default" in request.form:
-            default = True
+            default = request.form["default"]
             
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
         
         ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
         if ver is not None:
-                 
+            forr = ver['for']
+            ret = mongo.db.mail_template.update({"for": forr}, {
+                "$set": {
+                    "default": False,
+                }
+            },multi=True)
+
             version = ver['version'] + 1
             ver_message = ver['message']
             ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
@@ -199,7 +211,7 @@ def mail_message(message_origin):
                 "message_origin": message_origin,
                 "message_subject": MSG_SUBJECT,
                 "version": 1,
-                "default": False,
+                "default": True,
                 "for": for_detail,
                 "recruit_details":recruit_details,
                 "Doc_type": Doc_type, 
@@ -289,6 +301,7 @@ def slack_channel_test():
     slack_message(channel=[channel],message="Your slack account is integrated")
     return jsonify({"message": "Sended","status":True}), 200
 
+
 @bp.route('/triggers',methods=["GET"])
 #@token.admin_required
 def get_triggers():
@@ -304,3 +317,24 @@ def get_triggers():
         if elem not in triggers:
             triggers.append(elem)
     return jsonify({"triggers": triggers}), 200
+
+
+#Api for update channel code for all messages.
+@bp.route('/configuration/channel', methods=["PUT"])
+#@token.admin_required
+def assign_channel():
+    channel = request.json.get('channel')
+    assign = mongo.db.notification_msg.update({}, {
+        "$set": {
+            "slack_channel": channel
+        }
+    })
+    return jsonify ({'message': 'channel added'}), 200
+
+#Api for get email template
+@bp.route('/get_email_template', methods=["GET"])
+#@token.admin_required
+def all_mail_message():
+    ret = mongo.db.mail_template.find({})
+    ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+    return jsonify(ret), 200

@@ -3,17 +3,17 @@ import pyzmail
 import email
 import datetime
 import re
-from app.util import serialize_doc
-from app.mail_util import send_email
+from app.util.serializer import serialize_doc
+from app.email.model.sendmail import send_email
 from bson.objectid import ObjectId
 from app.config import hard_bounce_status,soft_bounce_status
 from app import mongo
 from datetime import date
-from dateutil.relativedelta import relativedelta
+
 
 #cron for remind candidates if candidates not replied msg
 def mail_reminder():
-    remind_mail_since =""
+    remind_mail_since = ""
     mail_settings = mongo.db.imap_settings.find({"active":True})
     mail_settings = [serialize_doc(doc) for doc in mail_settings]
     for mail_setting in mail_settings:
@@ -69,7 +69,7 @@ def mail_reminder():
 
 
 
-def bounced_mail(day=None):
+def bounced_mail():
     print("----bounced running-----")
     mail_settings = mongo.db.mail_settings.find({"origin": "CAMPAIGN"})
     mail_settings = [serialize_doc(doc) for doc in mail_settings]
@@ -83,11 +83,10 @@ def bounced_mail(day=None):
             imapObj.login(mail_username,mail_password)
             if imapObj is not None:
                 imapObj.select_folder('INBOX')
-                if day is None:
-                    bounced_mail_date = datetime.datetime.today()
-                else:
-                    bounced_mail_date = datetime.datetime.today() - relativedelta(days=day)
+                bounced_mail_date = datetime.datetime.today()
                 bounced_mail_since = "{}-{}-{}".format(bounced_mail_date.strftime("%d"),bounced_mail_date.strftime("%b"),bounced_mail_date.strftime("%Y"))
+                print("start_log",bounced_mail_since)
+                print(daemon_mail)
                 search_bounce_mails=imapObj.search(['SINCE',bounced_mail_since,'FROM',daemon_mail]) #searching bounced mails from a date
                 for search_bounce_mail in search_bounce_mails:
                 #fetching bounced mail info from msg body
@@ -96,6 +95,9 @@ def bounced_mail(day=None):
                     mail_subject = message_body.get_subject()
                     mail_from =message_body.get_addresses('from')
                     mail_to =message_body.get_addresses('to')
+                    print(mail_from)
+                    print(mail_subject)
+                    print(mail_to)
                     if message_body.text_part != None:
                         #checking if msg body have text part
                         mail_text = message_body.text_part.get_payload().decode(message_body.text_part.charset)
@@ -113,20 +115,22 @@ def bounced_mail(day=None):
                                 bounce_status = bounce_code
                                 bounce_type = "soft"
                                 break
-                        if day is None:
-                            dt = date.today()
-                            sendDate = datetime.datetime.combine(dt,datetime.datetime.min.time())
-                            ret = mongo.db.mail_status.update({
-                                    "user_mail": bounced_mail,
-                                    "sending_time": {"$gte": sendDate}
-                                }, {
-                                    "$set": {
-                                        "bounce": True,
-                                        "bounce_status":bounce_status,
-                                        "bounce_type":bounce_type
-                                    }})
-                        else:
-                            ret = mongo.db.mail_status.update({"user_mail": bounced_mail}, {"$set": {"bounce": True,"bounce_status":bounce_status,"bounce_type":bounce_type}})
+                        print(bounce_type)
+                        print(bounce_status)
+                        print(bounced_mail)
+                        dt = date.today()
+                        sendDate = datetime.datetime.combine(dt,datetime.datetime.min.time())
+                        print(sendDate)
+                        ret = mongo.db.mail_status.update({
+                                "user_mail": bounced_mail,
+                                "sending_time": {"$gte": sendDate}
+                            }, {
+                                "$set": {
+                                    "bounce": True,
+                                    "bounce_status":bounce_status,
+                                    "bounce_type":bounce_type
+                                }})
+                        print(ret)
                     else:
                         pass
             else:

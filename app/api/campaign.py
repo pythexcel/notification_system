@@ -1,9 +1,12 @@
 import os
 from app import mongo
-from app import token
+from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory,redirect)
-from app.util import serialize_doc,Template_details,campaign_details,user_data,allowed_file
-import datetime
+from app.util.serializer import serialize_doc
+import datetime 
+from app.email.model.template_making import Template_details
+from app.model.campaign import campaign_details,user_data
+from app.util.validate_files import allowed_file
 import pymongo.errors
 import dateutil.parser
 from flask import current_app as app
@@ -13,35 +16,31 @@ from flask_jwt_extended import (
     get_jwt_identity, get_current_user, jwt_refresh_token_required,
     verify_jwt_in_request
 )
-from app.mail_util import send_email,validate_smtp_counts,validate_smtp
+from app.email.model.sendmail import send_email
+from app.model.validate_smtp import validate_smtp_counts
+from app.util.validate_smtp import validate_smtp
 import smtplib
 from pymongo.collection import ReturnDocument
 from app.config import smtp_counts
 from werkzeug import secure_filename
 import uuid
-from app.imap_util import bounced_mail
+from app.crons.imap_util import bounced_mail
 
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
 
 
-@bp.route('/SyncBouncedMail', methods=["GET"])
-def SyncBouncedMail():
-    day = request.args.get('days',default=None,type=int)
-    if day is not None:
-        checkbounces = bounced_mail(day=day)
-        return jsonify({"status":"success"})
-    else:
-        return jsonify({"status":"Number of days is null"})
 
 
 @bp.route('/create_campaign', methods=["GET", "POST"])
 #@token.admin_required
 def create_campaign():
+
     if request.method == "GET":
         ret = mongo.db.campaigns.aggregate([])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret)
+
     if request.method == "POST":
         name = request.json.get("campaign_name",None)
         description = request.json.get("campaign_description",None)
@@ -76,9 +75,11 @@ def create_campaign():
     
         return jsonify({"campaign_id":str(ret),"message_id":message_id}),200
 
+
 @bp.route('/attached_file/<string:Id>/<string:message_id>', methods=["POST","DELETE"])
 #@token.admin_required
 def attache_campaign(Id,message_id):
+
     if request.method == "POST":
         file = request.files['attachment_file']
         if file and allowed_file(file.filename):
@@ -95,6 +96,7 @@ def attache_campaign(Id,message_id):
             return jsonify({"message": "File attached to campaign"}), 200
         else:
             return jsonify({"message": "Please select a file"}), 400
+
     elif request.method == "DELETE":
         ret = mongo.db.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
             "$unset":{
@@ -109,6 +111,7 @@ def attache_campaign(Id,message_id):
 @bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
 #@token.admin_required
 def pause_campaign(Id,status):
+
     working = None
     if status == 1:
         block = False
@@ -122,11 +125,13 @@ def pause_campaign(Id,status):
             "status": working
         }
     })
+
     users = mongo.db.campaign_users.update({"campaign":Id},{
         "$set": {
             "block": block
         }
     },multi=True)
+
     return jsonify({"message":"Campaign status changed to {}".format(working)}),200
 
 
@@ -138,6 +143,7 @@ def delete_campaign(Id):
     status = mongo.db.mail_status.remove({ "campaign": Id })
     return jsonify({"message":"Campaign deleted"}),200
 
+
 @bp.route('/list_campaign', methods=["GET"])
 #@token.admin_required
 def list_campaign():
@@ -145,10 +151,12 @@ def list_campaign():
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
 
+
 @bp.route('/update_campaign/<string:Id>', methods=["POST"])
 @bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
 #@token.admin_required
 def update_campaign(Id,message_id=None):
+
     if request.method == "POST":
         name = request.json.get("campaign_name")
         description = request.json.get("campaign_description")
@@ -157,6 +165,7 @@ def update_campaign(Id,message_id=None):
         message_subject = request.json.get("message_subject",None)
         message_id = request.json.get("message_id",None)
         message_detail = request.json.get("message_detail",[])
+
         if message_id is not None:
             campaign = mongo.db.campaigns.update({"_id": ObjectId(Id),"message_detail.message_id": message_id},{
             "$set": {
@@ -168,7 +177,9 @@ def update_campaign(Id,message_id=None):
             }
             })
             return jsonify({"message":"Campaign Updated with message","message_id":message_id}),200
+
         else:
+
             if message_detail:
                 message_ids = []
                 for data in message_detail:
@@ -185,7 +196,9 @@ def update_campaign(Id,message_id=None):
                         "message_detail" : data
                         }
                     })
+
             else:
+
                 campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
                 "$set": {
                     "Campaign_name": name,
@@ -193,7 +206,9 @@ def update_campaign(Id,message_id=None):
                     "status": status
                 }                
                 })
+
             return jsonify({"message":"Campaign Updated","message_id":message_ids}),200
+
     elif request.method == "DELETE":
         campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
         "$pull": {
@@ -203,6 +218,7 @@ def update_campaign(Id,message_id=None):
             } 
         }
         })
+
         return jsonify({"message": "message deleted from campaign"})
 
 @bp.route('/user_list_campaign',methods=["GET","POST"])
@@ -233,13 +249,15 @@ def add_user_campaign():
         except pymongo.errors.BulkWriteError as bwe:
             return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200
 
+
 @bp.route('/user_delete_campaign/<string:campaign_id>/<string:user_id>',methods=["DELETE"])
 def delete_user_campaign(campaign_id,user_id):
     ret = mongo.db.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
     vet = mongo.db.mail_status.remove({"user_id":user_id,"campaign":campaign_id})
     return jsonify({"message":"User deleted from campaign"}), 200
         
-          
+
+        
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
 #@token.admin_required
 def campaign_detail(Id):
@@ -288,7 +306,7 @@ def campaign_start_mail(campaign):
         for smtp in smtps:
             smtp_values = mongo.db.mail_settings.find_one({"_id":ObjectId(smtp)})
             try:
-                validate = validate_smtp(username=smtp_values['mail_username'],password=smtp_values['mail_password'],port=smtp_values['mail_port'],smtp=smtp_values['mail_server'])
+                validate_smtp(username=smtp_values['mail_username'],password=smtp_values['mail_password'],port=smtp_values['mail_port'],smtp=smtp_values['mail_server'])
             
             except smtplib.SMTPServerDisconnected:
                 return jsonify({"smtp": smtp_values['mail_server'],"mail":smtp_values['mail_username'],"message": "Smtp server is disconnected"}), 400                
