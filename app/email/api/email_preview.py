@@ -27,7 +27,6 @@ import dateutil.parser
 import datetime
 from datetime import timedelta
 import smtplib
-from app.email.model.sender_list import create_sender_list
 from app.email.util.template_util import generate_full_template_from_string_payload,fetch_msg_and_subject_by_date
 from app.email.model.template_making import fetch_recipients_by_mode
 from app.email.model.recruit_mail import update_recruit_mail_msg
@@ -35,9 +34,10 @@ from app.slack.model.construct_payload import contruct_payload_from_request
 from app.model.interview_reminders import fetch_interview_reminders
 from app.email.util.template_util import attach_letter_head
 from app.email.model.template_making import construct_attachments_in_by_msg_details
-
+from app.email.util.get_recipients import get_recipients_from_request
 from app.slack.model.notification_msg import get_notification_function_by_key
 from app.email.util.date_convertor import convert_dates_to_format
+from app.email.model.interview_rejection import interview_rejection
 
 bp = Blueprint('email_preview', __name__, url_prefix='/notify')
 
@@ -94,7 +94,9 @@ def send_or_preview_mail():
 
             #function calling for create message with header footer
         
-            message_str = attach_letter_head(header=header, footer= footer, message= message_str)
+            download_pdf = attach_letter_head(header=header, footer= footer, message= message_str)
+        else:
+            raise Exception("Template not exist")
     except Exception as error:
         return(str(error)),400
 
@@ -109,76 +111,24 @@ def send_or_preview_mail():
                     attachment_file = os.getcwd() + '/attached_documents/' + filename
                 else:
                     pass
-        if message_detail['message_key'] == "Interview Reminder":
-            reminder_details = mongo.db.reminder_details.insert({
-                'date': datetime.datetime.now(),
-                'message_key': "Interview Reminder"
-            })
+        to,bcc,cc = get_recipients_from_request(req)
         if message_detail['message_key'] == "interviewee_reject":
-            reject_mail = None
-            if app.config['ENV'] == 'production':
-                if 'email' in req['data']:
-                    reject_mail = req['data']['email']
-                else:
-                    return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
-            else:
-                if app.config['ENV'] == 'development':
-                    email = req['data']['email']
-                    full_domain = re.search("@[\w.]+", email)  
-                    domain = full_domain.group().split(".")
-                    if domain[0] == "@excellencetechnologies":
-                        reject_mail = email
-                    else:
-                        reject_mail = app.config['to']   
-            reject_handling = mongo.db.rejection_handling.insert_one({
-            "email": reject_mail,
-            'rejection_time': req['data']['rejection_time'],
-            'send_status': False,
-            'message': message_str,
-            'subject': message_subject,
-            'smtp_email': smtp_email
-            }).inserted_id  
-            return jsonify({"status":True,"*Note":"Added for Rejection"}),200   
+            interview_rejection(req,message_str,message_subject,smtp_email)
         else:
-            sending_message_details = {
-                "smtp_email": smtp_email,
-                "message": message_str,
-                "subject": message_subject,
-                "files": files,
-                "single_filelink": attachment_file,
-                "single_filename": attachment_file_name
-            }
-            
-            try:
-                sender_details = create_sender_list(request= req, details= sending_message_details)
-                if 'mailing_staus' in sender_details:
-                    return jsonify({ 
-                        "status": True,
-                        "*Note": "No mail will be sended!",
-                        "Subject": message_subject,
-                        "Message": message_str,
-                        "attachment_file_name": attachment_file_name,
-                        "attachment_file": attachment_file,
-                        "missing_payload": missing_payload,
-                        "mobile_message": mobile_message_str,
-                        "phone_status": phone_status,
-                        "phone_issue": phone_issue
-                    }), 200
+            if to is not None:
+                if smtp_email is not None:
+                    mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
+                    if mail_details is None:
+                        return jsonify({"status":False,"Message": "Smtp not available in db"})
+                    else:
+                        send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+                        return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
                 else:
-                    return jsonify({ 
-                        "status":True,
-                        "Subject": message_subject,
-                        "Message": message_str,
-                        "attachment_file_name":attachment_file_name,
-                        "attachment_file":attachment_file,
-                        "missing_payload":missing_payload,
-                        "mobile_message": mobile_message_str,
-                        "phone_status" : phone_status, 
-                        "phone_issue": phone_issue
-                        }),200
-            except Exception as error:
-                return jsonify({"status": False, "Message": str(error)})
-        return jsonify({"status":False ,"Message" : "Template not exist"})
+                    send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
+                    return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str,"phone_status" : phone_status, "phone_issue": phone_issue}),200
+            else:
+                return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str, "phone_status" : phone_status, "phone_issue": phone_issue}),200
+
 
 #Api for send mail
 @bp.route('/send_mail', methods=["POST"])
@@ -261,7 +211,7 @@ def mails():
 #@token.admin_required
 def required_message(message_key):
     if request.method == "GET":
-        ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
+        ret = mongo.db.mail_template.find({"for": message_key,"default":True},{"version":0,"version_details":0})
         if ret is not None:
             ret = [template_requirement(serialize_doc(doc)) for doc in ret]
             return jsonify(ret), 200

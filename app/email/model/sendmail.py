@@ -29,6 +29,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
             mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
         elif os.getenv('origin') == "recruit":    
             mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True},{"_id":0})
+        elif os.getenv('origin') == "tms":    
+            mail_details = mongo.db.mail_settings.find_one({"origin": "TMS","active": True},{"_id":0})
 
 
     username = None

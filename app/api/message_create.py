@@ -278,6 +278,7 @@ def slack_channel_test():
     slack_message(channel=[channel],message="Your slack account is integrated")
     return jsonify({"message": "Sended","status":True}), 200
 
+
 @bp.route('/triggers',methods=["GET"])
 #@token.admin_required
 def get_triggers():

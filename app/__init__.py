@@ -144,11 +144,11 @@ def create_app(test_config=None):
     elif app.config['origin'] == "tms":
         
         tms_schduled_messages_scheduler = BackgroundScheduler()
-        tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=60)
+        tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=6)
         tms_schduled_messages_scheduler.start()
         #Added zapier cron will run in every 2 seconds
         zapier_scheduler = BackgroundScheduler()
-        zapier_scheduler.add_job(zapier_cron_messages, trigger='interval', seconds=60)
+        zapier_scheduler.add_job(zapier_cron_messages, trigger='interval', seconds=6)
         zapier_scheduler.start()
 
         try:
