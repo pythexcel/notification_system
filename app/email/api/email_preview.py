@@ -211,7 +211,7 @@ def mails():
 #@token.admin_required
 def required_message(message_key):
     if request.method == "GET":
-        ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
+        ret = mongo.db.mail_template.find({"for": message_key,"default":True},{"version":0,"version_details":0})
         if ret is not None:
             ret = [template_requirement(serialize_doc(doc)) for doc in ret]
             return jsonify(ret), 200
