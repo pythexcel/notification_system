@@ -34,10 +34,11 @@ def construct_message(user_slack_details,user_email_details,user_zapier_details,
     else:
         pass
     # If for_zapier is true in request which coming from tms it will send notification to zapier using webhook.
-    if message_detail['for_zapier'] is True:
-        zapier_notification(user_zapier_details,message,message_detail,message_variables,system_require,system_variable)
-    else:
-        pass
+    if 'for_zapier' in message_detail:
+        if message_detail['for_zapier'] is True:
+            zapier_notification(user_zapier_details,message,message_detail,message_variables,system_require,system_variable)
+        else:
+            pass
 
 
 
