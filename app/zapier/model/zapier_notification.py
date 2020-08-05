@@ -40,6 +40,7 @@ def zapier_notification(user_detail,message,message_detail,message_variables,sys
         #Difference between both just in slack message have slack if and in default message have username.
         if 'user' in user_detail and user_detail['user'] is not None:
             slack_details = True
+            slack = ""
             try:
                 slack = slack_id(user_detail['user']['email'])# Fetching user slack id by email using slack api
             except Exception:
@@ -56,6 +57,13 @@ def zapier_notification(user_detail,message,message_detail,message_variables,sys
         slackmessage = MakeMessage(message_str=message,message_variables=message_variables,user_detail=user_detail,system_require=system_require,system_variable=system_variable)
         #I make a common function for fetch channels from tms requests.like on which slack or personal we want to send message.
         channels = FetchChannels(user_detail=user_detail,message_detail=message_detail)
+
+        #It will take slack channels if sended status private like slack bot
+        if 'sended_to' in message_detail:
+            if message_detail['sended_to'] == "private":
+                channels.append(slack)
+            else:
+                pass      
 
         if slack_details is not False:
                 user_detail['user'] = username
