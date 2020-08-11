@@ -3,7 +3,7 @@ version: '3.7'
 services:
     notifyapi:
         container_name: notifyapi
-        image: xrecruit/notifyapi:latest
+        image: xrecruit/notifyapi
         build: 
             context: .
             dockerfile: Dockerfile
