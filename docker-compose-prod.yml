@@ -13,9 +13,12 @@ services:
             - "8006:8006"
         environment: 
             - database=mongodb://notify_staging:notify_staging@127.0.0.1:27017/notify_staging
-            - base_url=http://176.9.137.77:8006/
+            - base_url=https://notifyapi.exweb.in/
             - origin=recruit
             - ENVIRONMENT=production
+            - to=recruit_testing@mailinator.com 
+            - bcc=bcc_testing_recruit@mailinator.com
+            - cc=cc_testing_recruit@mailinator.com
             
     mongo:
         image: mongo
