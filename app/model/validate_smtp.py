@@ -1,7 +1,7 @@
 
 import datetime
 from app import mongo
-from app.config import smtp_counts,base_url,default_unsub
+from app.config import smtp_counts,default_unsub
 from bson import ObjectId
 import re
 from app.util.serializer import serialize_doc
