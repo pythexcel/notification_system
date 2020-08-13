@@ -226,7 +226,8 @@ def seed_hr():
         notification_message = mongo.db.notification_msg.insert_many(slack_message)
     else:
         notification_message = mongo.db.notification_msg.insert_many(slack_message)
-    
+
+
 @click.command("seed_recruit")
 @with_appcontext
 def seed_recruit():
