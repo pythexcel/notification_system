@@ -231,26 +231,28 @@ def seed_hr():
 @click.command("seed_recruit")
 @with_appcontext
 def seed_recruit():
-    template_exist = mongo.db.mail_template.find({"message_origin": "RECRUIT"})
-    if template_exist:
-        mongo.db.mail_template.remove({"message_origin": "RECRUIT"})
-        mail_template = mongo.db.mail_template.insert_many(rec_templates)
-    else:    
-        mail_template = mongo.db.mail_template.insert_many(rec_templates)
-    
-    notification_message_exist = mongo.db.notification_msg.find({"message_origin": "RECRUIT"})
-    if notification_message_exist:
-        mongo.db.notification_msg.remove({"message_origin": "RECRUIT"})
-        notification_message = mongo.db.notification_msg.insert_many(rec_message)
-    else:
-        notification_message = mongo.db.notification_msg.insert_many(rec_message)
-    mail_variable_exist = mongo.db.mail_variables.find({})
-    if mail_variable_exist:
-        mongo.db.mail_variables.remove({})
-        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
-    else:
-        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
-    
+    print("uploading.......")
+    for rec_template in rec_templates:
+        template_exist = mongo.db.mail_template.find_one({"message_key":rec_template.get("message_key")})
+        if template_exist is None:
+            mail_template = mongo.db.mail_template.insert_one(rec_template)
+
+    for rec_messag in rec_message:
+        notification_message_exist = mongo.db.notification_msg.find_one({"message_key":rec_messag.get("message_key")})
+        if notification_message_exist is None:
+            notification_message = mongo.db.notification_msg.insert_one(rec_messag)
+
+    for variable in variables:
+        mail_variable_exist = mongo.db.mail_variables.find_one({"name":variable.get("name")})
+        if mail_variable_exist is None:
+            mail_variable = mongo.db.mail_variables.insert_one(variable)
+
+    mail_settings_exist = mongo.db.mail_settings.find({"origin":"RECRUIT","active":True}).count()
+    if not mail_settings_exist:
+        update_mail_settings = mongo.db.mail_settings.insert_one({"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"})
+        print("added smtp")
+    print("------>>>>Successfully uploaded data..............")
+
 
 @click.command("seed_system")
 @with_appcontext
