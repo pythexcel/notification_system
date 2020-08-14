@@ -1,6 +1,8 @@
 
 ![Python application](https://github.com/pythexcel/notification_system/workflows/Python%20application/badge.svg)
 
+[![CircleCI](https://circleci.com/gh/pythexcel/notification_system.svg?style=svg&circle-token=c750486d7d1e8af64977d2904739b49028ec1cd6)](https://circleci.com/gh/pythexcel/notification_system)
+
 # Notification settings
 
 
