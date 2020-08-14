@@ -1,0 +1,30 @@
+version: 2.1
+
+jobs:
+ build:
+   machine:
+     image: ubuntu-1604:202007-01
+   steps:
+     - checkout
+     # start proprietary DB using private Docker image
+     # with credentials stored in the UI
+     - run: |
+         echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
+ 
+
+     # build the application image
+     - run: docker-compose -f docker-compose-prod.yml build
+
+     # deploy the image
+     - run: docker-compose -f docker-compose-prod.yml push
+
+workflows:
+  node-build:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - master
+                - priyaCodeUpgrades
+          context: docker
