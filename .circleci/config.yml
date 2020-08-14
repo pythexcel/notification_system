@@ -11,7 +11,7 @@ jobs:
      - run: |
          echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
          
-     - run: cp .env.circlci .env
+     - run: cp .env.circleci .env
 
      # build the application image
      - run: docker-compose -f docker-compose-prod.yml build
