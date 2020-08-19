@@ -43,7 +43,7 @@ class AllDataTestCase(unittest.TestCase):
         #making data
         self.create_mail_variables()
         # act
-        response = self.app.get('/message/special_variable')
+        response = self.app.get('/message/special_variable',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -66,7 +66,7 @@ class AllDataTestCase(unittest.TestCase):
         })
 
         # act
-        response = self.app.put('/message/special_variable',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.put('/message/special_variable',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -83,7 +83,7 @@ class AllDataTestCase(unittest.TestCase):
         message_origin = "TMS"
         
         # act
-        response = self.app.get(f'/message/configuration/'+message_origin)
+        response = self.app.get(f'/message/configuration/'+message_origin,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -124,7 +124,7 @@ class AllDataTestCase(unittest.TestCase):
         })
 
         # act
-        response = self.app.put(f'/message/configuration/'+message_origin,headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.put(f'/message/configuration/'+message_origin,headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
         
         # assert
         self.assertEqual(response.status_code, 200)
@@ -144,7 +144,7 @@ class AllDataTestCase(unittest.TestCase):
         message_origin = "RECRUIT"
         
         # act
-        response = self.app.get(f'/message/get_email_template/'+message_origin)
+        response = self.app.get(f'/message/get_email_template/'+message_origin,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -175,7 +175,7 @@ class AllDataTestCase(unittest.TestCase):
         })
         
         # act
-        response = self.app.delete(f'/message/get_email_template/'+message_origin,headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.delete(f'/message/get_email_template/'+message_origin,headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -190,7 +190,7 @@ class AllDataTestCase(unittest.TestCase):
         file_id = "9d10b8ee-2b3d-4449-a1ab-d1a61bbff8dd"
 
         # act
-        response = self.app.delete(f'/message/delete_file/'+str(id)+'/'+file_id)
+        response = self.app.delete(f'/message/delete_file/'+str(id)+'/'+file_id,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -209,7 +209,7 @@ class AllDataTestCase(unittest.TestCase):
         })
 
         # act
-        response = self.app.put(f'/message/letter_heads',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.put(f'/message/letter_heads',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
         
         # assert
         self.assertEqual(response.status_code, 200)
@@ -222,7 +222,7 @@ class AllDataTestCase(unittest.TestCase):
         self.test_put_letter_head()
 
         # act
-        response = self.app.get(f'/message/letter_heads')
+        response = self.app.get(f'/message/letter_heads',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -246,7 +246,7 @@ class AllDataTestCase(unittest.TestCase):
         }
         id = mongo.db.letter_heads.insert_one(payload).inserted_id
 
-        response = self.app.delete(f'/message/letter_heads/'+str(id))
+        response = self.app.delete(f'/message/letter_heads/'+str(id),headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -263,7 +263,7 @@ class AllDataTestCase(unittest.TestCase):
         letter_head_id = "5f0c16db3fbe9cf9946700df"
 
         # act
-        response = self.app.put(f'/message/assign_letter_heads/'+str(template_id)+'/'+letter_head_id)
+        response = self.app.put(f'/message/assign_letter_heads/'+str(template_id)+'/'+letter_head_id,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         
         # assert
         self.assertEqual(response.status_code, 200)
@@ -277,7 +277,7 @@ class AllDataTestCase(unittest.TestCase):
         mongo.db.mail_template.insert_one(payload).inserted_id
 
         # act
-        response = self.app.get(f'/message/triggers')
+        response = self.app.get(f'/message/triggers',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -298,7 +298,7 @@ class AllDataTestCase(unittest.TestCase):
         payload = {"name":"test_letter_head","footer_value":"<div id=\"footer\" style=\"bottom: 0; position: absolute; width: 100%;\"><hr /> <div>ExcellenceTechnosoft Pvt Ltd</div> <div>CIN: U72200DL2010PTC205087</div> <div>Corp Office:C84-A, Sector 8,Noida, U.P. - 201301</div> <div>Regd Office: 328 GAGAN VIHAR IST MEZZAZINE,NEW DELHI-110051</div> <div style=\"height: 5px; margin-top: 5px; margin-bottom: 2px; background-color: #4bb698;\">&nbsp;</div> </div>","header_value":"<p> <div id=\"header\"> <div style=\"height: 5px; background-color: #4bb698;\">&nbsp;</div> <div style=\"height: 8px; margin-top: 1px; background-color: #4bb698;\">&nbsp;</div> <div style=\"height: 5px; margin-top: 1px; background-color: #4bb698;\">&nbsp;</div> <br /> <div style=\"text-align: right; padding-right:40px\"><img src=\"https://res.cloudinary.com/dp0y84e66/image/upload/v1568791251/logo.e5be347d_yf4q90.png\" style=\"width: 150px;\" /></div> </div>","working":True}
 
         # act
-        response = self.app.get(f'/message/get_email_template')
+        response = self.app.get(f'/message/get_email_template',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponses = self.json_of_response(response)
 
         # assert

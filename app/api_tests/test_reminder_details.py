@@ -26,7 +26,7 @@ class AllTestReminderApis(unittest.TestCase):
         mongo.db.reminder_details.insert_one(payload)
 
         #act
-        response = self.app.get('/notify/reminder_details')
+        response = self.app.get('/notify/reminder_details',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert

@@ -17,7 +17,6 @@ bp = Blueprint('dispatch', __name__, url_prefix='/notify')
 
 #dispatch was made to send particular message on slack but those message can be sended on email too
 @bp.route('/dispatch', methods=["POST"])
-#@token.authentication
 def construct_dispatch_message_to_slack():
     if not request.json:
         abort(500)
@@ -34,7 +33,6 @@ def construct_dispatch_message_to_slack():
 
 #Api for test slack token and notifications is working or by email address
 @bp.route('/slack_test',methods=["POST"])
-#@token.authentication
 def token_test():
     email = request.json.get('email')
     try:

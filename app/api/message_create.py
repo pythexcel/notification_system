@@ -21,7 +21,7 @@ bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
 
 @bp.route('/configuration/<string:message_origin>', methods=["GET", "PUT"])
-#@token.admin_required
+@token.SecretKeyAuth
 def notification_message(message_origin):
     if request.method == "GET":
         ret = mongo.db.notification_msg.find(
@@ -72,8 +72,7 @@ def notification_message(message_origin):
 
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
-#@token.authentication
-#@token.admin_required
+@token.SecretKeyAuth
 def special_var():
     if request.method == "GET":
         ret = mongo.db.mail_variables.find({})
@@ -94,7 +93,7 @@ def special_var():
 
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT","DELETE"])
-#@token.admin_required
+@token.SecretKeyAuth
 def mail_message(message_origin):
     if request.method == "GET":
         ret = mongo.db.mail_template.find({"message_origin": message_origin})
@@ -226,7 +225,7 @@ def mail_message(message_origin):
             return jsonify({"message": "Template Added", "status": True}), 200
 
 @bp.route('/delete_file/<string:id>/<string:file_id>',methods=["DELETE"])
-#@token.admin_required
+@token.SecretKeyAuth
 def delete_attached_file(id,file_id):
     ret = mongo.db.mail_template.update({"_id": ObjectId(id)},{
         "$pull": {
@@ -241,7 +240,7 @@ def delete_attached_file(id,file_id):
 
 @bp.route('/letter_heads', methods=["GET", "PUT"])
 @bp.route('/letter_heads/<string:id>', methods=["DELETE"])
-#@token.admin_required
+@token.SecretKeyAuth
 def letter_heads(id=None):
     if request.method == "GET":
         ret = mongo.db.letter_heads.find({})
@@ -267,7 +266,7 @@ def letter_heads(id=None):
 
 
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',methods=["PUT"])
-#@token.admin_required
+@token.SecretKeyAuth
 def assign_letter_heads(template_id, letter_head_id):
     ret = mongo.db.mail_template.update(
         {"_id": ObjectId(template_id)},
@@ -277,7 +276,6 @@ def assign_letter_heads(template_id, letter_head_id):
     return jsonify({"message": "Letter Head Added To Template"}), 200
 
 @bp.route('/slack_channel_test', methods=["POST"])
-#@token.admin_required
 def slack_channel_test():
     channel = request.json.get("channel")
     ret = mongo.db.working_channels.insert_one({
@@ -288,7 +286,7 @@ def slack_channel_test():
 
 
 @bp.route('/triggers',methods=["GET"])
-#@token.admin_required
+@token.SecretKeyAuth
 def get_triggers():
     duplicate = []
     triggers = []
@@ -306,7 +304,7 @@ def get_triggers():
 
 #Api for update channel code for all messages.
 @bp.route('/configuration/channel', methods=["PUT"])
-#@token.admin_required
+@token.SecretKeyAuth
 def assign_channel():
     channel = request.json.get('channel')
     assign = mongo.db.notification_msg.update({}, {
@@ -318,7 +316,7 @@ def assign_channel():
 
 #Api for get email template
 @bp.route('/get_email_template', methods=["GET"])
-#@token.admin_required
+@token.SecretKeyAuth
 def all_mail_message():
     ret = mongo.db.mail_template.find({})
     ret = [template_requirement(serialize_doc(doc)) for doc in ret]

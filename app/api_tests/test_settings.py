@@ -37,7 +37,7 @@ class AllTestSettingApis(unittest.TestCase):
             })
 
         # act
-        response = self.app.put('/settings',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.put('/settings',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -51,7 +51,7 @@ class AllTestSettingApis(unittest.TestCase):
         self.create_system_settings()
         
         # act
-        response = self.app.get('/settings')
+        response = self.app.get('/settings',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert

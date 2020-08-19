@@ -35,13 +35,13 @@ class AllTestCampaignApis(unittest.TestCase):
             "generated_from_recruit":True
         })
 
-        response = self.app.post('/create_campaign',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/create_campaign',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
         jsonResponse = self.json_of_response(response)
         return jsonResponse,response
 
     #common function for delete campaign by id
     def delete_campaign(self,id):
-        response = self.app.delete(f'/delete_campaign/'+id)
+        response = self.app.delete(f'/delete_campaign/'+id,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         return response
 
     #test case for create campaign api
@@ -70,7 +70,7 @@ class AllTestCampaignApis(unittest.TestCase):
         }
 
         # act
-        response = self.app.post('/create_campaign',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/create_campaign',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -89,7 +89,7 @@ class AllTestCampaignApis(unittest.TestCase):
         })
 
         # act
-        response = self.app.post('/create_campaign',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/create_campaign',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 400)
@@ -105,7 +105,7 @@ class AllTestCampaignApis(unittest.TestCase):
         template_payload = {"Doc_type":"email","for":"Interviwee Hold","message":"<p>Dear Applicant<br/>Hope you are doing good!<br/>This is to inform you that with respect your application and subsequent interview with #company: your candidature has been put on hold for a while due to unavoidable circumstance.<br/>We will surely get back to you once the position re-opens. Thank you so much for showing your pleasant interest with the company and the job.<br/>Regards<br/> #hr_signature: </p>","message_key":"interviewee_onhold","message_origin":"RECRUIT","message_subject":"interviewee put on hold","recruit_details":"Interviewee On Hold","version":1,"working":True,"template_head":str(idd)}
         mongo.db.mail_template.insert_one(template_payload).inserted_id
 
-        response = self.app.get('/create_campaign')
+        response = self.app.get('/create_campaign',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponses = self.json_of_response(response)
 
         # checking assert conditions
@@ -128,7 +128,7 @@ class AllTestCampaignApis(unittest.TestCase):
         id = jsonResponse['campaign_id']
 
         # testing delete campaign api 
-        response = self.app.delete(f'/delete_campaign/'+id)
+        response = self.app.delete(f'/delete_campaign/'+id,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
 
         # assert conditions checking
         self.assertEqual(response.status_code, 200)
@@ -143,7 +143,7 @@ class AllTestCampaignApis(unittest.TestCase):
         #hardcoded value for pause campaign
         status = "0"
         # testing pause campaign api
-        response = self.app.post('/pause_campaign/'+id+'/'+status)
+        response = self.app.post('/pause_campaign/'+id+'/'+status,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
 
         # assert conditons checking
         self.assertEqual(response.status_code, 200)
@@ -161,7 +161,7 @@ class AllTestCampaignApis(unittest.TestCase):
         mongo.db.mail_template.insert_one(template_payload).inserted_id
 
         # act
-        response = self.app.get(f'/list_campaign')
+        response = self.app.get(f'/list_campaign',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponses = self.json_of_response(response)
         # assert
         self.assertEqual(response.status_code, 200)
@@ -186,7 +186,7 @@ class AllTestCampaignApis(unittest.TestCase):
         user_id = mongo.db.campaign_users.insert_one(campign_payload).inserted_id
 
         # testing delete campaign api 
-        response = self.app.delete(f'/user_delete_campaign/'+str(id)+'/'+str(user_id))
+        response = self.app.delete(f'/user_delete_campaign/'+str(id)+'/'+str(user_id),headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
 
         # assert conditions checking
         self.assertEqual(response.status_code, 200)
@@ -200,7 +200,7 @@ class AllTestCampaignApis(unittest.TestCase):
         campaign_id = jsonResponse['campaign_id'] 
 
         # testing campaign details api 
-        response = self.app.get(f'/campaign_detail/'+campaign_id)
+        response = self.app.get(f'/campaign_detail/'+campaign_id,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponses = self.json_of_response(response)
     
         # assert conditions checking
@@ -224,7 +224,7 @@ class AllTestCampaignApis(unittest.TestCase):
         skip = "0"
         limit = "100"
         # testing campaign details api 
-        response = self.app.get(f'/mails_status?skip='+skip+'&'+'limit='+limit)
+        response = self.app.get(f'/mails_status?skip='+skip+'&'+'limit='+limit,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
             
         # assert conditions checking
@@ -254,7 +254,7 @@ class AllTestCampaignApis(unittest.TestCase):
         limit = "100"
         mongo.db.unsubscribed_users.insert_one(payload).inserted_id
         # testing campaign details api 
-        response = self.app.get(f'/unsub_status?skip='+skip+'&'+'limit='+limit)
+        response = self.app.get(f'/unsub_status?skip='+skip+'&'+'limit='+limit,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
             
         # assert conditions checking
@@ -269,7 +269,7 @@ class AllTestCampaignApis(unittest.TestCase):
         payload = {"user":"rogger","email":"roger@gmail.com","unsubscribe_at":datetime.datetime.now()}
         Id = mongo.db.unsubscribed_users.insert_one(payload).inserted_id
         # testing campaign details api 
-        response = self.app.get(f'/delete_unsub_status/'+str(Id))
+        response = self.app.get(f'/delete_unsub_status/'+str(Id),headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
             
         # assert conditions checking
         self.assertEqual(response.status_code, 200)
@@ -293,8 +293,9 @@ class AllTestCampaignApis(unittest.TestCase):
             "recruit_details":True
         })
 
+
         # act
-        response = self.app.post('edit_templates/'+str(template_id),headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('edit_templates/'+str(template_id),headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("Template Updated",response.get_data(as_text=True))
@@ -307,7 +308,7 @@ class AllTestCampaignApis(unittest.TestCase):
         skip = "0"
         limit = "100"
         # testing campaign details api 
-        response = self.app.get(f'/daily_validate_details?skip='+skip+'&'+'limit='+limit)
+        response = self.app.get(f'/daily_validate_details?skip='+skip+'&'+'limit='+limit,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
         # assert conditions checking
         self.assertEqual(response.status_code, 200)
@@ -330,7 +331,7 @@ class AllTestCampaignApis(unittest.TestCase):
             })
 
         # act
-        response = self.app.post('/campaign_smtp_test',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/campaign_smtp_test',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         #assert
         self.assertEqual(response.status_code, 200)

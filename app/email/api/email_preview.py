@@ -44,8 +44,7 @@ bp = Blueprint('email_preview', __name__, url_prefix='/notify')
 
 #1preview is used in recruit and hr to generate message for the templates and can also be used to send email if details are provided
 @bp.route('/preview', methods=["POST"])
-#@token.admin_required
-#@token.authentication
+@token.SecretKeyAuth
 def send_or_preview_mail():
     if not request.json:
         abort(500)
@@ -132,7 +131,7 @@ def send_or_preview_mail():
 
 #Api for send mail
 @bp.route('/send_mail', methods=["POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def mails():
     if not request.json:
         abort(500) 
@@ -208,7 +207,7 @@ def mails():
 
 #Api for return email template by message key
 @bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def required_message(message_key):
     if request.method == "GET":
         ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
@@ -221,7 +220,7 @@ def required_message(message_key):
 
 #Api for test mailing service is working or not
 @bp.route('/mail_test',methods=["POST"])
-#@token.authentication
+@token.SecretKeyAuth
 def mail_test():
     email = None
     if app.config['ENV']=='development':
