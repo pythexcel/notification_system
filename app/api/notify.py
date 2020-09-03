@@ -19,13 +19,13 @@ bp = Blueprint('notify', __name__, url_prefix='/notify')
 #Api for cound total reminders fron yesterday
 #Not sure where this api is calling and why
 #But as i read code its for return total sum of interview reminder by one day before day
-@bp.route('/reminder_details', methods=["GET"])
+@bp.route('/reminder_details/<string:jobId>', methods=["GET"])
 @token.SecretKeyAuth
-def reminder_details():
+def reminder_details(jobId):
     date = (datetime.datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
     before_date = dateutil.parser.parse(date)
     try:
-        details = fetch_interview_reminders(date=before_date) #Here calling function for fetch interview reminder records from db by date
+        details = fetch_interview_reminders(date=before_date,jobId=jobId) #Here calling function for fetch interview reminder records from db by date
         if (details):
             sum = 0
             if (len(details) > 1):
@@ -37,6 +37,4 @@ def reminder_details():
             return jsonify ({'total': 0}), 200
     except Exception as error:
         return(str(error)),400
-
-
 

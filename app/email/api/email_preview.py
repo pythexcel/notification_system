@@ -37,7 +37,7 @@ from app.email.model.template_making import construct_attachments_in_by_msg_deta
 from app.email.util.get_recipients import get_recipients_from_request
 from app.slack.model.notification_msg import get_notification_function_by_key
 from app.email.util.date_convertor import convert_dates_to_format
-from app.email.model.interview_rejection import interview_rejection
+from app.email.model.interview_rejection import interview_rejection,interview_reminder_set
 
 bp = Blueprint('email_preview', __name__, url_prefix='/notify')
 
@@ -113,6 +113,12 @@ def send_or_preview_mail():
         to,bcc,cc = get_recipients_from_request(req)
         if message_detail['message_key'] == "interviewee_reject":
             interview_rejection(req,message_str,message_subject,smtp_email)
+        elif message_detail['message_key'] == "Interview Reminder":
+            status = interview_reminder_set(req,message_str,message_subject,smtp_email)
+            if status == True:
+                return jsonify({"status":True,"*Note":"Added for Reminder"}),200
+            else:
+                return  jsonify({"status":False,"*Note":"Something went wrong in interview_reminder function"})
         else:
             if to is not None:
                 if smtp_email is not None:

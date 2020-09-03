@@ -4,7 +4,7 @@ from flask import current_app as app
 import re
 from app import mongo
 from flask import jsonify
-
+import datetime
 
 
 def interview_rejection(req,message_str,message_subject,smtp_email):
@@ -32,3 +32,17 @@ def interview_rejection(req,message_str,message_subject,smtp_email):
                     'smtp_email': smtp_email
             }).inserted_id  
     return jsonify({"status":True,"*Note":"Added for Rejection"}),200
+
+def interview_reminder_set(req,message_str,message_subject,smtp_email):
+    jobId = req.get('jobId')
+    date = datetime.datetime.now()
+    message_key = "Interview Reminder"
+    if jobId is not None:
+        reject_handling = mongo.db.reminder_details.insert_one({
+                    "jobId": jobId,
+                    'date': date,
+                    'message_key': message_key
+            }).inserted_id  
+        return True
+    else:
+        return False
