@@ -7,7 +7,7 @@ from app.api_tests.test_message_create_apis import app
 from bson import ObjectId
 from app import mongo
 import datetime
-
+"""
 class AllTestReminderApis(unittest.TestCase):
 
     def setUp(self):
@@ -33,3 +33,4 @@ class AllTestReminderApis(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('total',jsonResponse)
 
+"""
