@@ -143,6 +143,19 @@ rec_templates = [
     "Doc_type" : "email"
     },
     {
+    "message" : "#name&#160;<br>you have cometed roud first,<br>congratulations!",
+    "message_key" : "Interview Reminder",
+    "working" : True,
+    "mobile_message" : "Interview Reminder",
+    "message_origin" : "RECRUIT",
+    "message_subject" : "Interview Reminder",
+    "version" : 1,
+    "default" : False,
+    "for" : None,
+    "recruit_details" : "Interview Reminder",
+    "Doc_type" : "email"
+    },
+    {
     "message" : "#name:<br>#interview_date:<br>#interview_time:<br>",
     "message_key" : "First_Round",
     "working" : True,

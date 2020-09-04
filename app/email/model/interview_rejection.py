@@ -42,7 +42,7 @@ def interview_reminder_set(req,message_str,message_subject,smtp_email):
                     "jobId": jobId,
                     'date': date,
                     'message_key': message_key
-            }).inserted_id  
+            }).inserted_id 
         return True
     else:
         return False

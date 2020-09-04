@@ -113,13 +113,13 @@ def send_or_preview_mail():
         to,bcc,cc = get_recipients_from_request(req)
         if message_detail['message_key'] == "interviewee_reject":
             interview_rejection(req,message_str,message_subject,smtp_email)
-        elif message_detail['message_key'] == "Interview Reminder":
-            status = interview_reminder_set(req,message_str,message_subject,smtp_email)
-            if status == True:
-                return jsonify({"status":True,"*Note":"Added for Reminder"}),200
-            else:
-                return  jsonify({"status":False,"*Note":"Something went wrong in interview_reminder function"})
         else:
+            if message_detail['message_key'] == "Interview Reminder":
+                status = interview_reminder_set(req,message_str,message_subject,smtp_email)
+                if status == False:
+                    return jsonify({"status":False,"*Note":"Job_ID missing"}),400
+                else:
+                    pass
             if to is not None:
                 if smtp_email is not None:
                     mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
