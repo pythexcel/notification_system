@@ -15,7 +15,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
 from werkzeug.utils import secure_filename
 from flask import current_app as app
 from app.slack.model.slack_util import slack_message
-
+from app.slack.model.notification_msg import get_notification_function_by_key
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
@@ -69,6 +69,24 @@ def notification_message(message_origin):
             }
         },upsert=True)
         return jsonify({"message": "upsert"}), 200
+
+
+@bp.route('/enable_message', methods=["PUT"])
+@token.SecretKeyAuth
+def enable_message():
+    MSG_KEY = request.json.get("message_key", None)
+    Working = request.json.get("working", True)
+    try:
+        message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
+        ret = mongo.db.notification_msg.update({"message_key": MSG_KEY}, {
+            "$set": {
+                "working": Working,
+            }
+        })
+        return jsonify({"message": "upsert"}), 200
+    except Exception as error:
+        return(str(error)),400
+
 
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
