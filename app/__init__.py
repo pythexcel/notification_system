@@ -22,7 +22,7 @@ from mail_variables import variables
 
 from slack_messages import slack_message
 
-from recruit_templates import rec_templates,recruit_notificationmss
+from recruit_templates import rec_templates
 
 from recruit_slack import rec_message
 
@@ -246,11 +246,6 @@ def seed_recruit():
         mail_variable_exist = mongo.db.mail_variables.find_one({"name":variable.get("name")})
         if mail_variable_exist is None:
             mail_variable = mongo.db.mail_variables.insert_one(variable)
-
-    for notifymsg in recruit_notificationmss:
-        mesg_exist = mongo.db.notification_msg.find_one({"message_key":notifymsg.get("message_key")})
-        if mesg_exist is None:
-            notification_msg_inser = mongo.db.notification_msg.insert_one(notifymsg)
 
     mail_settings_exist = mongo.db.mail_settings.find({"origin":"RECRUIT","active":True}).count()
     if not mail_settings_exist:
