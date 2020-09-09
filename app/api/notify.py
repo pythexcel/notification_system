@@ -38,3 +38,20 @@ def reminder_details(jobId):
     except Exception as error:
         return(str(error)),400
 
+
+
+"""
+ENVIRONMENT=development
+to=testingattach0@gmail.com
+bcc=bcc_testing_recruit@mailinator.com
+cc=cc_testing_recruit@mailinator.com
+origin=recruit
+database=mongodb://notify_staging:notify_staging@127.0.0.1:27017/notify_staging
+base_url="http://127.0.0.1:8006/"
+service=twilio
+twilioSid=AC56872d72a474cee77829e5f90be39e61
+twilioToken=14835448708919a666e6aba612b485f8
+twilio_number=+12055129668
+localtextkey=jt8iVFR027c-gUuWrJauOiLcFSDCL5TM1heITeBVcL	
+SecretKey=MBw[;Rv]-6M]&3P2Grb
+"""

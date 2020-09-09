@@ -36,6 +36,7 @@ from app.crons.send_notification import cron_messages,recruit_cron_messages,tms_
 from app.crons.calculatebounces import calculate_bounce_rate
 from app.crons.imap_util import bounced_mail
 from app.crons.campaigns_details import update_completion_time,campaign_details
+from recruit_notification_msg import recruit_notificationmss
 
 def create_app(test_config=None):
     # create and configure the app
@@ -126,6 +127,7 @@ def create_app(test_config=None):
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
     app.cli.add_command(seed_system)
+    app.cli.add_command(seed_recruit_msg)
 
     if "pytest" in sys.modules:
         return app
@@ -252,6 +254,18 @@ def seed_recruit():
         update_mail_settings = mongo.db.mail_settings.insert_one({"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"})
         print("added smtp")
     print("------>>>>Successfully uploaded data..............")
+
+
+@click.command("seed_recruit_msg")
+@with_appcontext
+def seed_recruit_msg():
+    print("seed_recruit_msg.......")
+    for rec_template in recruit_notificationmss:
+        template_exist = mongo.db.notification_msg.find_one({"message_key":rec_template.get("message_key")})
+        if template_exist is None:
+            mail_template = mongo.db.notification_msg.insert_one(rec_template)
+    print("------>>>>Successfully uploaded data..............")
+
 
 
 @click.command("seed_system")
