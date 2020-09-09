@@ -36,7 +36,7 @@ from app.crons.send_notification import cron_messages,recruit_cron_messages,tms_
 from app.crons.calculatebounces import calculate_bounce_rate
 from app.crons.imap_util import bounced_mail
 from app.crons.campaigns_details import update_completion_time,campaign_details
-from recruit_notification_msg import recruit_notificationmss
+#from recruit_notification_msg import recruit_notificationmss
 
 def create_app(test_config=None):
     # create and configure the app
@@ -127,7 +127,7 @@ def create_app(test_config=None):
     app.cli.add_command(seed_hr)
     app.cli.add_command(seed_recruit)
     app.cli.add_command(seed_system)
-    app.cli.add_command(seed_recruit_msg)
+    #app.cli.add_command(seed_recruit_msg)
 
     if "pytest" in sys.modules:
         return app
@@ -255,7 +255,7 @@ def seed_recruit():
         print("added smtp")
     print("------>>>>Successfully uploaded data..............")
 
-
+"""
 @click.command("seed_recruit_msg")
 @with_appcontext
 def seed_recruit_msg():
@@ -265,7 +265,7 @@ def seed_recruit_msg():
         if template_exist is None:
             mail_template = mongo.db.notification_msg.insert_one(rec_template)
     print("------>>>>Successfully uploaded data..............")
-
+"""
 
 
 @click.command("seed_system")
