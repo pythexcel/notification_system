@@ -7,7 +7,8 @@ rec_message = [
     "for_slack" : True,
     "message" : "Interview is Scheduled for !! Job Profile: @tag title: \n Candidate Name: @candidate_name: \n On Dated date At schedule time \n Cv: @link: ",
     "message_color" : None,
-    "message_key" : "exam_candidate_email_process_if_tag_type_is_default",
+    "message_key" : "Exam Candidate Email Process If Tag Type Is Default",
+    "key_text":"This notification is sent out when a exam candidate email in process",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
@@ -22,13 +23,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "A candidate have been moved with details \n Job Profile: @tag_title: \n Candidate Name: @candidatename: \n Tag Moved To: @tagetitle: \n Assignee: @assignee_email: On Dated @date: ",
     "message_color" : None,
-    "message_key" : "candidateTagChange",
+    "message_key" : "Candidate Tag Change",
+    "key_text":"This notification is sent out when a candidate profile will move",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -39,14 +39,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "@candidate_name: note has been added \n for @job_profile: by @user: \n Note: \n @note:",
     "message_color" : None,
-    "message_key" : "for_inserting_note",
+    "message_key" : "Note Added For Candidate",
     "key_text":"A note has been added for candidate",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -57,7 +55,8 @@ rec_message = [
     "for_slack" : True,
     "message" : "<!here> *A candidate submitted the exam*  Email: @candidate_email:  Max Marks: @marks:  Marks scored: @score:  Group wise scores- @grp_score:  Candidate url: @candidate_url: ",
     "message_color" : None,
-    "message_key" : "exam result",
+    "message_key" : "Exam Result",
+    "key_text":"This notification is sent out when a candidate submit exam",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
@@ -72,7 +71,8 @@ rec_message = [
     "for_slack" : True,
     "message" : "@email: is calling for help while giving test <!here> ``  @message: `` ",
     "message_color" : None,
-    "message_key" : "ask for help",
+    "message_key" : "Ask For Help",
+    "key_text":"This notification is sent out when a candidate will ask for help",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
@@ -87,7 +87,8 @@ rec_message = [
     "for_slack" : True,
     "message" : "A new candidate  @email:  has applied for job .",
     "message_color" : None,
-    "message_key" : "add candidate: if candidate already exist",
+    "message_key" : "Add Candidate: If Candidate Already Exist",
+    "key_text":"This notification is sent out when a candidate will already Exists",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
@@ -102,7 +103,8 @@ rec_message = [
     "for_slack" : True,
     "message" : "A new candidate  @email: is in pending list for exam. Kindly approve.",
     "message_color" : None,
-    "message_key" : "add candidate: if candidate is new",
+    "message_key" : "Add Candidate: If Candidate Is New",
+    "key_text":"This notification is sent out when a candidate will add",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
@@ -115,16 +117,14 @@ rec_message = [
     "for_email" : False,
     "for_phone" : False,
     "for_slack" : True,
-    "message" : "@candidate_name: has been scheduled for interview \n on @date: at @time: \n for @jobprofile: by @user: \n Interview Round @round: to be taken by @assignee: via @planed: ",
+    "message" : "@candidate_name: has been scheduled for `interview` \n on @date: at @time: \n for @jobprofile: by @user: \n Interview Round @round: to be taken by @assignee: via @planed: ",
     "message_color" : None,
-    "message_key" : "interview_scheduled",
+    "message_key" : "Candidate Interview Scheduled",
     "key_text":"This notification is sent out when an interview is scheduled",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -135,7 +135,8 @@ rec_message = [
     "for_slack" : True,
     "message" : " <!here> A candidate just started his/her exam by exam link \n name: @name: \n email: @email: ",
     "message_color" : None,
-    "message_key" : "candidate_exam_detail",
+    "message_key" : "Candidate Exam Detail",
+    "key_text":"This notification is sent out when a candidate will send exam details",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
@@ -150,14 +151,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "A @job_profile: job profile has been closed by @user: ",
     "message_color" : None,
-    "message_key" : "closeJobProfile",
+    "message_key" : "Job Profile Closed",
     "key_text":"This notification is sent out when a job profile is closed",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -168,13 +167,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "A candidate named @candidate: is assigned to @user: for interview purpose on @date:",
     "message_color" : None,
-    "message_key" : "assignInterviewee",
+    "message_key" : "Assign Interviewee",
+    "key_text":"This notification is sent out when a interview will assign",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -185,14 +183,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "@job_profile: job profile has been created by @user:",
     "message_color" : None,
-    "message_key" : "jobProfilecreated",
+    "message_key" : "New Job Profile Added",
     "key_text":"This notification is sent out when a job profile is added",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -201,16 +197,14 @@ rec_message = [
     "for_email" : False,
     "for_phone" : False,
     "for_slack" : True,
-    "message" : "*CRITICAL* error in source @source_name:.Go to manage \n source menu to fix it",
+    "message" : "`CRITICAL` error in source @source_name:.Go to manage \n source menu to fix it",
     "message_color" : None,
-    "message_key" : "sourceError",
+    "message_key" : "Error in source",
     "key_text":"This notification is sent out when there is an error in a source which you have added",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -221,14 +215,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "@candidate_name: just applied who has been referred \n to the job @job_profile:",
     "message_color" : None,
-    "message_key" : "referCandidateApplied",
+    "message_key" : "Referral Candidate Applied",
     "key_text":"This notification is sent out when a referral candidate applies",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -239,14 +231,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "@candidate_name: just applied who has been referred \n to the job @job_profile:",
     "message_color" : None,
-    "message_key" : "jobssummary",
+    "message_key" : "Jobs Summary",
     "key_text":"This notification is sent out when a referral candidate applies",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -257,14 +247,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "@jobprofile:",
     "message_color" : None,
-    "message_key" : "interviewsummaryforday",
+    "message_key" : "Interview Summary For The Day",
     "key_text":"This notification is sent out when our AI classifies a candidate with high score",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -275,14 +263,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "<!here> @candidate_name: has applied found with score of @score: for @job_profile: \n Education Details: @edu_details: \n Work Experiance: @work_exp: \n Skills: @skills: ",
     "message_color" : None,
-    "message_key" : "highScoreCandidateAlert",
+    "message_key" : "High Score Candidate Alert",
     "key_text":"This notification is sent out when our AI classifies a candidate with high score",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -291,16 +277,14 @@ rec_message = [
     "for_email" : False,
     "for_phone" : False,
     "for_slack" : True,
-    "message" : "@candidate_name: has been shortlisted \n for @job_profile: by @user:",
+    "message" : "@candidate_name: has been `shortlisted` \n for @job_profile: by @user:",
     "message_color" : None,
-    "message_key" : "candidateShortlist",
+    "message_key" : "Candidate Shortlisted",
     "key_text":"This notification is sent out when a candidate is shortlisted",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -309,16 +293,14 @@ rec_message = [
     "for_email" : False,
     "for_phone" : False,
     "for_slack" : True,
-    "message" : "@candidate_name: has been rejected \n for @job_profile: by @user: for @reject_reason:",
+    "message" : "@candidate_name: has been `rejected` \n for @job_profile: by @user: for @reject_reason:",
     "message_color" : None,
-    "message_key" : "candidateRejectedAfter",
+    "message_key" : "Candidate Rejected after shortlist",
     "key_text":"This sent out when candidate is rejected due to a specific reason",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -327,16 +309,14 @@ rec_message = [
     "for_email" : False,
     "for_phone" : False,
     "for_slack" : True,
-    "message" : "@candidate_name: has been cv rejected \n for @job_profile: by @user: for reason \n @reject_reason:",
+    "message" : "@candidate_name: has been `cv rejected` \n for @job_profile: by @user: for reason \n @reject_reason:",
     "message_color" : None,
-    "message_key" : "candidateRejectedBefore",
+    "message_key" : "Candidate Rejected before shortlist",
     "key_text":"This sent out when candidate is rejected due to this cv",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" :None,
     "working" : True
     },
     {
@@ -347,14 +327,12 @@ rec_message = [
     "for_slack" : True,
     "message" : "@candidate_name: has been put on hold for \n @job_profile: by @user: for reason \n @hold_reason: ",
     "message_color" : None,
-    "message_key" : "candidateonHold",
+    "message_key" : "Candidate has been put on hold",
     "key_text":"This sent out when candidate is rejected due to a specific reason",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "C014QA6E1TK"
-    ],
+    "slack_channel" : None,
     "working" : True
     },
     {
@@ -365,13 +343,11 @@ rec_message = [
     "for_slack" : True,
     "message" : "This is a testing message from @user: for @reason:",
     "message_color" : None,
-    "message_key" : "testing_message",
+    "message_key" : "Testing Message",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
-    "slack_channel" : [ 
-        "CLNKVAKPD"
-    ],
+    "slack_channel":None,
     "working" : True
     }
 ]
@@ -420,7 +396,7 @@ rec_message = [
     "for_slack" : False,
     "message" : "@candidate_name: note has been added \n for @job_profile: by @user: \n Note: \n @note:",
     "message_color" : None,
-    "message_key" : "for_inserting_note",
+    "message_key" : "Note Added For Candidate",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
@@ -529,7 +505,7 @@ rec_message = [
     "for_slack" : False,
     "message" : "A @job_profile: job profile has been closed by @user: ",
     "message_color" : None,
-    "message_key" : "closeJobProfile",
+    "message_key" : "Job Profile Closed",
     "message_origin" : "RECRUIT",
     "message_type" : "simple_message",
     "sended_to" : "public",
