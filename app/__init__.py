@@ -22,9 +22,7 @@ from mail_variables import variables
 
 from slack_messages import slack_message
 
-from recruit_templates import rec_templates
-
-from recruit_notification_msg import recruit_notificationmss
+from recruit_templates import rec_templates,recruit_notificationmss
 
 from recruit_slack import rec_message
 
