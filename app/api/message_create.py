@@ -119,7 +119,7 @@ def mail_message(message_origin):
         return jsonify(ret), 200
     if request.method == "POST":
         MSG_KEY = request.json.get("message_key", None)
-        ret = mongo.db.mail_template.remove({"message_key": MSG_KEY})
+        ret = mongo.db.mail_template.remove({"message_key": MSG_KEY,"default":False})
         return jsonify({
                 "message": "Template Deleted",
                 "status": True
