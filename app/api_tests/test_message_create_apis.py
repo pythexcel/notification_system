@@ -175,7 +175,7 @@ class AllDataTestCase(unittest.TestCase):
         })
         
         # act
-        response = self.app.delete(f'/message/get_email_template/'+message_origin,headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.post(f'/message/get_email_template/'+message_origin,headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
