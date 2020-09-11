@@ -110,14 +110,14 @@ def special_var():
         return jsonify({"message": "upsert"}), 200
 
 
-@bp.route('/get_email_template/<string:message_origin>',methods=["GET", "PUT","DELETE"])
+@bp.route('/get_email_template/<string:message_origin>',methods=["GET","POST","DELETE"])
 @token.SecretKeyAuth
 def mail_message(message_origin):
     if request.method == "GET":
         ret = mongo.db.mail_template.find({"message_origin": message_origin})
         ret = [template_requirement(serialize_doc(doc)) for doc in ret]
         return jsonify(ret), 200
-    if request.method == "DELETE":
+    if request.method == "POST":
         MSG_KEY = request.json.get("message_key", None)
         ret = mongo.db.mail_template.remove({"message_key": MSG_KEY})
         return jsonify({

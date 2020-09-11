@@ -189,11 +189,13 @@ def mails():
         if smtp_email is not None:
             mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
             if mail_details is None:
-                return jsonify({"status":False,"Message": "Smtp not available in db"})
+                mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
+                #return jsonify({"status":False,"Message": "Smtp not available in db"})
         else:
             mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True})
             if mail_details is None:
-                return jsonify({"status":False,"Message": "No smtp active in DB"})
+                mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
+                #return jsonify({"status":False,"Message": "No smtp active in DB"})
         try:
             send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
             return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username'],"phone_status" : phone_status, "phone_issue": phone_issue}),200 
