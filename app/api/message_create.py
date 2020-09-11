@@ -110,7 +110,7 @@ def special_var():
         return jsonify({"message": "upsert"}), 200
 
 
-@bp.route('/get_email_template/<string:message_origin>',methods=["GET","POST","DELETE"])
+@bp.route('/get_email_template/<string:message_origin>',methods=["GET","POST","PUT"])
 @token.SecretKeyAuth
 def mail_message(message_origin):
     if request.method == "GET":
