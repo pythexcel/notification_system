@@ -37,15 +37,14 @@ from app.email.model.template_making import construct_attachments_in_by_msg_deta
 from app.email.util.get_recipients import get_recipients_from_request
 from app.slack.model.notification_msg import get_notification_function_by_key
 from app.email.util.date_convertor import convert_dates_to_format
-from app.email.model.interview_rejection import interview_rejection
+from app.email.model.interview_rejection import interview_rejection,interview_reminder_set
 
 bp = Blueprint('email_preview', __name__, url_prefix='/notify')
 
 
 #1preview is used in recruit and hr to generate message for the templates and can also be used to send email if details are provided
 @bp.route('/preview', methods=["POST"])
-#@token.admin_required
-#@token.authentication
+@token.SecretKeyAuth
 def send_or_preview_mail():
     if not request.json:
         abort(500)
@@ -115,6 +114,12 @@ def send_or_preview_mail():
         if message_detail['message_key'] == "interviewee_reject":
             interview_rejection(req,message_str,message_subject,smtp_email)
         else:
+            if message_detail['message_key'] == "Interview Reminder":
+                status = interview_reminder_set(req,message_str,message_subject,smtp_email)
+                if status == False:
+                    return jsonify({"status":False,"*Note":"Job_ID missing"}),400
+                else:
+                    pass
             if to is not None:
                 if smtp_email is not None:
                     mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
@@ -132,7 +137,7 @@ def send_or_preview_mail():
 
 #Api for send mail
 @bp.route('/send_mail', methods=["POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def mails():
     if not request.json:
         abort(500) 
@@ -184,11 +189,13 @@ def mails():
         if smtp_email is not None:
             mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
             if mail_details is None:
-                return jsonify({"status":False,"Message": "Smtp not available in db"})
+                mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
+                #return jsonify({"status":False,"Message": "Smtp not available in db"})
         else:
             mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True})
             if mail_details is None:
-                return jsonify({"status":False,"Message": "No smtp active in DB"})
+                mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
+                #return jsonify({"status":False,"Message": "No smtp active in DB"})
         try:
             send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
             return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username'],"phone_status" : phone_status, "phone_issue": phone_issue}),200 
@@ -208,7 +215,7 @@ def mails():
 
 #Api for return email template by message key
 @bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def required_message(message_key):
     if request.method == "GET":
         ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
@@ -221,7 +228,7 @@ def required_message(message_key):
 
 #Api for test mailing service is working or not
 @bp.route('/mail_test',methods=["POST"])
-#@token.authentication
+@token.SecretKeyAuth
 def mail_test():
     email = None
     if app.config['ENV']=='development':

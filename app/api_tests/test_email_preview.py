@@ -61,7 +61,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         payload = json.dumps({"message_key":"first_round","message":" Hi,#name: <br/> Your First round with Excellence Technosoft Pvt. Ltd has been schedule on #date: at the C-86 B Excellence Technosoft Pvt. Ltd Noida Sector 8 for #job_profile: <br/> <p>HR <br/> Juhi Singh <br/> Landline No: 0120-4113772 <br/> https://excellencetechnologies.in/<br/>https://www.facebook.com/ExcellenceTechnologies<br/>https://itunes.apple.com/in/app/career-app-by-etech/id1399557922?mt=8<br/>  ","subject":"#name!,your interview for First round of #job_profile: is scheduled","to":["aayush_saini@excellencetechnologies.in"],"cc":[],"bcc":[],"smtp_email":"testnt64@gmail.com","phone":None,"phone_message":None,"data":{"name":None}})
 
         #act
-        response = self.app.post('/notify/preview',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/notify/preview',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -79,7 +79,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.post('/notify/send_mail',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/notify/send_mail',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -94,7 +94,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.post('/notify/send_mail',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/notify/send_mail',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 400)
@@ -109,7 +109,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.post('/notify/send_mail',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/notify/send_mail',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 400)
@@ -134,7 +134,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.post('/notify/mail_test',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/notify/mail_test',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -149,7 +149,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         mongo.db.mail_template.insert_one(template_payload).inserted_id
 
         #act
-        response = self.app.get('/notify/email_template_requirement/'+message_key)
+        response = self.app.get('/notify/email_template_requirement/'+message_key,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         
         #assert
         self.assertEqual(response.status_code, 200)

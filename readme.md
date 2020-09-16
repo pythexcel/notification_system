@@ -1,6 +1,8 @@
 
 ![Python application](https://github.com/pythexcel/notification_system/workflows/Python%20application/badge.svg)
 
+[![CircleCI](https://circleci.com/gh/pythexcel/notification_system.svg?style=svg&circle-token=c750486d7d1e8af64977d2904739b49028ec1cd6)](https://circleci.com/gh/pythexcel/notification_system)
+
 # Notification settings
 
 
@@ -156,3 +158,52 @@ gunicorn error.log files can be big so in
 }
 
 > inside config.py file write the base url of app
+
+
+
+#How to create slack app
+
+step 1- > go to your apps   https://api.slack.com/apps
+step 2- > click on create new app select app_name and workspace.
+step 3- > after that click on oauth & permission  https://api.slack.com/apps/A018821L9CK/oauth?
+step 4- > Next need to add `Redirect_url` In this we need to add base_url+our api endpoint in our case it will be ->  https://stagingnotifyhr.excellencetechnologies.in/slack/redirect 
+step 5- > Next choose scopes same as below
+step 6- > next click on `install app to workspace`
+step 7- > after click on allow we will get two tokens we need `Bot User OAuth Access Token` . 
+
+
+Bot Token Scopes                
+
+->app_mentions:read
+->channels:history
+->channels:join
+->channels:read
+->chat:write
+->chat:write.customize
+->chat:write.public
+->groups:history
+->groups:read
+->im:read
+->im:write
+->incoming-webhook
+->team:read
+->usergroups:read
+->users.profile:read
+->users:read
+->users:read.email
+
+
+User Token Scopes
+
+->admin (optional)
+->channels:history
+->channels:read
+->chat:write
+->groups:read
+->im:read
+->mpim:read
+->team:read
+->usergroups:read
+->users.profile:read
+->users:read
+->users:read.email

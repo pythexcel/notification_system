@@ -18,17 +18,11 @@ client_secret = '0405e4f1150a7a9dcbaa4442e3aeea4f'
 if "pytest" in sys.modules:
     base_url = "http://127.0.0.1:5000/"
 else:
-    if os.getenv("origin") == "tms":
-        if os.getenv("base_url") is None:
-            raise Exception ('missing base url')
-        else:
-            base_url = os.getenv("base_url")
+    if os.getenv("base_url") is None:
+        raise Exception ('missing base url')
+    else:
+        base_url = os.getenv("base_url")
         
-    if os.getenv("origin") == "recruit":
-        if os.getenv("base_url") is None:
-            raise Exception ('missing base url')
-        else:
-            base_url = os.getenv("base_url")
 
 smtp_counts = {
     'smtp.gmail.com' : 100,

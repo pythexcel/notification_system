@@ -5,6 +5,16 @@ variables = [
         "variable_type": "user"
     },
     {
+        "name": "#time",
+        "value": None,
+        "variable_type": "user"
+    },
+    {
+        "name": "#job_profile",
+        "value": None,
+        "variable_type": "user"
+    },
+    {
         "name": "#joining_date",
         "value": None,
         "variable_type": "user"
