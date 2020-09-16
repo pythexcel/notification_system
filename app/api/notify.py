@@ -19,12 +19,13 @@ bp = Blueprint('notify', __name__, url_prefix='/notify')
 #Api for cound total reminders fron yesterday
 #Not sure where this api is calling and why
 #But as i read code its for return total sum of interview reminder by one day before day
-@bp.route('/reminder_details', methods=["GET"])
-def reminder_details():
+@bp.route('/reminder_details/<string:jobId>', methods=["GET"])
+@token.SecretKeyAuth
+def reminder_details(jobId):
     date = (datetime.datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
     before_date = dateutil.parser.parse(date)
     try:
-        details = fetch_interview_reminders(date=before_date) #Here calling function for fetch interview reminder records from db by date
+        details = fetch_interview_reminders(date=before_date,jobId=jobId) #Here calling function for fetch interview reminder records from db by date
         if (details):
             sum = 0
             if (len(details) > 1):
@@ -39,3 +40,18 @@ def reminder_details():
 
 
 
+"""
+ENVIRONMENT=development
+to=testingattach0@gmail.com
+bcc=bcc_testing_recruit@mailinator.com
+cc=cc_testing_recruit@mailinator.com
+origin=recruit
+database=mongodb://notify_staging:notify_staging@127.0.0.1:27017/notify_staging
+base_url="http://127.0.0.1:8006/"
+service=twilio
+twilioSid=AC56872d72a474cee77829e5f90be39e61
+twilioToken=14835448708919a666e6aba612b485f8
+twilio_number=+12055129668
+localtextkey=jt8iVFR027c-gUuWrJauOiLcFSDCL5TM1heITeBVcL	
+SecretKey=MBw[;Rv]-6M]&3P2Grb
+"""

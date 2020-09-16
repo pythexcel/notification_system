@@ -39,7 +39,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         mongo.db.mail_settings.insert_many(payload)
 
         #act
-        response = self.app.get('/smtp/settings/'+origin)
+        response = self.app.get('/smtp/settings/'+origin,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -63,8 +63,9 @@ class AllTestMailsettingApis(unittest.TestCase):
         #Making data
         id = self.create_smtp_settings()
         origin = "RECRUIT"
+
         #act
-        response = self.app.delete('/smtp/settings/'+origin+'/'+str(id))
+        response = self.app.delete('/smtp/settings/'+origin+'/'+str(id),headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
 
         #assert
         self.assertEqual(response.status_code, 200)
@@ -83,7 +84,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.put('/smtp/settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json"}, data=jsonpayload)
+        response = self.app.put('/smtp/settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=jsonpayload)
 
         #assert
         self.assertEqual(response.status_code, 200)
@@ -99,7 +100,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         id = mongo.db.mail_settings.insert_one(payload).inserted_id
 
         #act
-        response = self.app.post('/smtp/smtp_priority/'+str(id)+'/'+position)
+        response = self.app.post('/smtp/smtp_priority/'+str(id)+'/'+position,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("priority changed",response.get_data(as_text=True))
@@ -118,7 +119,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         self.assertEqual(response.status_code, 400)
 
@@ -136,7 +137,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("Smtp password updated",response.get_data(as_text=True))
@@ -152,7 +153,7 @@ class AllTestMailsettingApis(unittest.TestCase):
             })
 
         #act
-        response = self.app.post('/smtp/validate_smtp',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/smtp/validate_smtp',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         #assert
         self.assertEqual(response.status_code, 200)
@@ -168,7 +169,7 @@ class AllTestMailsettingApis(unittest.TestCase):
             })
 
         #act
-        response = self.app.post('/smtp/validate_smtp',headers={"Content-Type": "application/json"}, data=payload)
+        response = self.app.post('/smtp/validate_smtp',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("smtp login and password failed",response.get_data(as_text=True))

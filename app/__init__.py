@@ -159,6 +159,11 @@ def create_app(test_config=None):
             zapier_scheduler.shutdown()
             
     elif app.config['origin'] == "recruit":
+        try:
+            seed_recruit_data()
+        except Exception:
+            pass
+
         recruit_schduled_messages_scheduler = BackgroundScheduler()
         recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
         recruit_schduled_messages_scheduler.start()
@@ -228,9 +233,8 @@ def seed_hr():
         notification_message = mongo.db.notification_msg.insert_many(slack_message)
 
 
-@click.command("seed_recruit")
-@with_appcontext
-def seed_recruit():
+
+def seed_recruit_data():
     print("uploading.......")
     for rec_template in rec_templates:
         template_exist = mongo.db.mail_template.find_one({"message_key":rec_template.get("message_key")})
@@ -253,6 +257,11 @@ def seed_recruit():
         print("added smtp")
     print("------>>>>Successfully uploaded data..............")
 
+
+@click.command("seed_recruit")
+@with_appcontext
+def seed_recruit():
+    seed_recruit_data()
 
 @click.command("seed_system")
 @with_appcontext

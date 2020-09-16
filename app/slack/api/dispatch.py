@@ -17,13 +17,14 @@ bp = Blueprint('dispatch', __name__, url_prefix='/notify')
 
 #dispatch was made to send particular message on slack but those message can be sended on email too
 @bp.route('/dispatch', methods=["POST"])
-#@token.authentication
 def construct_dispatch_message_to_slack():
     if not request.json:
         abort(500)
     MSG_KEY = request.json.get("message_key", None)
     try:
         message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
+        if message_detail == False:
+            return jsonify({"status":True,"Message":"This message key not enable"}),200
         notify = notify_system()
         notify.make_payload_from_request(message_detail,request.json)
         #a=notify.make_payload_from_request(message_detail,input)
@@ -34,7 +35,6 @@ def construct_dispatch_message_to_slack():
 
 #Api for test slack token and notifications is working or by email address
 @bp.route('/slack_test',methods=["POST"])
-#@token.authentication
 def token_test():
     email = request.json.get('email')
     try:

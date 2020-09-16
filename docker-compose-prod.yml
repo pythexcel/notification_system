@@ -20,6 +20,7 @@ services:
             - bcc=bcc_testing_recruit@mailinator.com
             - cc=cc_testing_recruit@mailinator.com
             - send_grid_key=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
+            - Secretkey=gUuWrJauOiLcFSDCL5TM1heITeBVcL
     mongo:
         image: mongo
         container_name: mongodb_notify

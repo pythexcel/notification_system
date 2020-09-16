@@ -15,7 +15,7 @@ rec_templates = [
     {
         "Doc_type" : "email",
         "for" : "when candidate is hired",
-        "message" : "<p>Dear #name:, <br/> Greetings from #company: <br/>We are pleased to inform you that based on your subsequent interview and application; we are welcoming you to our organization #company: for the position of #designation: We look forward to you joining us from #date: at #time:. <br/> Please do not hesitate to call us for any information you may need.<br/>Kindly send your acceptance for the same.<br/> Congratulations! <br/> With Regards,<br/> #hr_signature: </p>",
+        "message" : "<p>Dear #name:, <br/> Greetings from #company: <br/>We are pleased to inform you that based on your subsequent interview and application; we are welcoming you to our organization #company: for the position of #job_profile: We look forward to you joining us from #date: at #time:. <br/> Please do not hesitate to call us for any information you may need.<br/>Kindly send your acceptance for the same.<br/> Congratulations! <br/> With Regards,<br/> #hr_signature: </p>",
         "message_key" : "interviewee_selection",
         "message_origin" : "RECRUIT",
         "message_subject" : "Job Offer For #job_profile:",
@@ -23,7 +23,7 @@ rec_templates = [
         "version" : 1,
         "default" : True,
         "working" : True,
-        "mobile_message" : "Dear #name: We are pleased to inform you that, we have selected you for the position of #designation: We look forward to you joining us from #date:.Please do not hesitate to call us for any information you may need Congratulations!With Regards"
+        "mobile_message" : "Dear #name: We are pleased to inform you that, we have selected you for the position of #job_profile: We look forward to you joining us from #date:.Please do not hesitate to call us for any information you may need Congratulations!With Regards"
     },
     {
         "Doc_type" : "email",
@@ -53,12 +53,12 @@ rec_templates = [
     },
     {
         "message_key" : "chat_interested",
-        "message" : "<p>\n  Hi #name: <br/> Thank you for applying to the #job_profile: position at #company!. If you are interested for the rolep,kindly reply to this mail and we will contact you on this same email for further details.<br/>#hr_signature:\n</p>",
+        "message" : "<p>\n  Hi #name: <br/> Thank you for applying to the #job_profile: position at #company:. If you are interested for the role,kindly reply to this mail and we will contact you on this same email for further details.<br/>#hr_signature:\n</p>",
         "working" : True,
         "message_origin" : "RECRUIT",
         "message_subject" : "#name: Your application for #job_profile:",
         "version" : 1,
-        "default" : False,
+        "default" : True,
         "for" : "when candidate is shortlisted",
         "recruit_details" : "still interested?",
         "Doc_type" : "email",
@@ -69,7 +69,7 @@ rec_templates = [
         "message" : "<p>\n  Hi #name: <br> we would love to chat with you regarding #job_profile: from #company: <br/> <br/> Please kindly reply to this email with a suitable time, we would love to have a chat with you \n.<br/>#hr_signature:\n</p>",
         "working" : True,
         "message_origin" : "RECRUIT",
-        "message_subject" : "#name: Your application for #job_profile:"
+        "message_subject" : "#name: Your application for #job_profile:",
         "version" : 1,
         "default" : False,
         "for" : "when candidate is shortlisted",
@@ -91,67 +91,15 @@ rec_templates = [
         "Doc_type" : "email"
     },
     {
-    "message" : "#name&#160;<br>you have completed round first,<br>congratulations!",
-    "message_key" : "First_Round_Completed",
-    "working" : True,
-    "mobile_message" : "First Round Completed",
-    "message_origin" : "RECRUIT",
-    "message_subject" : "First Round Completed",
-    "version" : 1,
-    "default" : False,
-    "for" : None,
-    "recruit_details" : "First Round Completed",
-    "Doc_type" : "email"
-    },
-    {
-    "message" : "#name:<br>#interview_date:<br>#interview_time:<br>",
-    "message_key" : "First_Round",
-    "working" : True,
-    "mobile_message" : "#name: #interview_date: #interview_time:",
-    "message_origin" : "RECRUIT",
-    "message_subject" : "First Round",
-    "version" : 1,
-    "default" : False,
-    "for" : "undefined",
-    "recruit_details" : "First Round",
-    "Doc_type" : "email"
-    },
-    {
-    "message" : "#name:<br>#interview_date:<br>hi there",
-    "message_key" : "First_round_interview",
-    "working" : True,
-    "mobile_message" : "#name: #interview_date:",
-    "message_origin" : "RECRUIT",
-    "message_subject" : "First round interview",
-    "version" : 1,
-    "default" : True,
-    "for" : "when interview first round mail is sent",
-    "recruit_details" : "First round interview",
-    "Doc_type" : "email"
-    },
-    {
-    "message" : "#date:<br>#name:",
-    "message_key" : "Shortlist_confirmation",
-    "working" : True,
-    "mobile_message" : "#date: #name:",
-    "message_origin" : "RECRUIT",
-    "message_subject" : "shortlist confirmation",
-    "version" : 1,
-    "default" : False,
-    "for" : "when candidate is shortlisted",
-    "recruit_details" : "Shortlist confirmation",
-    "Doc_type" : "email"
-    },
-    {
-    "Doc_type" : "email",
-    "for" : "when candidate is rejected",
-    "message" : "<p>Dear Applicant <br/> Thank you very much for taking the time to interview with us for the profile of #job_profile:. We regret to inform that you couldn't clear the subsequent rounds of the interview process but we do appreciate your interest in the company and the job.<br/>We wish you all the best for future endeavors <br/>Regards<br/> #hr_signature: </p>",
-    "message_key" : "interviewee_reject",
-    "message_origin" : "RECRUIT",
-    "message_subject" : "interviewee Rejection",
-    "recruit_details" : "Interviwee Reject",
-    "version" : 1,
-    "default" : True,
-    "working" : True
+        "Doc_type" : "email",
+        "for" : "when candidate is rejected",
+        "message" : "<p>Dear Applicant <br/> Thank you very much for taking the time to interview with us for the profile of #job_profile:. We regret to inform that you couldn't clear the subsequent rounds of the interview process but we do appreciate your interest in the company and the job.<br/>We wish you all the best for future endeavors <br/>Regards<br/> #hr_signature: </p>",
+        "message_key" : "interviewee_reject",
+        "message_origin" : "RECRUIT",
+        "message_subject" : "interviewee Rejection",
+        "recruit_details" : "Interviwee Reject",
+        "version" : 1,
+        "default" : True,
+        "working" : True
     }
 ]

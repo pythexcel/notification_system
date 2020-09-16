@@ -33,7 +33,7 @@ bp = Blueprint('campaigns', __name__, url_prefix='/')
 
 
 @bp.route('/create_campaign', methods=["GET", "POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def create_campaign():
 
     if request.method == "GET":
@@ -77,7 +77,7 @@ def create_campaign():
 
 
 @bp.route('/attached_file/<string:Id>/<string:message_id>', methods=["POST","DELETE"])
-#@token.admin_required
+@token.SecretKeyAuth
 def attache_campaign(Id,message_id):
 
     if request.method == "POST":
@@ -109,7 +109,7 @@ def attache_campaign(Id,message_id):
 
 
 @bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def pause_campaign(Id,status):
 
     working = None
@@ -136,7 +136,7 @@ def pause_campaign(Id,status):
 
 
 @bp.route('/delete_campaign/<string:Id>', methods=["DELETE"])
-#@token.admin_required
+@token.SecretKeyAuth
 def delete_campaign(Id):
     ret = mongo.db.campaigns.remove({"_id":ObjectId(Id)})
     user = mongo.db.campaign_users.remove({ "campaign": Id })
@@ -145,7 +145,7 @@ def delete_campaign(Id):
 
 
 @bp.route('/list_campaign', methods=["GET"])
-#@token.admin_required
+@token.SecretKeyAuth
 def list_campaign():
         ret = mongo.db.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
         ret = [Template_details(serialize_doc(doc)) for doc in ret]
@@ -154,7 +154,7 @@ def list_campaign():
 
 @bp.route('/update_campaign/<string:Id>', methods=["POST"])
 @bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
-#@token.admin_required
+@token.SecretKeyAuth
 def update_campaign(Id,message_id=None):
 
     if request.method == "POST":
@@ -222,7 +222,7 @@ def update_campaign(Id,message_id=None):
         return jsonify({"message": "message deleted from campaign"})
 
 @bp.route('/user_list_campaign',methods=["GET","POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def add_user_campaign():
     if request.method == "GET":
         ret = mongo.db.campaign_users.aggregate([])
@@ -251,6 +251,7 @@ def add_user_campaign():
 
 
 @bp.route('/user_delete_campaign/<string:campaign_id>/<string:user_id>',methods=["DELETE"])
+@token.SecretKeyAuth
 def delete_user_campaign(campaign_id,user_id):
     ret = mongo.db.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
     vet = mongo.db.mail_status.remove({"user_id":user_id,"campaign":campaign_id})
@@ -259,14 +260,14 @@ def delete_user_campaign(campaign_id,user_id):
 
         
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
-#@token.admin_required
+@token.SecretKeyAuth
 def campaign_detail(Id):
     ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
     detail = serialize_doc(ret)
     return jsonify(user_data(detail)),200
 
 @bp.route("/campaign_smtp_test", methods=["POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def campaign_smtp_test():
     mail = mongo.db.mail_settings.find({"origin":"CAMPAIGN"})
     mail = [serialize_doc(doc) for doc in mail]
@@ -296,7 +297,7 @@ def campaign_smtp_test():
     return jsonify({"message": "sended"}),200
 
 @bp.route("/campaign_mails/<string:campaign>", methods=["POST"])
-#@token.admin_required
+@token.SecretKeyAuth
 def campaign_start_mail(campaign):   
     delay = request.json.get("delay",30)
     smtps = request.json.get("smtps",[])
@@ -369,7 +370,7 @@ def campaign_start_mail(campaign):
         return jsonify({"message":"Please select smtps"}),400
 
 @bp.route("/mails_status",methods=["GET"])
-#@token.admin_required
+@token.SecretKeyAuth
 def mails_status():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
@@ -378,7 +379,7 @@ def mails_status():
     return jsonify(ret), 200
 
 @bp.route("/unsub_status",methods=["GET"])
-#@token.admin_required
+@token.SecretKeyAuth
 def unsub():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
@@ -394,7 +395,7 @@ def unsub():
     return jsonify( responseData ), 200
 
 @bp.route("/delete_unsub_status/<string:Id>",methods=["GET"])
-#@token.admin_required
+@token.SecretKeyAuth
 def delete_unsub(Id):        
     ret = mongo.db.unsubscribed_users.remove({"_id" : ObjectId(Id)})
     return jsonify({ "message" :"user removed from unsub" }), 200
@@ -435,6 +436,7 @@ def redirectes(unique_key,campaign_id):
     return redirect(url), 302
 
 @bp.route('edit_templates/<string:template_id>',methods=["POST"])
+@token.SecretKeyAuth
 def edit_template(template_id):
     mongo.db.mail_template.update({"_id": ObjectId(template_id)}, {
     "$set": request.json
@@ -445,6 +447,7 @@ def edit_template(template_id):
 
 
 @bp.route('/daily_validate_details',methods = ["GET"])
+@token.SecretKeyAuth
 def validate_details():
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         

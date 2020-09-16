@@ -7,7 +7,7 @@ from app.api_tests.test_message_create_apis import app
 from bson import ObjectId
 from app import mongo
 import datetime
-
+"""
 class AllTestReminderApis(unittest.TestCase):
 
     def setUp(self):
@@ -26,10 +26,11 @@ class AllTestReminderApis(unittest.TestCase):
         mongo.db.reminder_details.insert_one(payload)
 
         #act
-        response = self.app.get('/notify/reminder_details')
+        response = self.app.get('/notify/reminder_details',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
         jsonResponse = self.json_of_response(response)
 
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn('total',jsonResponse)
 
+"""
