@@ -249,3 +249,26 @@ def mail_test():
     except Exception:
         return jsonify({"status":False,"message": "Something went wrong with smtp"}), 400                                                         
 
+
+
+@bp.route('/recruit_variable', methods=["GET", "PUT"])
+@token.SecretKeyAuth
+def recruit_var():
+    if request.method == "GET":
+        ret = mongo.db.mail_variables.find({"recruit_variable":{"$exists":True}})
+        ret = [serialize_doc(doc) for doc in ret]
+        return jsonify(ret)
+    if request.method == "PUT":
+        name = request.json.get("name", None)
+        value = request.json.get("value", None)
+        variable_type = request.json.get("variable_type", None)
+        recruit_variable = request.json.get("recruit_variable", None)
+        ret = mongo.db.mail_variables.update({"name": name}, {
+            "$set": {
+                "name": name,
+                "value": value,
+                "recruit_variable":recruit_variable,
+                "variable_type": variable_type
+            }
+        },upsert=True)
+        return jsonify({"message": "upsert"}), 200
