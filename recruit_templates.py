@@ -8,7 +8,7 @@ rec_templates = [
         "message_subject" : "#name: your interview for #job_profile: is scheduled",
         "recruit_details" : "Interview First Round",
         "version" : 1,
-        "default" : False,
+        "default" : True,
         "working" : True,
         "mobile_message" : "Hi,#name: Your First round with #company: has been schedule on #date: at the #venue: for #job_profile:"
     },
@@ -62,7 +62,7 @@ rec_templates = [
         "for" : "when candidate is shortlisted",
         "recruit_details" : "still interested?",
         "Doc_type" : "email",
-        "mobile_message" : "null"
+        "mobile_message" :" Hi #name: Thank you for applying to the #job_profile: position at #company:. If you are interested for the role,kindly reply to this SMS and we will contact you on this same number for further details. #hr_signature:"
     },
     {
         "message_key" : "chat_details",
@@ -71,11 +71,11 @@ rec_templates = [
         "message_origin" : "RECRUIT",
         "message_subject" : "#name: Your application for #job_profile:",
         "version" : 1,
-        "default" : False,
+        "default" : True,
         "for" : "when candidate is shortlisted",
         "recruit_details" : "we would love to have a chat with you.",
         "Doc_type" : "email",
-        "mobile_message" : "null"
+        "mobile_message" :"Hi #name: we would love to chat with you regarding #job_profile: from #company: Please kindly reply to this SMS with a suitable time, we would love to have a chat with you #hr_signature:"
     },
     {
         "message" : "Hi #name:, <br/> You're resume has been shortlisted for #jobProfile: <br/> Please reply to this mail for showing your interest. <br/> #hr_signature: <br/> #company: <br/> #date:",
@@ -91,12 +91,26 @@ rec_templates = [
         "Doc_type" : "email"
     },
     {
+        "message" : "Hi #name:, <br/> Your Interview #date: #time: is updated.",
+        "message_key" : "Interview_date_updated",
+        "working" : True,
+        "mobile_message" : "Hi #name:, <br/> Your Interview #date: #time: is updated.",
+        "message_origin" : "RECRUIT",
+        "message_subject" : "Interview Date Updated",
+        "version" : 1,
+        "default" : True,
+        "for" : "when candidate interview date updated",
+        "recruit_details" : "interview date updated",
+        "Doc_type" : "email"
+    },
+    {
         "Doc_type" : "email",
         "for" : "when candidate is rejected",
         "message" : "<p>Dear Applicant <br/> Thank you very much for taking the time to interview with us for the profile of #job_profile:. We regret to inform that you couldn't clear the subsequent rounds of the interview process but we do appreciate your interest in the company and the job.<br/>We wish you all the best for future endeavors <br/>Regards<br/> #hr_signature: </p>",
         "message_key" : "interviewee_reject",
         "message_origin" : "RECRUIT",
         "message_subject" : "interviewee Rejection",
+        "mobile_message" : "Thank you very much for taking the time to interview with us for the profile of #job_profile:.",
         "recruit_details" : "Interviwee Reject",
         "version" : 1,
         "default" : True,

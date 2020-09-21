@@ -2,16 +2,19 @@ variables = [
     {
         "name": "#date",
         "value": None,
+        "recruit_variable":"[date]",
         "variable_type": "user"
     },
     {
         "name": "#time",
         "value": None,
+        "recruit_variable":"[time]",
         "variable_type": "user"
     },
     {
         "name": "#job_profile",
         "value": None,
+        "recruit_variable":"[job_profile]",
         "variable_type": "user"
     },
     {
@@ -61,17 +64,20 @@ variables = [
     },
     {
         "name": "#venue",
-        "value": "C-86 B Excellence Technosoft Pvt. Ltd Noida Sector 8",
+        "value": None,
+        "recruit_variable":"[venue]",
         "variable_type": "system"
     },
     {
         "name": "#company",
-        "value": "Excellence Technosoft Pvt. Ltd",
+        "value": None,
+        "recruit_variable":"[company]",
         "variable_type": "system"
     },
     {
         "name": "#hr_signature",
-        "value": "<p>HR <br/> Juhi Singh <br/> Landline No: 0120-4113772 <br/> https://excellencetechnologies.in/<br/>https://www.facebook.com/ExcellenceTechnologies<br/>https://itunes.apple.com/in/app/career-app-by-etech/id1399557922?mt=8<br/>",
+        "value": None,
+        "recruit_variable":"[hr_signature]",
         "variable_type": "system"
     },
     {
@@ -80,9 +86,9 @@ variables = [
         "variable_type": "user"
     },
     {
-       
         "name": "#name",
         "value": None,
+        "recruit_variable":"[name]",
         "variable_type": "user"
     },
     {
