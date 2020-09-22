@@ -6,6 +6,12 @@ variables = [
         "variable_type": "user"
     },
     {
+        "name": "#round_name",
+        "value": None,
+        "recruit_variable":"[round_name]",
+        "variable_type": "user"
+    },
+    {
         "name": "#time",
         "value": None,
         "recruit_variable":"[time]",

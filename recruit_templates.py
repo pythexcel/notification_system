@@ -91,12 +91,12 @@ rec_templates = [
         "Doc_type" : "email"
     },
     {
-        "message" : "Hi #name:, <br/> Your Interview #date: #time: is updated.",
+        "message" : "Hi #name:, <br/> Regarding your job application for profile #job_profile: with #company:. <br/> Your interview for #round_name: has been reschedule to #date:",
         "message_key" : "Interview_date_updated",
         "working" : True,
-        "mobile_message" : "Hi #name:, <br/> Your Interview #date: #time: is updated.",
+        "mobile_message" : "Hi #name:, <br/> Regarding your job application for profile #job_profile: with #company:. <br/> Your interview for #round_name: has been reschedule to #date:",
         "message_origin" : "RECRUIT",
-        "message_subject" : "Interview Date Updated",
+        "message_subject" : "Interview rescheduled for #job_profile:",
         "version" : 1,
         "default" : True,
         "for" : "when candidate interview date updated",
