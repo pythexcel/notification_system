@@ -119,7 +119,7 @@ rec_templates = [
     {
         "Doc_type" : "email",
         "for" : "when candidate is registered",
-        "message" : "Hi #name: <br/><br/> Your account has been successfully created.<br/><br/>Your login details are as follows<br/> Email: #email: <br/> Password : #password: <br/> Role: #role: <br/><br/> You can login at #website_url:",
+        "message" : "Hi #name:, <br/><br/> Your account has been successfully created.<br/><br/>Your login details are as follows<br/> Email: #email: <br/> Password : #password: <br/> Role: #role: <br/><br/> You can login at #website_url:",
         "message_key" : "candidate_registered",
         "message_origin" : "RECRUIT",
         "message_subject" : "Account Created on recruit",
