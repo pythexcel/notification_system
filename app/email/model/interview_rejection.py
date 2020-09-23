@@ -13,7 +13,8 @@ def interview_rejection(req,message_str,message_subject,smtp_email):
         if 'email' in req['data']:
             reject_mail = req['data']['email']
         else:
-            return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
+            return False
+            #return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
     else:
         if app.config['ENV'] == 'development':
             email = req['data']['email']
@@ -31,7 +32,10 @@ def interview_rejection(req,message_str,message_subject,smtp_email):
                     'subject': message_subject,
                     'smtp_email': smtp_email
             }).inserted_id  
-    return jsonify({"status":True,"*Note":"Added for Rejection"}),200
+    return True
+    #return jsonify({"status":True,"*Note":"Added for Rejection"}),200
+
+
 
 def interview_reminder_set(req,message_str,message_subject,smtp_email):
     jobId = req.get('jobId')

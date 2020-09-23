@@ -112,7 +112,11 @@ def send_or_preview_mail():
                     pass
         to,bcc,cc = get_recipients_from_request(req)
         if message_detail['message_key'] == "interviewee_reject":
-            interview_rejection(req,message_str,message_subject,smtp_email)
+            status = interview_rejection(req,message_str,message_subject,smtp_email)
+            if status == False:
+                return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
+            else:
+                return jsonify({"status":True,"*Note":"Added for Rejection"}),200
         else:
             if message_detail['message_key'] == "Interview Reminder":
                 status = interview_reminder_set(req,message_str,message_subject,smtp_email)
