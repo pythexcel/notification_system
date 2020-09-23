@@ -6,6 +6,30 @@ variables = [
         "variable_type": "user"
     },
     {
+        "name": "#email",
+        "value": None,
+        "recruit_variable":"[email]",
+        "variable_type": "user"
+    },
+    {
+        "name": "#password",
+        "value": None,
+        "recruit_variable":"[password]",
+        "variable_type": "user"
+    },
+    {
+        "name": "#role",
+        "value": None,
+        "recruit_variable":"[role]",
+        "variable_type": "user"
+    },
+    {
+        "name": "#website_url",
+        "value": None,
+        "recruit_variable":"[website_url]",
+        "variable_type": "user"
+    },
+    {
         "name": "#round_name",
         "value": None,
         "recruit_variable":"[round_name]",
