@@ -32,7 +32,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         elif os.getenv('origin') == "tms":    
             mail_details = mongo.db.mail_settings.find_one({"origin": "TMS","active": True},{"_id":0})
 
-
+    if mail_details is None:
+        mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
     username = None
     if sending_mail is None:    
         username = mail_details["mail_username"]
