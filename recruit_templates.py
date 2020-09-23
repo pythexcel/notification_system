@@ -115,5 +115,18 @@ rec_templates = [
         "version" : 1,
         "default" : True,
         "working" : True
+    },
+    {
+        "Doc_type" : "email",
+        "for" : "when candidate is registered",
+        "message" : "Hi #name: <br/><br/> You have successfully registered to our website.",
+        "message_key" : "candidate_registered",
+        "message_origin" : "RECRUIT",
+        "message_subject" : "Candidate Registration",
+        "mobile_message" : "Hi #name: <br/><br/> You have successfully registered to our website.",
+        "recruit_details" : "Candidate Registration",
+        "version" : 1,
+        "default" : True,
+        "working" : True
     }
 ]
