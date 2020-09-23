@@ -128,5 +128,20 @@ rec_templates = [
         "version" : 1,
         "default" : True,
         "working" : True
+    },
+    {
+        "Doc_type" : "email",
+        "for" : "when password is changed",
+        "message" : "Hi #name:, <br/><br/> Your password has been changed to #password: ",
+        "message_key" : "password_changed",
+        "message_origin" : "RECRUIT",
+        "message_subject" : "Password Changed",
+        "mobile_message" : "Hi #name:, <br/><br/> Your password has been changed to #password: ",
+        "recruit_details" : "Password Changed",
+        "version" : 1,
+        "default" : True,
+        "working" : True
     }
 ]
+
+
