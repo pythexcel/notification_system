@@ -2,20 +2,20 @@ rec_templates = [
     {
         "Doc_type" : "email",
         "for" : "when interview first round mail is sent",
-        "message" : "Hi #name:, <br/> Thank you for applying for the job #job_profile:. <br/> After reviewing your application, we are excited to move forward with the interview process. <br/> Your First round with #company: has been schedule on #date: at the #venue: for #job_profile: <br/> Do revert back with your availablity for the same. <br/> #hr_signature: ",
+        "message" : "Hi #name:,<div><br></div><div>Thank your for application for the role of #jobProfile:&#160;with #company:</div><div><br></div><div>Your application for the&#160;<span>#jobProfile: stood out to us and we would like to schedule your interview. on</span><span>#date: at the #venue:&#160;</span></div><div><br></div><div>Please confirm your availability for the same.&#160;</div><div><br> #hr_signature: </div>",
         "message_key" : "first_round",
         "message_origin" : "RECRUIT",
-        "message_subject" : "#name: your interview for #job_profile: is scheduled",
-        "recruit_details" : "Interview First Round",
+        "message_subject" : "#name: your interview for First round of #job_profile:",
+        "recruit_details" : "Interview First Round Onsite",
         "version" : 1,
-        "default" : True,
+        "default" : False,
         "working" : True,
-        "mobile_message" : "Hi,#name: Your First round with #company: has been schedule on #date: at the #venue: for #job_profile:"
+        "mobile_message" : "Hi #name: Your First round with #company: has been schedule on #date: at the #venue: for #job_profile:",
     },
     {
         "Doc_type" : "email",
         "for" : "when candidate is hired",
-        "message" : "<p>Dear #name:, <br/> Greetings from #company: <br/>We are pleased to inform you that based on your subsequent interview and application; we are welcoming you to our organization #company: for the position of #job_profile: We look forward to you joining us from #date: at #time:. <br/> Please do not hesitate to call us for any information you may need.<br/>Kindly send your acceptance for the same.<br/> Congratulations! <br/> With Regards,<br/> #hr_signature: </p>",
+        "message" : "<p>Dear #name: <br/> Greetings from #company: <br/>We are pleased to inform you that based on your subsequent interview and application; we are welcoming you to our organization #company: for the position of #designation: We look forward to you joining us from #date: at #time:. <br/> Please do not hesitate to call us for any information you may need.<br/>Kindly send your acceptance for the same.<br/> Congratulations! <br/> With Regards,<br/> #hr_signature: </p>",
         "message_key" : "interviewee_selection",
         "message_origin" : "RECRUIT",
         "message_subject" : "Job Offer For #job_profile:",
@@ -23,12 +23,12 @@ rec_templates = [
         "version" : 1,
         "default" : True,
         "working" : True,
-        "mobile_message" : "Dear #name: We are pleased to inform you that, we have selected you for the position of #job_profile: We look forward to you joining us from #date:.Please do not hesitate to call us for any information you may need Congratulations!With Regards"
+        "mobile_message" : "Dear #name: Greetings from #company: We are pleased to inform you that based on your subsequent interview and application we are welcoming you to our organization #company: for the position of #designation: We look forward to you joining us from #date:.Please do not hesitate to call us for any information you may need Congratulations!With Regards",
     },
     {
         "Doc_type" : "email",
         "for" : "when interview second round mail is sent",
-        "message" : "Hi #name:, <br/> Your Second round with #company: has been schedule on #date: at the #venue: for #job_profile: <br/> #hr_signature: ",
+        "message" : "Hi #name: ,<div><br></div><div>Based on the feedback on your previous interview, we would like to invite you for the next round of interview.</div><div><br></div><div> Your Second round with #company: has been schedule on #date: for #job_profile:&#160;</div><div><br></div><div>This is an online interview, you will be getting an invite for the same on your email.<br><br></div><div>Please confirm your availability for the same.&#160;</div><div><br></div><div> #hr_signature: </div>",
         "message_key" : "second_round",
         "message_origin" : "RECRUIT",
         "message_subject" : "#name: your interview for Second round for #job_profile: is scheduled",
@@ -36,12 +36,12 @@ rec_templates = [
         "version" : 1,
         "default" : True,
         "working" : True,
-        "mobile_message" : "Hi #name:, Your Second round with #company: has been schedule on #date: at the #venue: for #job_profile:"
+        "mobile_message" : "#name! your interview for Second round for #jobProfile: with #company:"
     },
     {
         "Doc_type" : "email",
         "for" : "when interview third round mail is sent",
-        "message" : "Hi #name:, <br/> Your Third round with #company: has been schedule on #date: at the #venue: for #job_profile: <br/> #hr_signature: ",
+        "message" : "Hi #name:,<div><br></div><div>Based on the feedback on your previous interview, you have been further shortlisted for the final round of interview.<br><div><br></div><div> Your final round with #company: has been schedule on #date: at the #venue: for #job_profile:&#160;</div><div><br></div><div>Please confirm your availability for the same.&#160;<br><br></div><div> #hr_signature: </div></div> ",
         "message_key" : "third_round",
         "message_origin" : "RECRUIT",
         "message_subject" : "#name: your interview for Third round for #job_profile: is scheduled",
@@ -53,7 +53,7 @@ rec_templates = [
     },
     {
         "message_key" : "chat_interested",
-        "message" : "<p>\n  Hi #name: <br/> Thank you for applying to the #job_profile: position at #company:. If you are interested for the role,kindly reply to this mail and we will contact you on this same email for further details.<br/>#hr_signature:\n</p>",
+        "message" : "<p>&#10;  Hi #name:,</p><p><br></p><p>How are you doing today!</p><p><br></p><p>Thank your for your job application for the role #job_profile:&#160; with our company #company:<br> <br>Just want to get in touch and see if you are still interested in this job profile.<br><br> Kindly reply to this mail and we will contact you on this same email for further details.</p><p><br>#hr_signature:&#10;</p>",
         "working" : True,
         "message_origin" : "RECRUIT",
         "message_subject" : "#name: Your application for #job_profile:",
@@ -66,7 +66,7 @@ rec_templates = [
     },
     {
         "message_key" : "chat_details",
-        "message" : "<p>\n  Hi #name: <br> we would love to chat with you regarding #job_profile: from #company: <br/> <br/> Please kindly reply to this email with a suitable time, we would love to have a chat with you \n.<br/>#hr_signature:\n</p>",
+        "message" : "<p>Hi #name:,</p><p><br></p><p>Thank your for your job application for the role #job_profile:&#160; with our company #company:<br><br>We did love to chat further with you regarding the role.<br><br></p><p>Kindly reply to this mail with your availability so we can contact you accordingly.&#160;&#160;</p><p><br>#hr_signature:</p>",
         "working" : True,
         "message_origin" : "RECRUIT",
         "message_subject" : "#name: Your application for #job_profile:",
@@ -78,10 +78,10 @@ rec_templates = [
         "mobile_message" :"Hi #name: we would love to chat with you regarding #job_profile: from #company: Please kindly reply to this SMS with a suitable time, we would love to have a chat with you #hr_signature:"
     },
     {
-        "message" : "Hi #name:, <br/> You're resume has been shortlisted for #jobProfile: <br/> Please reply to this mail for showing your interest. <br/> #hr_signature: <br/> #company: <br/> #date:",
+        "message" : "<div>Hi #name:,</div><div><br></div><div>In reference to your application for the job profile&#160;<span>#jobProfile: with #company:</span></div><div><br></div><div>You're resume has been shortlisted for #jobProfile:&#160;</div><div><br></div><div>Please reply to this mail for showing your interest, so we can further process your application.&#160;</div><div><br></div><div>#hr_signature:</div>",
         "message_key" : "shortlist_confirmation",
         "working" : True,
-        "mobile_message" : "shortlist confirmation message #date:",
+        "mobile_message" : "shortlisted for #jobProfile: with #company:",
         "message_origin" : "RECRUIT",
         "message_subject" : "Shortlisted for #job_profile:",
         "version" : 1,
@@ -91,10 +91,10 @@ rec_templates = [
         "Doc_type" : "email"
     },
     {
-        "message" : "Hi #name:, <br/><br/> Regarding your job application for profile #job_profile: with #company: . <br/> Your interview for #round_name: has been reschedule to #date: <br/><br/> #hr_signature:",
+        "message" : "Hi #name:, <br/><br/> Regarding your job application for profile #job_profile: with #company: . <br/> Your interview for #round_name: has been reschedule to #date: #time: <br/><br/> #hr_signature:",
         "message_key" : "Interview_date_updated",
         "working" : True,
-        "mobile_message" : "Hi #name:, <br/><br/> Regarding your job application for profile #job_profile: with #company: . <br/> Your interview for #round_name: has been reschedule to #date: <br/><br/> #hr_signature:",
+        "mobile_message" : "Hi #name:, <br/><br/> Regarding your job application for profile #job_profile: with #company: . <br/> Your interview for #round_name: has been reschedule to #date: #time <br/><br/> #hr_signature:",
         "message_origin" : "RECRUIT",
         "message_subject" : "Interview rescheduled for #job_profile:",
         "version" : 1,
@@ -141,6 +141,19 @@ rec_templates = [
         "version" : 1,
         "default" : True,
         "working" : True
+    },
+    {
+    "message" : "#name&#160;<br>you have cometed roud first,<br>congratulations!",
+    "message_key" : "Interview Reminder",
+    "working" : True,
+    "mobile_message" : "Interview Reminder",
+    "message_origin" : "RECRUIT",
+    "message_subject" : "Interview Reminder",
+    "version" : 1,
+    "default" : False,
+    "for" : "Interview_reminder",
+    "recruit_details" : "Interview Reminder",
+    "Doc_type" : "email"
     }
 ]
 
