@@ -15,12 +15,12 @@ services:
             - database=mongodb://notify_staging:notify_staging@127.0.0.1:27017/notify_staging
             - base_url=https://notifyapi.exweb.in/
             - origin=recruit
-            - ENVIRONMENT=production
+            - ENVIRONMENT=developement
             - to=recruit_testing@mailinator.com 
             - bcc=bcc_testing_recruit@mailinator.com
             - cc=cc_testing_recruit@mailinator.com
             - send_grid_key=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
-            - Secretkey=gUuWrJauOiLcFSDCL5TM1heITeBVcL
+            - Secretkey=MBw[;Rv]-6M]&3P2Grb
     mongo:
         image: mongo
         container_name: mongodb_notify
