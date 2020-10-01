@@ -115,10 +115,10 @@ class AllTestMailsettingApis(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('Message subject and recipents not should be none',response.get_data(as_text=True))
     
-
+    """
     #testing get mail settings test api
     def test_smtp_mail_test_api(self):
-        mail_setting = {"mail_server":"smtp.gmail.com","mail_port":465,"origin":"CAMPAIGN","mail_use_tls":True,"mail_username":"etechmusic8@gmail.com","mail_password":"dwxdfpovcucnqcms","active":True,"type":"tls","daemon_mail":"mailer-daemon@googlemail.com","priority":3,"mail_from":None,"created_at":datetime.datetime.now()}
+        mail_setting = {"mail_server":"smtp.gmail.com","mail_port":465,"origin":"CAMPAIGN","mail_use_tls":True,"mail_username":"testnt64@gmail.com","mail_password":"injbjnzckuqjddgm","active":True,"type":"tls","daemon_mail":"mailer-daemon@googlemail.com","priority":3,"mail_from":None,"created_at":datetime.datetime.now()}
         mongo.db.mail_settings.insert_one(mail_setting).inserted_id
         self.create_mail_variables()
         letterpayload = {
@@ -139,7 +139,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn('Smtp working',response.get_data(as_text=True))
-
+    """
 
     #testing mail template requirements test api
     def test_email_template_requirement(self):
