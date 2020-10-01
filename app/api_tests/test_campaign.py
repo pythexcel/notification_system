@@ -319,7 +319,7 @@ class AllTestCampaignApis(unittest.TestCase):
             self.assertIn("email",jsonResponses)
             self.assertIn("smtp",jsonResponses)
 
-
+    """
     #test campaign_smtp_test
     def test_campaign_smtp_test(self):
         mail_setting_payload = {"mail_server":"smtp.gmail.com","mail_port":465,"origin":"CAMPAIGN","mail_use_tls":True,"mail_username":"etechmusic8@gmail.com","mail_password":"dwxdfpovcucnqcms","active":True,"type":"tls","daemon_mail":"mailer-daemon@googlemail.com","priority":3,"mail_from":None,"created_at":datetime.datetime.now()}
@@ -336,3 +336,4 @@ class AllTestCampaignApis(unittest.TestCase):
         #assert
         self.assertEqual(response.status_code, 200)
         self.assertIn("sended",response.get_data(as_text=True))
+    """
