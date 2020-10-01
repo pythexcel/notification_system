@@ -22,13 +22,17 @@ def email_notification(user_detail,message,message_detail,message_variables,syst
             subject = message_detail['message_key']             
     else:
         subject = message_detail['message_key']             
-
-    #I make a common function for fetch recipients from tms requests.like on which email we want to send message.
-    recipient = FetchRecipient(user_detail=user_detail,message_detail=message_detail)
-    #if no default recipients available then it will take user email.
-    if not recipient:
-        recipient = [username]
-    #If channels available for send notification it will insert notification info in collection.
+    if "to" in user_detail:
+        if "SlackEmail" in user_detail:
+            recipient = user_detail['to']
+            message_str = message_str.replace("\n","<br>")
+    else:
+        #I make a common function for fetch recipients from tms requests.like on which email we want to send message.
+        recipient = FetchRecipient(user_detail=user_detail,message_detail=message_detail)
+        #if no default recipients available then it will take user email.
+        if not recipient:
+            recipient = [username]
+        #If channels available for send notification it will insert notification info in collection.
     mongo.db.messages_cron.insert_one({
         "cron_status":False,
         "type": "email",
