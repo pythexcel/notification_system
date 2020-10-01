@@ -49,10 +49,9 @@ def token_test():
 #Api for test slack token and notifications is working or by email address
 @bp.route('/recruit_slack_test',methods=["POST"])
 def recruit_token_test():
-    email = request.json.get('email')
+    slack_channel = request.json.get('channel')
     try:
-        slack = slack_id(email)
-        slack_message(channel=[slack],message="Testing Slack Notification from Recruit System")
+        slack_message(channel=[slack_channel],message="Testing Slack Notification from Recruit System")
         return jsonify({"status":True,"message": "Slack Token Tested"}), 200
     except Exception:
-        return jsonify({"status":False,"message": "Slack User not exist or invalid token"}), 400
+        return jsonify({"status":False,"message": "Slack channel not exist or invalid token"}), 400
