@@ -131,7 +131,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
             message = message + url 
         else:
             message = message + url + unsuscribe_url 
-
+            
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 
