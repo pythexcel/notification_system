@@ -2,7 +2,7 @@ from app.slack.util.make_message import MakeMessage
 from app.slack.util.fetch_channels import FetchRecipient
 import json
 from app import mongo
-
+from app.email.model.template_making import fetch_recipients_by_mode
 
 def email_notification(user_detail,message,message_detail,message_variables,system_require,system_variable):
     if 'user' in user_detail and user_detail['user'] is not None:
@@ -24,7 +24,7 @@ def email_notification(user_detail,message,message_detail,message_variables,syst
         subject = message_detail['message_key']             
     if "to" in user_detail:
         if "SlackEmail" in user_detail:
-            recipient = user_detail['to']
+            recipient = fetch_recipients_by_mode(user_detail)
             message_str = message_str.replace("\n","<br>")
     else:
         #I make a common function for fetch recipients from tms requests.like on which email we want to send message.
