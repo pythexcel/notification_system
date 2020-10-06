@@ -8,7 +8,7 @@ rec_templates = [
         "message_subject" : "#name: your interview for First round of #job_profile:",
         "recruit_details" : "Interview First Round Onsite",
         "version" : 1,
-        "default" : False,
+        "default" : True,
         "working" : True,
         "mobile_message" : "Hi #name: Your First round with #company: has been schedule on #date: at the #venue: for #job_profile:",
     },
@@ -150,7 +150,7 @@ rec_templates = [
     "message_origin" : "RECRUIT",
     "message_subject" : "Interview Reminder",
     "version" : 1,
-    "default" : False,
+    "default" : Ture,
     "for" : "Interview_reminder",
     "recruit_details" : "Interview Reminder",
     "Doc_type" : "email"
