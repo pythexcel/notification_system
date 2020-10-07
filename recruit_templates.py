@@ -143,10 +143,10 @@ rec_templates = [
         "working" : True
     },
     {
-    "message" : "#name<br>you have cometed roud first,<br>congratulations!",
+    "message" : "#name: <br>you have completed round first,<br>congratulations!",
     "message_key" : "Interview Reminder",
     "working" : True,
-    "mobile_message" : "Interview Reminder",
+    "mobile_message" : "#name: <br>you have completed round first,<br>congratulations!",
     "message_origin" : "RECRUIT",
     "message_subject" : "Interview Reminder",
     "version" : 1,
