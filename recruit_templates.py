@@ -154,6 +154,19 @@ rec_templates = [
     "for" : "Interview_reminder",
     "recruit_details" : "Interview Reminder",
     "Doc_type" : "email"
+    },
+    {
+    "message" : "Hi #name:, <br><br> Thanks for your job application for #job_profile: with #company: <br><br> We could not find your resume, could you provide the same by replying on this email. <br> Thanks <br> #hr_signature:",
+    "message_key" : "Resume_missing",
+    "working" : True,
+    "mobile_message" : "Hi #name:, <br><br> Thanks for your job application for #job_profile: with #company: <br><br> We could not find your resume, could you provide the same by replying on this email. <br> Thanks <br> #hr_signature:",
+    "message_origin" : "RECRUIT",
+    "message_subject" : "Resume Missing for your job application #job_profile:",
+    "version" : 1,
+    "default" : True,
+    "for" : "when candidate resume is missing",
+    "recruit_details" : "Resume Missing",
+    "Doc_type" : "email"
     }
 ]
 
