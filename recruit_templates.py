@@ -109,7 +109,7 @@ rec_templates = [
         "message" : "<p>Dear Applicant <br/> Thank you very much for taking the time to interview with us for the profile of #job_profile:. We regret to inform that you couldn't clear the subsequent rounds of the interview process but we do appreciate your interest in the company and the job.<br/>We wish you all the best for future endeavors <br/>Regards<br/> #hr_signature: </p>",
         "message_key" : "interviewee_reject",
         "message_origin" : "RECRUIT",
-        "message_subject" : "interviewee Rejection",
+        "message_subject" : "Interview Rejection for #job_profile:",
         "mobile_message" : "Thank you very much for taking the time to interview with us for the profile of #job_profile:.",
         "recruit_details" : "Interviwee Reject",
         "version" : 1,
