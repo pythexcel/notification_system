@@ -169,7 +169,7 @@ def create_app(test_config=None):
         recruit_schduled_messages_scheduler.start()
 
         reject_mail_scheduler = BackgroundScheduler()
-        reject_mail_scheduler.add_job(reject_mail, trigger='interval', seconds=5000)
+        reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
         reject_mail_scheduler.start()
 
         campaign_mail_scheduler = BackgroundScheduler()
