@@ -234,12 +234,20 @@ def mails():
 @token.SecretKeyAuth
 def required_message(message_key):
     if request.method == "GET":
-        ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
-        if ret is not None:
-            ret = [template_requirement(serialize_doc(doc)) for doc in ret]
-            return jsonify(ret), 200
-        else:
-            return jsonify ({"message": "no template exist"}), 200    
+        if message_key == "All":
+            ret = mongo.db.mail_template.find({},{"version":0,"version_details":0})
+            if ret is not None:
+                ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+                return jsonify(ret), 200
+            else:
+                return jsonify ({"message": "no template exist"}), 200    
+        else:    
+            ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
+            if ret is not None:
+                ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+                return jsonify(ret), 200
+            else:
+                return jsonify ({"message": "no template exist"}), 200    
 
 
 #Api for test mailing service is working or not
