@@ -156,10 +156,10 @@ rec_templates = [
     "Doc_type" : "email"
     },
     {
-    "message" : "Hi #name:, <br><br> Thanks for your job application for #job_profile: with #company: <br><br> We could not find your resume, could you provide the same by replying on this email. <br> Thanks <br> #hr_signature:",
+    "message" : "Hi #name:, <br><br> Thanks for your job application for #job_profile: with #company: <br><br> We could not find your resume, could you provide the same by replying on this email. <br><br> Thanks <br> #hr_signature:",
     "message_key" : "Resume_missing",
     "working" : True,
-    "mobile_message" : "Hi #name:, <br><br> Thanks for your job application for #job_profile: with #company: <br><br> We could not find your resume, could you provide the same by replying on this email. <br> Thanks <br> #hr_signature:",
+    "mobile_message" : "Hi #name:, <br><br> Thanks for your job application for #job_profile: with #company: <br><br> We could not find your resume, could you provide the same by replying on this email. <br><br> Thanks <br> #hr_signature:",
     "message_origin" : "RECRUIT",
     "message_subject" : "Resume Missing for your job application #job_profile:",
     "version" : 1,
