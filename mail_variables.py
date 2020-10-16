@@ -6,6 +6,24 @@ variables = [
         "variable_type": "user"
     },
     {
+        "name": "#interview_date",
+        "value": None,
+        "recruit_variable":"[interview_date]",
+        "variable_type": "user"
+    },
+    {
+        "name": "#test_link",
+        "value": None,
+        "recruit_variable":"[test_link]",
+        "variable_type": "user"
+    },
+    {
+        "name": "#interview_time",
+        "value": None,
+        "recruit_variable":"[interview_time]",
+        "variable_type": "user"
+    },
+    {
         "name": "#email",
         "value": None,
         "recruit_variable":"[email]",
