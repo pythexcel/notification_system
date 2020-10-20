@@ -79,4 +79,7 @@ message_needs={
             }
 
 
-fcm_api_key = "AIzaSyBO2S6xvT5qD2KuTYw-emCpNaJMVFZrzU0"
+if os.getenv("fcm_api_key") is None:
+    fcm_api_key = "AAAAFHNjgwc:APA91bFKVxkuZIoK5qA1zSHTIe9cAE45pcbwegefBMSYRYBOti8dCk0JsFVW0BmfEKwf3Y4s-RbPdMF7rjEWX9Igl99OcUjS9btZe_cWR-rsqeHug6KG7x32mWa1ElMvIogQoNH3c01r"
+else:
+    fcm_api_key = os.getenv("fcm_api_key")
