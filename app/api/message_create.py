@@ -213,7 +213,7 @@ def mail_message(message_origin):
                 "message_origin": message_origin,
                 "message_subject": MSG_SUBJECT,
                 "version": 1,
-                "default": True,
+                "default": default,
                 "for": for_detail,
                 "recruit_details":recruit_details,
                 "Doc_type": Doc_type, 
