@@ -3,6 +3,7 @@ from app.slack.util.fetch_channels import FetchRecipient
 import json
 from app import mongo
 from app.email.model.template_making import fetch_recipients_by_mode
+from app.push_notification.util.push_notification import Push_notification
 
 def email_notification(user_detail,message,message_detail,message_variables,system_require,system_variable):
     if 'user' in user_detail and user_detail['user'] is not None:
@@ -24,6 +25,10 @@ def email_notification(user_detail,message,message_detail,message_variables,syst
         subject = message_detail['message_key']             
     if "to" in user_detail:
         if "SlackEmail" in user_detail:
+            if 'fcm_registration_id' in user_detail:
+                pushmsg =message_str
+                pushmsg = pushmsg.replace("\n","")
+                Push_notification(message=pushmsg,subject=subject,fcm_registration_id=user_detail['fcm_registration_id'])
             recipient = fetch_recipients_by_mode(user_detail)
             message_str = message_str.replace("\n","<br>")
     else:
