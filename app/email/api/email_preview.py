@@ -116,7 +116,8 @@ def send_or_preview_mail():
             if status == False:
                 return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
-                return jsonify({"status":True,"*Note":"Added for Rejection"}),200
+                return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
+                #return jsonify({"status":True,"*Note":"Added for Rejection"}),200
         else:
             if message_detail['message_key'] == "Interview Reminder":
                 status = interview_reminder_set(req,message_str,message_subject,smtp_email)
