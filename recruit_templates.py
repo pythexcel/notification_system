@@ -11,6 +11,7 @@ rec_templates = [
         "default" : True,
         "working" : True,
         "mobile_message" : "Hi #name: Your First round with #company: has been schedule on #date: at the #venue: for #job_profile:",
+        "jobProfileId":None
     },
     {
         "Doc_type" : "email",
@@ -24,6 +25,7 @@ rec_templates = [
         "default" : True,
         "working" : True,
         "mobile_message" : "Dear #name: Greetings from #company: We are pleased to inform you that based on your subsequent interview and application we are welcoming you to our organization #company: for the position of #job_profile: We look forward to you joining us from #date:.Please do not hesitate to call us for any information you may need Congratulations!With Regards",
+        "jobProfileId":None
     },
     {
         "Doc_type" : "email",
@@ -36,7 +38,9 @@ rec_templates = [
         "version" : 1,
         "default" : True,
         "working" : True,
-        "mobile_message" : "#name! your interview for Second round for #job_profile: with #company:"
+        "mobile_message" : "#name! your interview for Second round for #job_profile: with #company:",
+        "jobProfileId":None
+    
     },
     {
         "Doc_type" : "email",
@@ -49,7 +53,8 @@ rec_templates = [
         "version" : 1,
         "default" : True,
         "working" : True,
-        "mobile_message" : "Hi,#name: Your Third round with #company: has been schedule on #date: at the #venue: for #job_profile:"
+        "mobile_message" : "Hi,#name: Your Third round with #company: has been schedule on #date: at the #venue: for #job_profile:",
+        "jobProfileId":None
     },
     {
         "message_key" : "chat_interested",
@@ -62,7 +67,8 @@ rec_templates = [
         "for" : "when candidate is shortlisted",
         "recruit_details" : "still interested?",
         "Doc_type" : "email",
-        "mobile_message" :" Hi #name: Thank you for applying to the #job_profile: position at #company:. If you are interested for the role,kindly reply to this SMS and we will contact you on this same number for further details. #hr_signature:"
+        "mobile_message" :" Hi #name: Thank you for applying to the #job_profile: position at #company:. If you are interested for the role,kindly reply to this SMS and we will contact you on this same number for further details. #hr_signature:",
+        "jobProfileId":None
     },
     {
         "message_key" : "chat_details",
@@ -75,7 +81,8 @@ rec_templates = [
         "for" : "when candidate is shortlisted",
         "recruit_details" : "we would love to have a chat with you.",
         "Doc_type" : "email",
-        "mobile_message" :"Hi #name: we would love to chat with you regarding #job_profile: from #company: Please kindly reply to this SMS with a suitable time, we would love to have a chat with you #hr_signature:"
+        "mobile_message" :"Hi #name: we would love to chat with you regarding #job_profile: from #company: Please kindly reply to this SMS with a suitable time, we would love to have a chat with you #hr_signature:",
+        "jobProfileId":None
     },
     {
         "message" : "<div>Hi #name:,</div><div><br></div><div>In reference to your application for the #job_profile: with #company:</span></div><div><br></div><div>You're resume has been shortlisted for #job_profile:</div><div><br></div><div>Please reply to this mail for showing your interest, so we can further process your application.</div><div><br></div><div>#hr_signature:</div>",
@@ -88,7 +95,8 @@ rec_templates = [
         "default" : True,
         "for" : "when candidate is shortlisted",
         "recruit_details" : "shortlist confirmation",
-        "Doc_type" : "email"
+        "Doc_type" : "email",
+        "jobProfileId":None
     },
     {
         "message" : "Hi #name:, <br/><br/> Regarding your job application for profile #job_profile: with #company: . <br/> Your interview for #round_name: has been reschedule to #date: #time: <br/><br/> #hr_signature:",
@@ -101,7 +109,8 @@ rec_templates = [
         "default" : True,
         "for" : "when candidate interview date updated",
         "recruit_details" : "interview date updated",
-        "Doc_type" : "email"
+        "Doc_type" : "email",
+        "jobProfileId":None
     },
     {
         "Doc_type" : "email",
@@ -114,7 +123,8 @@ rec_templates = [
         "recruit_details" : "Interviwee Reject",
         "version" : 1,
         "default" : True,
-        "working" : True
+        "working" : True,
+        "jobProfileId":None
     },
     {
         "Doc_type" : "email",
@@ -127,7 +137,8 @@ rec_templates = [
         "recruit_details" : "Candidate Registration",
         "version" : 1,
         "default" : True,
-        "working" : True
+        "working" : True,
+        "jobProfileId":None
     },
     {
         "Doc_type" : "email",
@@ -140,7 +151,8 @@ rec_templates = [
         "recruit_details" : "Password Changed",
         "version" : 1,
         "default" : True,
-        "working" : True
+        "working" : True,
+        "jobProfileId":None
     },
     {
     "message" : "#name: <br>you have completed round first,<br>congratulations!",
@@ -153,7 +165,8 @@ rec_templates = [
     "default" : True,
     "for" : "Interview_reminder",
     "recruit_details" : "Interview Reminder",
-    "Doc_type" : "email"
+    "Doc_type" : "email",
+    "jobProfileId":None
     },
     {
     "message" : "Hi #name:, <br><br> Thanks for your job application for #job_profile: with #company: <br><br> We could not find your resume, could you provide the same by replying on this email. <br><br> Thanks <br> #hr_signature:",
@@ -166,7 +179,8 @@ rec_templates = [
     "default" : True,
     "for" : "when candidate resume is missing",
     "recruit_details" : "Resume Missing",
-    "Doc_type" : "email"
+    "Doc_type" : "email",
+    "jobProfileId":None
     },
     {
     "message" : "Hi #name:, <br><br> You need to take interview of #candidate_name: for #round_name: on date #interview_date: #interview_time: and profile of candidate profile link is  <br> #candidate_link:",
@@ -179,7 +193,8 @@ rec_templates = [
     "default" : True,
     "for" : "when need to take candidate interview",
     "recruit_details" : "Candidate interview",
-    "Doc_type" : "email"
+    "Doc_type" : "email",
+    "jobProfileId":None
     }
 ]
 
