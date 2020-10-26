@@ -167,6 +167,19 @@ rec_templates = [
     "for" : "when candidate resume is missing",
     "recruit_details" : "Resume Missing",
     "Doc_type" : "email"
+    },
+    {
+    "message" : "Hi #name:, <br><br> You need to take interview of #candidate_name: for #round_name: on date #interview_date: #interview_time: and profile of candidate profile link is  <br> #candidate_link:",
+    "message_key" : "candidate_interview",
+    "working" : True,
+    "mobile_message" : "Hi #name:, <br><br> You need to take interview of #candidate_name: for #round_name: on date #interview_date: #interview_time: and profile of candidate profile link is <br> #candidate_link:",
+    "message_origin" : "RECRUIT",
+    "message_subject" : "Candidate Interview Schedule",
+    "version" : 1,
+    "default" : True,
+    "for" : "when need to take candidate interview",
+    "recruit_details" : "Candidate interview",
+    "Doc_type" : "email"
     }
 ]
 
