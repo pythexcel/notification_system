@@ -1,5 +1,11 @@
 variables = [
     {
+        "name": "#candidate_link",
+        "value": None,
+        "recruit_variable":"[candidate_link]",
+        "variable_type": "user"
+    },
+    {
         "name": "#date",
         "value": None,
         "recruit_variable":"[date]",
