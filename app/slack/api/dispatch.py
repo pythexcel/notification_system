@@ -2,7 +2,7 @@ from app.auth import token
 from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.util.serializer import serialize_doc
-from app.slack.model.slack_util import slack_message,slack_id
+from app.slack.model.slack_util import slack_message,slack_id,recruit_slack_id
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
                                 jwt_refresh_token_required,
@@ -43,6 +43,18 @@ def token_test():
         return jsonify({"status":True,"message": "Slack Token Tested"}), 200
     except Exception:
         return jsonify({"status":False,"message": "Slack User not exist or invalid token"}), 400
+
+
+#Api for get slackid by email
+@bp.route('/get_slackid',methods=["POST"])
+def get_slackid():
+    email = request.json.get('email')
+    try:
+        slackid = recruit_slack_id(email)
+        #slack_message(channel=[slack],message="Testing Slack Notification from HR System")
+        return jsonify({"status":True,"Slackid":slackid}), 200
+    except Exception:
+        return jsonify({"status":False,"Slackid":None}), 400
 
 
 

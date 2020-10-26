@@ -21,6 +21,19 @@ def slack_id(email):
     else:
         raise Exception("Slack profile not available in workspace")  
 
+def recruit_slack_id(email):
+    slack_token = slack_load_token()
+    sc = SlackClient(slack_token)
+    sl_user_id = sc.api_call("users.lookupByEmail",
+                       email=email)
+    if sl_user_id['ok'] is True:                   
+        return (sl_user_id['user']['id'])
+    else:
+        return None
+        #raise Exception("Slack profile not available in workspace")  
+
+
+
 def slack_message(channel, message,req_json=None,message_detail=None):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)
