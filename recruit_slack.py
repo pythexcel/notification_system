@@ -349,10 +349,23 @@ rec_message = [
     "sended_to" : "public",
     "slack_channel":None,
     "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : " Hi @user: \n You need to take interview of @candidate_name: for @round: on date @date: @time: and profile of candidate is this \n @candidate_link: ",
+    "message_color" : None,
+    "message_key" : "candidate_interview",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel":None,
+    "working" : True
     }
 ]
-
-
 
 """
 [
