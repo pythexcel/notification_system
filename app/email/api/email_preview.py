@@ -58,8 +58,11 @@ def send_or_preview_mail():
         Subject = req.get("subject",None)
         smtp_email = req.get("smtp_email",None)
         phone = req.get("phone", None)
-
-        message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY}) #calling function for message details by message key
+        if "JobProfileId" in req: 
+            JobProfileId = req.get("JobProfileId", None)
+            message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY,"JobProfileId":JobProfileId})
+        else:
+            message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY,'JobProfileId':{'$exists':False}}) #calling function for message details by message key
 
         if message_detail is not None:
             if Message is not None:
