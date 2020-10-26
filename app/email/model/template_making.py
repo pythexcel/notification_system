@@ -147,4 +147,25 @@ def fetch_recipients_by_mode(request=None):
 
 
 
+#Here function for fetch recipients according to env
+def slack_fetch_recipients_by_mode(request=None):
+    if request is not None:
+        MAIL_SEND = []     
+        if app.config['ENV'] == 'development':
+            for email in request.get('to'):
+                full_domain = re.search("@[\w.]+", email)
+                domain = full_domain.group().split(".")
+                if domain[0] == "@excellencetechnologies":
+                    MAIL_SEND_TO = [email]
+                else:
+                    MAIL_SEND_TO = [app.config['to']]
+                if MAIL_SEND_TO:
+                    MAIL_SEND.append(MAIL_SEND_TO[0])
+        else:
+            if app.config['ENV'] == 'production':
+                MAIL_SEND = request.get("to",None)
+        return MAIL_SEND
+    else:
+        raise Exception("Request not should be None")
+
 
