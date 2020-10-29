@@ -15,18 +15,23 @@ client_id = '124720392913.1351927574339'
 client_secret = '456458283bbb8cdd7e4dc8edeaa77ff5'
 """
 
-if os.getenv("oauth_url") is not None:
-    oauth_url = os.getenv("oauth_url")
+if "pytest" in sys.modules:
+    oauth_url = "https://slack.com/api/oauth.v2.access"
+    client_id = "xyz"
+    client_secret = "xyz"
 else:
-    raise Exception ('missing oauth_url')
-if os.getenv("client_id") is not None:
-    client_id = os.getenv("client_id")
-else:
-    raise Exception ('missing client_id')
-if os.getenv("client_secret") is not None:
-    client_secret = os.getenv("client_secret")
-else:
-    raise Exception ('missing client_secret')
+    if os.getenv("oauth_url") is not None:
+        oauth_url = os.getenv("oauth_url")
+    else:
+        raise Exception ('missing oauth_url')
+    if os.getenv("client_id") is not None:
+        client_id = os.getenv("client_id")
+    else:
+        raise Exception ('missing client_id')
+    if os.getenv("client_secret") is not None:
+        client_secret = os.getenv("client_secret")
+    else:
+        raise Exception ('missing client_secret')
 #this is base url for pytest
 if "pytest" in sys.modules:
     base_url = "http://127.0.0.1:5000/"
