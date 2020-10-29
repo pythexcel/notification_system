@@ -195,6 +195,20 @@ rec_templates = [
     "recruit_details" : "Candidate interview",
     "Doc_type" : "email",
     "jobProfileId":None
+    },
+    {
+    "message" : "Hi #name:, <br><br> How are you doing today! <br><br> Thank your for your job application for the role of #job_profile: with our company #company: <br><br> I wanted to get in touch with you to get to know more about skills and experience. <br><br> Let me know a suitable time and your contact information, so we can get on a call. <br><br> #hr_signature:",
+    "message_key" : "ask_for_call_availability",
+    "working" : True,
+    "mobile_message" : "Hi #name:, <br><br> How are you doing today! <br><br> Thank your for your job application for the role of #job_profile: with our company #company: <br><br> I wanted to get in touch with you to get to know more about skills and experience. <br><br> Let me know a suitable time and your contact information, so we can get on a call. <br><br> #hr_signature:",
+    "message_origin" : "RECRUIT",
+    "message_subject" : "ask for call availability?",
+    "version" : 1,
+    "default" : True,
+    "for" : "when need to ask candidate for call",
+    "recruit_details" : "ask for call availability?",
+    "Doc_type" : "email",
+    "jobProfileId":None
     }
 ]
 
