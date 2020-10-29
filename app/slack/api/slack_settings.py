@@ -7,7 +7,7 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 jwt_refresh_token_required,
                                 verify_jwt_in_request)
 import datetime
-from app.config import slack_redirect_url,oauth_url,client_id,client_secret,base_url
+from app.config import oauth_url,client_id,client_secret,base_url
 import requests 
 
 bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
@@ -51,11 +51,53 @@ def app_state():
             return jsonify ({'message': 'app not installed'})
 
 
+@bp.route('/redirect', methods=['GET'])
+def slack_redirect():
+    code = request.args.get('code')
+    state = request.args.get('state')
+    client_redirect_uri = base_url+'slack/redirect'
+    remove_previous_state = mongo.db.app_state.remove({'code': code})
+    try:
+        oauth_details = {
+            'code': code,
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'redirect_uri': client_redirect_uri
+        }
+        token = requests.post(oauth_url,data=oauth_details)
+        print(token.json())
+        token_resp = token.json().get('access_token') 
+        """
+        save_token = mongo.db.slack_settings.update({}, {
+            '$set': {
+                'slack_token': token_resp
+            }
+        },upsert=True)
+        """
+        if token_resp:
+            state_save = mongo.db.app_state.update({"code":code}, {
+                '$set': {
+                    'slack_token': token_resp,
+                    'state': state,
+                    'code': code,
+                    'installed_on': datetime.datetime.now()
+                }
+            },upsert=True)
+            return jsonify({"error":False,'message': 'successfully app installed',"slack_token":token_resp}),200
+        else:
+            return jsonify({"error":True,'message': 'app not installed',"slack_token":token_resp}),200
+    except Exception:
+        return jsonify ({'message': 'unauthorized'}),400
+
+
+
+#----------This is old code not removing because may be will use later
+
 
 #Api for redirect and perform authentication and store client app info into db.
 #This api URL will pass as auth url in manage distribustion redirect url section in main slack app.
 #Then when someone try to install our slack app he will redirect to our api here we will authenticate and will store client slack token etc inour db .
-
+"""
 @bp.route('/redirect', methods=["GET"])
 #@token.admin_required
 def slack_redirect():
@@ -97,3 +139,4 @@ def slack_redirect():
         )
         return redirect(slack_redirect_url), 302 
     raise Exception("send slack auth code into param variable code")
+"""
