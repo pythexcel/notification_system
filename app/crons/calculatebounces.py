@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 from app.util.serializer import serialize_doc
 import datetime
 import dateutil.parser

@@ -1,5 +1,5 @@
 from app.auth import token
-from app import mongo
+#from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
@@ -11,6 +11,8 @@ import dateutil.parser
 import datetime
 from datetime import timedelta
 from app.model.interview_reminders import fetch_interview_reminders
+from app.account import initDB
+from app.utils import check_and_validate_account
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
@@ -21,7 +23,9 @@ bp = Blueprint('notify', __name__, url_prefix='/notify')
 #But as i read code its for return total sum of interview reminder by one day before day
 @bp.route('/reminder_details/<string:jobId>', methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def reminder_details(jobId):
+    mongo = initDB(request.account_name, request.account_config)
     date = (datetime.datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
     before_date = dateutil.parser.parse(date)
     try:

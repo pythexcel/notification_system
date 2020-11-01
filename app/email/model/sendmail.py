@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 from dotenv import load_dotenv
 import smtplib,ssl    
 import os 

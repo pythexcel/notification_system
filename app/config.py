@@ -14,7 +14,7 @@ oauth_url = 'https://slack.com/api/oauth.v2.access'
 client_id = '124720392913.1351927574339'
 client_secret = '456458283bbb8cdd7e4dc8edeaa77ff5'
 """
-
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 if "pytest" in sys.modules:
     oauth_url = "https://slack.com/api/oauth.v2.access"
     client_id = "xyz"

@@ -1,6 +1,6 @@
 
 import datetime
-from app import mongo
+#from app import mongo
 from app.config import smtp_counts,default_unsub
 from bson import ObjectId
 import re

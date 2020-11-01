@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 from flask import current_app as app
 
 

@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 import requests
 from slackclient import SlackClient
 from flask import jsonify

@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 from app.util.serializer import serialize_doc
 """
 #function for fetch details from db by date about interview reminders

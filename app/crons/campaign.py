@@ -3,7 +3,7 @@ import os
 import sys    
 import random
 import re
-from app import mongo
+#from app import mongo
 from app.util.serializer import serialize_doc
 import datetime
 import dateutil.parser

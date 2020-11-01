@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 import requests
 from slackclient import SlackClient
 from app.email.model.sendmail import send_email
@@ -91,10 +91,10 @@ def template_requirement(user):
     user['template_variables'] = unique_variables 
     return user              
 
-def Template_details(details):
+def Template_details(details,mongo):
     users = 0
     Template_data = []
-    user_data = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+    user_data = mongo.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
     user_data = [serialize_doc(doc) for doc in user_data]
     if user_data:
         for data in user_data:
@@ -102,7 +102,7 @@ def Template_details(details):
     details['users'] = users    
     if 'Template' in details:
         for elem in details['Template']:
-            ret = mongo.db.mail_template.find_one({"_id":ObjectId(elem)})
+            ret = mongo.mail_template.find_one({"_id":ObjectId(elem)})
             ret = serialize_doc(ret)
             Template_data.append(ret)
         details['Template'] = Template_data

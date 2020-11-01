@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.slack.model.slack_util import slack_message,slack_id,slack_load_token,slack_profile
 from slackclient import SlackClient

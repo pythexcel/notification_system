@@ -1,5 +1,5 @@
 from app.auth import token
-from app import mongo
+#from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.util.serializer import serialize_doc
 from app.slack.model.slack_util import slack_message,slack_id,recruit_slack_id

@@ -12,7 +12,6 @@ from flask import g, current_app, jsonify
 import jwt
 from bson.objectid import ObjectId
 
-from app import mongo
 
 from dotenv import load_dotenv
 

@@ -159,25 +159,26 @@ def create_app(test_config=None):
             zapier_scheduler.shutdown()
             
     elif app.config['origin'] == "recruit":
+        """
         try:
             seed_recruit_data()
         except Exception:
             pass
-
+        """
         recruit_schduled_messages_scheduler = BackgroundScheduler()
-        recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
+        #recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
         recruit_schduled_messages_scheduler.start()
 
         reject_mail_scheduler = BackgroundScheduler()
-        reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
+        #reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
         reject_mail_scheduler.start()
 
         campaign_mail_scheduler = BackgroundScheduler()
-        campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
+        #campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
         campaign_mail_scheduler.start()
 
         bounced_mail_scheduler = BackgroundScheduler()
-        bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=3)
+        #bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=3)
         bounced_mail_scheduler.start()
 
 
@@ -186,15 +187,15 @@ def create_app(test_config=None):
         mail_reminder_scheduler.start()
 
         calculate_bounce_rate_scheduler = BackgroundScheduler()
-        calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=5)
+        #calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=5)
         calculate_bounce_rate_scheduler.start()
 
         update_completion_time_scheduler = BackgroundScheduler()
-        update_completion_time_scheduler.add_job(update_completion_time, trigger='interval', seconds=5)
+        #update_completion_time_scheduler.add_job(update_completion_time, trigger='interval', seconds=5)
         update_completion_time_scheduler.start()
 
         campaign_details_update_scheduler = BackgroundScheduler()
-        campaign_details_update_scheduler.add_job(campaign_details, trigger='interval', seconds=2)
+        #campaign_details_update_scheduler.add_job(campaign_details, trigger='interval', seconds=2)
         campaign_details_update_scheduler.start()
 
         try:

@@ -2,7 +2,7 @@
 
 from flask import current_app as app
 import re
-from app import mongo
+#from app import mongo
 from flask import jsonify
 import datetime
 

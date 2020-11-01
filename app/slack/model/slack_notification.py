@@ -1,7 +1,7 @@
 from app.slack.model.slack_util import slack_id
 from app.slack.util.make_message import MakeMessage
 from app.slack.util.fetch_channels import FetchChannels
-from app import mongo
+#from app import mongo
 
 
 

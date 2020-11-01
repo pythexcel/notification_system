@@ -1,7 +1,7 @@
 from app.slack.util.make_message import MakeMessage
 from app.slack.util.fetch_channels import FetchRecipient
 import json
-from app import mongo
+#from app import mongo
 from app.email.model.template_making import fetch_recipients_by_mode,slack_fetch_recipients_by_mode
 from app.push_notification.util.push_notification import Push_notification
 
