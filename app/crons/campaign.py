@@ -17,7 +17,7 @@ import uuid
 import time
 import email
 import requests
-
+from app.email.util.template_util import construct_message_str
 
 
 def campaign_mail():
@@ -94,18 +94,22 @@ def campaign_mail():
                                     varb = re.split(rex, elem)
                                     message_variables.append(varb[0])
                                 message_str = final_message['message']
-                                for detail in message_variables:
-                                    if detail in campaign:
-                                        rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                                        message_str = re.sub(rexWithString, campaign[detail], message_str)
-                                    elif detail in user:
-                                        rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                                        message_str = re.sub(rexWithString, user[detail], message_str)
-                                    else:
-                                        for element in system_variable:
-                                            if "#" + detail == element['name'] and element['value'] is not None:
-                                                rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                                                message_str = re.sub(rexWithSystem, element['value'], message_str)  
+                                if "data" in user:
+                                    requestdate = user['data']
+                                    message_str,missing_payload = construct_message_str(message_detail=message_str, request=requestdate ,system_variable=system_variable)
+                                else:
+                                    for detail in message_variables:
+                                        if detail in campaign:
+                                            rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                                            message_str = re.sub(rexWithString, campaign[detail], message_str)
+                                        elif detail in user:
+                                            rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                                            message_str = re.sub(rexWithString, user[detail], message_str)
+                                        else:
+                                            for element in system_variable:
+                                                if "#" + detail == element['name'] and element['value'] is not None:
+                                                    rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                                                    message_str = re.sub(rexWithSystem, element['value'], message_str)  
                                 subject_variables = []
                                 message_sub = subject.split('#')
                                 del message_sub[0]
