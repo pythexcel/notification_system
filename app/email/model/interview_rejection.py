@@ -7,7 +7,7 @@ from flask import jsonify
 import datetime
 
 
-def interview_rejection(req,message_str,message_subject,smtp_email):
+def interview_rejection(mongo,req,message_str,message_subject,smtp_email):
     reject_mail = None
     if "sender_name" in req:
         sender_name = req['sender_name']
@@ -28,7 +28,7 @@ def interview_rejection(req,message_str,message_subject,smtp_email):
                 reject_mail = email
             else:
                 reject_mail = app.config['to']   
-    reject_handling = mongo.db.rejection_handling.insert_one({
+    reject_handling = mongo.rejection_handling.insert_one({
                     "email": reject_mail,
                     'rejection_time': req['data']['rejection_time'],
                     'send_status': False,
@@ -42,12 +42,12 @@ def interview_rejection(req,message_str,message_subject,smtp_email):
 
 
 
-def interview_reminder_set(req,message_str,message_subject,smtp_email):
+def interview_reminder_set(mongo,req,message_str,message_subject,smtp_email):
     jobId = req.get('jobId')
     date = datetime.datetime.now()
     message_key = "Interview Reminder"
     if jobId is not None:
-        reject_handling = mongo.db.reminder_details.insert_one({
+        reject_handling = mongo.reminder_details.insert_one({
                     "jobId": jobId,
                     'date': date,
                     'message_key': message_key

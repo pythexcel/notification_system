@@ -4,15 +4,15 @@ from slackclient import SlackClient
 from flask import jsonify
 import datetime
 
-def slack_load_token():
-    token = mongo.db.slack_settings.find_one({
+def slack_load_token(mongo):
+    token = mongo.slack_settings.find_one({
         "slack_token": {"$exists": True}
     }, {"slack_token": 1, '_id': 0})
     sl_token = token['slack_token']
     return sl_token
 
-def slack_id(email):
-    slack_token = slack_load_token()
+def slack_id(email,mongo):
+    slack_token = slack_load_token(mongo)
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
@@ -21,8 +21,8 @@ def slack_id(email):
     else:
         raise Exception("Slack profile not available in workspace")  
 
-def recruit_slack_id(email):
-    slack_token = slack_load_token()
+def recruit_slack_id(email,mongo):
+    slack_token = slack_load_token(mongo)
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
@@ -34,8 +34,8 @@ def recruit_slack_id(email):
 
 
 
-def slack_message(channel, message,req_json=None,message_detail=None):
-    slack_token = slack_load_token()
+def slack_message(mongo,channel, message,req_json=None,message_detail=None):
+    slack_token = slack_load_token(mongo)
     sc = SlackClient(slack_token)
     if req_json is not None:
         if 'button' in req_json:
@@ -74,8 +74,8 @@ def slack_message(channel, message,req_json=None,message_detail=None):
             attachments=attachments
         )
 
-def slack_profile(email=None):
-    slack_token = slack_load_token()
+def slack_profile(mongo,email=None):
+    slack_token = slack_load_token(mongo)
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)

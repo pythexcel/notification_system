@@ -464,5 +464,5 @@ def assign_channel():
 def all_mail_message():
     mongo = initDB(request.account_name, request.account_config)
     ret = mongo.mail_template.find({})
-    ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+    ret = [template_requirement(serialize_doc(doc),mongo) for doc in ret]
     return jsonify(ret), 200

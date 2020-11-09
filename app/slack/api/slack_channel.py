@@ -3,6 +3,9 @@ from flask import (Blueprint, flash, jsonify, abort, request)
 from app.slack.model.slack_util import slack_message,slack_id,slack_load_token,slack_profile
 from slackclient import SlackClient
 from app.auth import token
+from app.account import initDB
+from app.utils import check_and_validate_account
+
 
 bp = Blueprint('slack_channels', __name__, url_prefix='/')
 
@@ -13,9 +16,11 @@ def ping():
 
 
 @bp.route('/slackchannels', methods=["GET","POST"])
+@check_and_validate_account
 def slack():
+    mongo = initDB(request.account_name, request.account_config)
     # Getting slack token from function
-    token = slack_load_token()
+    token = slack_load_token(mongo)
     sc = SlackClient(token)
 
     if request.method == "GET":   
@@ -47,7 +52,7 @@ def slack():
             abort(500)
         #getting user slack id by using email id
         email = request.json.get("email", None)
-        slack = slack_id(email)
+        slack = slack_id(email,mongo)
 
         #getting user private channels into those channels a user and bot both exists.
         sl_user_pvt = sc.api_call(
@@ -68,20 +73,24 @@ def slack():
 
 
 @bp.route('/slack_profile', methods=["POST"])
+@check_and_validate_account
 def sl_profile():
     if not request.json:
             abort(500)
+    mongo = initDB(request.account_name, request.account_config)
     email = request.json.get("email", None)
     try:
-        slack = slack_profile(email)
+        slack = slack_profile(mongo,email)
         return jsonify (slack), 200
     except Exception:
         return jsonify(email),200
 
 
 @bp.route('/slack_channel_ids', methods=["GET"])
+@check_and_validate_account
 def getslackid():
-    token = slack_load_token()
+    mongo = initDB(request.account_name, request.account_config)
+    token = slack_load_token(mongo)
     sc = SlackClient(token)
     sl_channel = sc.api_call(
             "im.list"
@@ -90,8 +99,10 @@ def getslackid():
 
 
 @bp.route('/slack_users_list', methods=["GET"])
+@check_and_validate_account
 def getslackusers():
-    token = slack_load_token()
+    mongo = initDB(request.account_name, request.account_config)
+    token = slack_load_token(mongo)
     sc = SlackClient(token)
     sl_list = sc.api_call(
             "users.list"

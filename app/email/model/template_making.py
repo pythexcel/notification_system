@@ -12,7 +12,7 @@ import dateutil.parser
 from app.util.serializer import serialize_doc
 from flask import current_app as app
 
-def construct_attachments_in_by_msg_details(message_detail=None,req=None):
+def construct_attachments_in_by_msg_details(mongo,message_detail=None,req=None):
     attachment_file = None
     attachment_file_name = None
     if 'attachment' in req:
@@ -32,7 +32,7 @@ def construct_attachments_in_by_msg_details(message_detail=None,req=None):
     header = None
     footer = None
     if 'template_head' in message_detail:        
-        var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
+        var = mongo.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
         if var is not None:
             header = var['header_value']
             footer = var['footer_value']
@@ -40,11 +40,11 @@ def construct_attachments_in_by_msg_details(message_detail=None,req=None):
 
 
 # this function will send back variables of html templates with variable from templates if there are None in special variables collection
-def template_requirement(user):
+def template_requirement(user,mongo):
     special_val = []
     unrequired = []
     unique_variables = []
-    ret = mongo.db.mail_variables.find({})
+    ret = mongo.mail_variables.find({})
     ret = [serialize_doc(doc) for doc in ret]
     for data in ret:
         if data['value'] is None:
@@ -69,7 +69,7 @@ def template_requirement(user):
     header = None
     footer = None
     if 'template_head' in user:
-        var = mongo.db.letter_heads.find_one({"_id":ObjectId(user['template_head'])})
+        var = mongo.letter_heads.find_one({"_id":ObjectId(user['template_head'])})
         if var is not None:
             header = var['header_value']
             footer = var['footer_value']
@@ -81,7 +81,7 @@ def template_requirement(user):
             message_str = re.sub(footer_rex, footer, message_str)
 
     if 'template_head' in user:
-        ret = mongo.db.letter_heads.find({"_id":ObjectId(user['template_head'])})
+        ret = mongo.letter_heads.find({"_id":ObjectId(user['template_head'])})
         ret = [serialize_doc(doc) for doc in ret]
         user['template_head'] = [ret]
     else:

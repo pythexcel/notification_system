@@ -84,7 +84,7 @@ def send_or_preview_mail():
             system_variable = [serialize_doc(doc) for doc in system_variable]
 
             #here calling function for filter attachments,header,footer etc details from message details
-            attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(message_detail=message_detail,req=req)
+            attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(mongo,message_detail=message_detail,req=req)
             
             #Here calling function for filter message,mobile message,subject and any missing payload value
             message_str,message_subject,mobile_message_str,missing_payload = generate_full_template_from_string_payload(message_detail= message_detail, request= req,system_variable=system_variable)
@@ -120,7 +120,7 @@ def send_or_preview_mail():
                     pass
         to,bcc,cc = get_recipients_from_request(req)
         if message_detail['message_key'] == "interviewee_reject":
-            status = interview_rejection(req,message_str,message_subject,smtp_email)
+            status = interview_rejection(mongo,req,message_str,message_subject,smtp_email)
             if status == False:
                 return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
@@ -128,7 +128,7 @@ def send_or_preview_mail():
                 #return jsonify({"status":True,"*Note":"Added for Rejection"}),200
         else:
             if message_detail['message_key'] == "Interview Reminder":
-                status = interview_reminder_set(req,message_str,message_subject,smtp_email)
+                status = interview_reminder_set(mongo,req,message_str,message_subject,smtp_email)
                 if status == False:
                     return jsonify({"status":False,"*Note":"Job_ID missing"}),400
                 else:
@@ -143,14 +143,14 @@ def send_or_preview_mail():
                     if mail_details is None:
                         mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
                         #return jsonify({"status":False,"Message": "Smtp not available in db"})
-                        send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+                        send_email(mongo,message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
                         return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
                     else:
-                        send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+                        send_email(mongo,message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
                         return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
                 else:
                     #mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
-                    send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
+                    send_email(mongo,message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
                     return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str,"phone_status" : phone_status, "phone_issue": phone_issue}),200
             else:
                 return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str, "phone_status" : phone_status, "phone_issue": phone_issue}),200
@@ -205,7 +205,7 @@ def mails():
         for mail_store in MAIL_SEND_TO:
             #Here calling function for update recruit mails into a collection
             try:
-                update_recruit_mail_msg(phone=phone,phone_message=phone_message,phone_issue=phone_issue,message=message,subject=subject,to=mail_store,is_reminder=is_reminder)
+                update_recruit_mail_msg(mongo,phone=phone,phone_message=phone_message,phone_issue=phone_issue,message=message,subject=subject,to=mail_store,is_reminder=is_reminder)
             except Exception as error:
                 return(str(error)),400
 
@@ -224,7 +224,7 @@ def mails():
         else:
             sender_name = None
         try:
-            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,sender_name=sender_name,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
+            send_email(mongo,message=message,recipients=MAIL_SEND_TO,subject=subject,sender_name=sender_name,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
             if mail_details['mail_username'] == "apikey":
                 return jsonify({"status":True,"Message":"Sended","smtp":"noreply@excellencetechnologies.in","phone_status" : phone_status, "phone_issue": phone_issue}),200    
             else:
@@ -253,14 +253,14 @@ def required_message(message_key):
         if message_key == "All":
             ret = mongo.mail_template.find({},{"version":0,"version_details":0})
             if ret is not None:
-                ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+                ret = [template_requirement(serialize_doc(doc),mongo) for doc in ret]
                 return jsonify(ret), 200
             else:
                 return jsonify ({"message": "no template exist"}), 200    
         else:    
             ret = mongo.mail_template.find({"for": message_key},{"version":0,"version_details":0})
             if ret is not None:
-                ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+                ret = [template_requirement(serialize_doc(doc),mongo) for doc in ret]
                 return jsonify(ret), 200
             else:
                 return jsonify ({"message": "no template exist"}), 200    
