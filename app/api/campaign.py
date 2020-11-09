@@ -74,7 +74,6 @@ def create_campaign():
             })
         else:
             pass
-    
         return jsonify({"campaign_id":str(ret),"message_id":message_id}),200
 
 
@@ -156,7 +155,7 @@ def delete_campaign(Id):
 def list_campaign():
         mongo = initDB(request.account_name, request.account_config)
         ret = mongo.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
-        ret = [Template_details(serialize_doc(doc)) for doc in ret]
+        ret = [Template_details(serialize_doc(doc),mongo) for doc in ret]
         return jsonify(ret), 200
 
 
@@ -237,7 +236,7 @@ def add_user_campaign():
     mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
         ret = mongo.campaign_users.aggregate([])
-        ret = [campaign_details(serialize_doc(doc)) for doc in ret]
+        ret = [campaign_details(serialize_doc(doc),mongo) for doc in ret]
         return jsonify(ret), 200
     if request.method == "POST":
         users = request.json.get("users")
@@ -279,7 +278,7 @@ def campaign_detail(Id):
     mongo = initDB(request.account_name, request.account_config)
     ret = mongo.campaigns.find_one({"_id": ObjectId(Id)})
     detail = serialize_doc(ret)
-    return jsonify(user_data(detail)),200
+    return jsonify(user_data(detail,mongo)),200
 
 @bp.route("/campaign_smtp_test", methods=["POST"])
 @token.SecretKeyAuth
@@ -292,6 +291,7 @@ def campaign_smtp_test():
     for data in mail:
         try:
             send_email(
+                mongo,
                 message=request.json.get('message'),
                 recipients=[request.json.get('email')],
                 subject=request.json.get('message_subject'),

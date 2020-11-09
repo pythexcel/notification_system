@@ -1,8 +1,8 @@
 {
     "excellencerecruit" : {
         "mongodb" : {
-            "host" : "mongodb://xmage:xmage@cluster0-xooqb.mongodb.net/slack_settings_test?retryWrites=true",
-            "db" : "excellence_recruit"
+            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
+            "db" : "notify_staging"
         }
     },
    "devrecruit" : {

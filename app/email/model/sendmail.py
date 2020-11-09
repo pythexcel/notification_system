@@ -17,20 +17,20 @@ import datetime
 
 
 
-def send_email(message,recipients,subject,sender_name=None,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
+def send_email(mongo,message,recipients,subject,sender_name=None,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
     if "pytest" in sys.modules:
-        mail_details = mongo.db.mail_settings.find_one({"origin": "CAMPAIGN"},{"_id":0})
+        mail_details = mongo.mail_settings.find_one({"origin": "CAMPAIGN"},{"_id":0})
     else:
         # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
         if os.getenv('origin') == "hr":
-            mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
+            mail_details = mongo.mail_settings.find_one({"origin": "HR"},{"_id":0})
         elif os.getenv('origin') == "recruit":    
-            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True},{"_id":0})
+            mail_details = mongo.mail_settings.find_one({"origin": "RECRUIT","active": True},{"_id":0})
         elif os.getenv('origin') == "tms":    
-            mail_details = mongo.db.mail_settings.find_one({"origin": "TMS","active": True},{"_id":0})
+            mail_details = mongo.mail_settings.find_one({"origin": "TMS","active": True},{"_id":0})
 
     if mail_details is None:
         mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}

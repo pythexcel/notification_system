@@ -74,7 +74,7 @@ def mail_setings(origin,id=None):
         else:
             email = mail_username  
         try:
-            send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
+            send_email(mongo,message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
         except smtplib.SMTPServerDisconnected:
             return jsonify({"message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
@@ -194,6 +194,7 @@ def smtp_priority(Id,position):
 @token.SecretKeyAuth
 @check_and_validate_account
 def update_smtp(origin,id):
+    mongo = initDB(request.account_name, request.account_config)
     new_password = request.json.get('new_password',"password")
     mail_details = mongo.mail_settings.find_one({"_id": ObjectId(str(id))})
     if mail_details is None:
@@ -211,7 +212,7 @@ def update_smtp(origin,id):
         else:
             email = username 
         try:
-            send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=username,sending_password=new_password,sending_port=port,sending_server=mail_server)
+            send_email(mongo,message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=username,sending_password=new_password,sending_port=port,sending_server=mail_server)
         except smtplib.SMTPServerDisconnected:
             return jsonify({"message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
@@ -234,6 +235,7 @@ def update_smtp(origin,id):
 @token.SecretKeyAuth
 @check_and_validate_account
 def validate_smtp_check():
+    mongo = initDB(request.account_name, request.account_config)
     email = request.json.get('email')
     password = request.json.get('password')
     if email is None:
