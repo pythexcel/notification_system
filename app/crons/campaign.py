@@ -17,7 +17,7 @@ import uuid
 import time
 import email
 import requests
-from app.email.util.template_util import construct_message_str
+from app.email.util.template_util import construct_message_str,construct_message_subject
 
 
 def campaign_mail():
@@ -110,26 +110,29 @@ def campaign_mail():
                                                 if "#" + detail == element['name'] and element['value'] is not None:
                                                     rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
                                                     message_str = re.sub(rexWithSystem, element['value'], message_str)  
-                                subject_variables = []
-                                message_sub = subject.split('#')
-                                del message_sub[0]
-                                regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
-                                for elem in message_sub:
-                                    sub_varb = re.split(regex, elem)
-                                    subject_variables.append(sub_varb[0])
-                                message_subject = subject
-                                for detail in subject_variables:
-                                    if detail in campaign:
-                                        rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                                        message_subject = re.sub(rexWithString, campaign[detail], message_subject)
-                                    elif detail in user:
-                                        rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
-                                        message_str = re.sub(rexWithString, user[detail], message_str)
-                                    else:
-                                        for element in system_variable:
-                                            if "#" + detail == element['name'] and element['value'] is not None:
-                                                rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
-                                                message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
+                                if "data" in user:
+                                    message_subject,missing_payload = construct_message_subject(message_detail=final_message,request=user,system_variable=system_variable)
+                                else:
+                                    subject_variables = []
+                                    message_sub = subject.split('#')
+                                    del message_sub[0]
+                                    regex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
+                                    for elem in message_sub:
+                                        sub_varb = re.split(regex, elem)
+                                        subject_variables.append(sub_varb[0])
+                                    message_subject = subject
+                                    for detail in subject_variables:
+                                        if detail in campaign:
+                                            rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                                            message_subject = re.sub(rexWithString, campaign[detail], message_subject)
+                                        elif detail in user:
+                                            rexWithString = '#' + re.escape(detail) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])'
+                                            message_str = re.sub(rexWithString, user[detail], message_str)
+                                        else:
+                                            for element in system_variable:
+                                                if "#" + detail == element['name'] and element['value'] is not None:
+                                                    rexWithSystem = re.escape(element['name']) + r'([!]|[@]|[\$]|[\%]|[\^]|[\&]|[\*]|[\:]|[\;])' 
+                                                    message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
                                 digit = str(uuid.uuid4())
                                 to = []
                                 to.append(mail)
