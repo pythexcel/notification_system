@@ -142,5 +142,6 @@ def send_email(message,recipients,subject,sender_name=None,bcc=None,cc=None,mail
             
     main = MIMEText(message,'html')
     msg.attach(main)
+    print(delivered)
     mail.sendmail(username,delivered, msg.as_string()) 
     mail.quit()

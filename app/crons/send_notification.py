@@ -64,7 +64,11 @@ def recruit_cron_messages():
                     })
 
         if ret['type'] == "email":
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
+            if "sender_name" in ret:
+                sender_name = ret['sender_name']
+            else:
+                sender_name = None
+            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'],sender_name=sender_name)
         elif ret['type'] == "slack":
             slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
         else:

@@ -410,8 +410,8 @@ def slack_channel_test():
 @token.SecretKeyAuth
 def get_triggers():
     duplicate = []
-    triggers = []
-    holdTriger = ["when candidate is on hold"]
+    triggers = ["when candidate is on hold"]
+    #holdTriger = []
     ret = mongo.db.mail_template.find({"message_origin": "RECRUIT"})
     ret = [serialize_doc(doc) for doc in ret]
     if ret:
@@ -420,7 +420,7 @@ def get_triggers():
     for elem in duplicate:
         if elem not in triggers:
             triggers.append(elem)
-    return jsonify({"triggers": triggers+holdTriger}), 200
+    return jsonify({"triggers": triggers}), 200
 
 
 #Api for update channel code for all messages.

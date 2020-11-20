@@ -8,19 +8,23 @@ def slack_load_token():
     token = mongo.db.slack_settings.find_one({
         "slack_token": {"$exists": True}
     }, {"slack_token": 1, '_id': 0})
-    sl_token = token['slack_token']
-    return sl_token
-
+    if token:
+        sl_token = token['slack_token']
+        return sl_token
+    else:
+        return None
 def slack_id(email):
     slack_token = slack_load_token()
-    sc = SlackClient(slack_token)
-    sl_user_id = sc.api_call("users.lookupByEmail",
-                       email=email)
-    if sl_user_id['ok'] is True:                   
-        return (sl_user_id['user']['id'])
+    if slack_token is not None:
+        sc = SlackClient(slack_token)
+        sl_user_id = sc.api_call("users.lookupByEmail",
+                        email=email)
+        if sl_user_id['ok'] is True:                   
+            return (sl_user_id['user']['id'])
+        else:
+            raise Exception("Slack profile not available in workspace")  
     else:
-        raise Exception("Slack profile not available in workspace")  
-
+        raise Exception("Slack token not available in database")
 def recruit_slack_id(email):
     slack_token = slack_load_token()
     sc = SlackClient(slack_token)

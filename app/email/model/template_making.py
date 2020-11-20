@@ -162,8 +162,8 @@ def slack_fetch_recipients_by_mode(request=None):
                 if MAIL_SEND_TO:
                     MAIL_SEND.append(MAIL_SEND_TO[0])
         else:
-            if app.config['ENV'] == 'production':
-                MAIL_SEND = request.get("to",None)
+            #if app.config['ENV'] == 'production':
+            MAIL_SEND = request.get("to")
         return MAIL_SEND
     else:
         raise Exception("Request not should be None")
