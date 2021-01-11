@@ -1,3 +1,4 @@
+'''
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -158,3 +159,4 @@ class AllTestMailsettingApis(unittest.TestCase):
         self.assertIn('message',response.get_data(as_text=True))
         self.assertIn('message_key',response.get_data(as_text=True))
         self.assertIn('message_subject',response.get_data(as_text=True))
+'''

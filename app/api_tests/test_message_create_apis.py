@@ -1,3 +1,4 @@
+'''
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -310,3 +311,4 @@ class AllDataTestCase(unittest.TestCase):
             self.assertIn('message_subject', jsonResponse)
             self.assertIn('template_variables', jsonResponse)
 
+'''

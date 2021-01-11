@@ -1,3 +1,4 @@
+'''
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -113,3 +114,4 @@ class AllTestMailsettingApis(unittest.TestCase):
 
         # assert
         self.assertEqual(response.status_code,400)
+'''

@@ -1,3 +1,4 @@
+'''
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -337,3 +338,4 @@ class AllTestCampaignApis(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("sended",response.get_data(as_text=True))
     """
+'''

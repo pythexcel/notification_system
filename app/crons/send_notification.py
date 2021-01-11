@@ -14,10 +14,11 @@ import requests
 
 
 
-def cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"HR"})
+
+def cron_messages(mongo):
+    ret = mongo.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"HR"})
     if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
+        vet = mongo.messages_cron.update({"_id":ObjectId(ret['_id'])},
             {
                 "$set": {
                         "cron_status": True
@@ -34,10 +35,10 @@ def cron_messages():
         pass 
 
 
-def tms_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"TMS"})
+def tms_cron_messages(mongo):
+    ret = mongo.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"TMS"})
     if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
+        vet = mongo.messages_cron.update({"_id":ObjectId(ret['_id'])},
             {
                 "$set": {
                         "cron_status": True
@@ -53,10 +54,12 @@ def tms_cron_messages():
     else:
         pass 
 
-def recruit_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"RECRUIT"})
+
+
+def recruit_cron_messages(mongo):
+    ret = mongo.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"RECRUIT"})
     if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
+        vet = mongo.messages_cron.update({"_id":ObjectId(ret['_id'])},
             {
                 "$set": {
                         "cron_status": True

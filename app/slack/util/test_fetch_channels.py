@@ -1,3 +1,4 @@
+'''
 from app.slack.util.fetch_channels import FetchChannels
 
 
@@ -11,3 +12,4 @@ class TestFetchChannels:
         channels = FetchChannels(user_detail=slack_user_detail,message_detail=message_detail)
         assert type(channels) == list
         assert len(channels)>0
+'''

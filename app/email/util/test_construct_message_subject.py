@@ -1,3 +1,4 @@
+'''
 from app.email.util.template_util import construct_message_subject
 from bson.objectid import ObjectId
 
@@ -17,3 +18,4 @@ class TestConstructMessageSubject:
 
 
 
+'''

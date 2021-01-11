@@ -1,3 +1,4 @@
+'''
 from app.slack.util.fetch_channels import FetchRecipient
 
 
@@ -10,3 +11,4 @@ class TestFetchRecipient:
         status = FetchRecipient(user_detail=slack_user_detail,message_detail=message_detail)
         assert type(status) == list
         assert status
+'''

@@ -27,8 +27,26 @@ import uuid
 from app.crons.imap_util import bounced_mail
 from app.account import initDB
 from app.utils import check_and_validate_account
+from app.crons import send_notification,reject_mail
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
+
+
+@bp.route('/crons/<string:type>', methods=["GET", "POST"])
+@token.SecretKeyAuth
+@check_and_validate_account
+def master_cron(type):
+    mongo = initDB(request.account_name, request.account_config)
+    if type == "hr":    
+        send_notification.cron_messages(mongo)
+    if type == "tms":    
+        send_notification.tms_cron_messages(mongo)
+    if type == "recruit":    
+        send_notification.recruit_cron_messages(mongo)
+    if type == "reject_mail":    
+        reject_mail.reject_mail(mongo)
+    if type == "reject_mail":    
+        reject_mail.reject_mail(mongo)
 
 
 

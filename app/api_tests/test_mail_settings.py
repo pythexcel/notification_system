@@ -1,3 +1,4 @@
+'''
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -173,3 +174,4 @@ class AllTestMailsettingApis(unittest.TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("smtp login and password failed",response.get_data(as_text=True))
+'''

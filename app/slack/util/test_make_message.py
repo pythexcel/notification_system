@@ -1,3 +1,4 @@
+'''
 import datetime
 from app.slack.util.make_message import MakeMessage
 
@@ -30,3 +31,4 @@ class TestMakeMessage:
         message_string = MakeMessage(message_str=self.message,message_variables=self.message_variables,user_detail=user_detail,system_require=self.system_require,system_variable=self.system_variable)
         assert message_string != None
         assert type(message_string) == str
+'''

@@ -1,3 +1,4 @@
+'''
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -57,3 +58,4 @@ class AllTestSettingApis(unittest.TestCase):
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn('pdf',jsonResponse)
+'''

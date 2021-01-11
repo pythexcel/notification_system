@@ -1,3 +1,4 @@
+'''
 from app.util.validate_files import allowed_file
 
 #Test for check file type is valid or not
@@ -17,3 +18,4 @@ class TestClassFilename:
         file = allowed_file(filename=filename1)
         assert file != None
         assert file == True
+'''
