@@ -134,7 +134,11 @@ def mail_message(message_origin):
         return jsonify(ret), 200
     if request.method == "POST":
         MSG_KEY = request.json.get("message_key", None)
-        ret = mongo.db.mail_template.remove({"message_key": MSG_KEY,"default":False})
+        if "JobProfileId" in request.json:
+            JobProfileId = request.json.get("JobProfileId", None)
+            ret = mongo.db.mail_template.remove({"JobProfileId": JobProfileId,"message_key": MSG_KEY,"default":False})      
+        else:
+            ret = mongo.db.mail_template.remove({"message_key": MSG_KEY,"default":False})
         return jsonify({
                 "message": "Template Deleted",
                 "status": True
@@ -160,102 +164,201 @@ def mail_message(message_origin):
             
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
-        
-        ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
-        if ver is not None:
-            forr = ver['for']
-            ret = mongo.db.mail_template.update({"for": forr}, {
-                "$set": {
-                    "default": False,
-                }
-            },multi=True)
-
-            version = ver['version'] + 1
-            ver_message = ver['message']
-            ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
-                "$push": {
-                    "version_details": {
-                        "message": ver_message,
-                        "version": ver['version']
+        if "JobProfileId" in request.form:
+            JobProfileId = request.form["JobProfileId"]
+            ver = mongo.db.mail_template.find_one({"JobProfileId": JobProfileId,"message_key": MSG_KEY})
+            if ver is not None:
+                forr = ver['for']
+                ret = mongo.db.mail_template.update({"for": forr,"JobProfileId": JobProfileId}, {
+                    "$set": {
+                        "default": False,
                     }
-                },
-                "$set": {
+                },multi=True)
+
+                version = ver['version'] + 1
+                ver_message = ver['message']
+                ret = mongo.db.mail_template.update({"message_key": MSG_KEY,"JobProfileId": JobProfileId}, {
+                    "$push": {
+                        "version_details": {
+                            "message": ver_message,
+                            "version": ver['version']
+                        }
+                    },
+                    "$set": {
+                        "message": MSG,
+                        "message_key": MSG_KEY,
+                        "working": working,
+                        "mobile_message" : mobile_message,
+                        "message_origin": message_origin,
+                        "message_subject": MSG_SUBJECT,
+                        "version": version,
+                        "JobProfileId": JobProfileId,
+                        "for": for_detail,
+                        "default": default,
+                        "recruit_details":recruit_details,
+                        "Doc_type": Doc_type
+                    }
+                })
+                if 'num_attachment' in request.form:
+                    if request.form['num_attachment'] != 0:
+                        for i in range(0,int(request.form['num_attachment'])):
+                            file = request.files['attachment_file_{}'.format(i)]
+                            if file and allowed_file(file.filename):
+                                filename = secure_filename(file.filename)
+                                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                                attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                                attachment_file_name = filename
+                                mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                                "$push": {
+                                    "attachment_files":{
+                                        "file_id": str(uuid.uuid4()),
+                                        "file_name": attachment_file_name,
+                                        "file": attachment_file
+                                    }
+                                    }
+                                })
+                else:
+                    pass
+
+                return jsonify({
+                    "message": "Template Updated",
+                    "status": True
+                }), 200
+            
+            else:
+                ret = mongo.db.mail_template.insert_one({
                     "message": MSG,
                     "message_key": MSG_KEY,
                     "working": working,
                     "mobile_message" : mobile_message,
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
-                    "version": version,
-                    "for": for_detail,
+                    "version": 1,
                     "default": default,
+                    "JobProfileId": JobProfileId,
+                    "for": for_detail,
                     "recruit_details":recruit_details,
-                    "Doc_type": Doc_type
-                }
-            })
-            if 'num_attachment' in request.form:
-                if request.form['num_attachment'] != 0:
-                    for i in range(0,int(request.form['num_attachment'])):
-                        file = request.files['attachment_file_{}'.format(i)]
-                        if file and allowed_file(file.filename):
-                            filename = secure_filename(file.filename)
-                            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-                            attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                            attachment_file_name = filename
-                            mongo.db.mail_template.update({"message_key": MSG_KEY},{
-                            "$push": {
-                                "attachment_files":{
-                                    "file_id": str(uuid.uuid4()),
-                                    "file_name": attachment_file_name,
-                                    "file": attachment_file
-                                }
-                                }
-                            })
-            else:
-                pass
+                    "Doc_type": Doc_type, 
+                }).inserted_id
 
-            return jsonify({
-                "message": "Template Updated",
-                "status": True
-            }), 200
-        
-        else:
-            ret = mongo.db.mail_template.insert_one({
-                "message": MSG,
-                "message_key": MSG_KEY,
-                "working": working,
-                "mobile_message" : mobile_message,
-                "message_origin": message_origin,
-                "message_subject": MSG_SUBJECT,
-                "version": 1,
-                "default": True,
-                "for": for_detail,
-                "recruit_details":recruit_details,
-                "Doc_type": Doc_type, 
-            }).inserted_id
+                if 'num_attachment' in request.form:
+                    if request.form['num_attachment'] != 0:
+                        for i in range(0,int(request.form['num_attachment'])):
+                            file = request.files['attachment_file_{}'.format(i)]
+                            if file and allowed_file(file.filename):
+                                filename = secure_filename(file.filename)
+                                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                                attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                                attachment_file_name = filename
+                                mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                                "$push": {
+                                    "attachment_files":{
+                                        "file_id": str(uuid.uuid4()),
+                                        "file_name": attachment_file_name,
+                                        "file": attachment_file
+                                    }
+                                    }
+                                })
+                else:
+                    pass
+                                    
+                return jsonify({"message": "Template Added", "status": True}), 200
+        else:    
+            ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+            if ver is not None:
+                forr = ver['for']
+                ret = mongo.db.mail_template.update({"for": forr}, {
+                    "$set": {
+                        "default": False,
+                    }
+                },multi=True)
 
-            if 'num_attachment' in request.form:
-                if request.form['num_attachment'] != 0:
-                    for i in range(0,int(request.form['num_attachment'])):
-                        file = request.files['attachment_file_{}'.format(i)]
-                        if file and allowed_file(file.filename):
-                            filename = secure_filename(file.filename)
-                            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
-                            attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                            attachment_file_name = filename
-                            mongo.db.mail_template.update({"message_key": MSG_KEY},{
-                            "$push": {
-                                "attachment_files":{
-                                    "file_id": str(uuid.uuid4()),
-                                    "file_name": attachment_file_name,
-                                    "file": attachment_file
-                                }
-                                }
-                            })
+                version = ver['version'] + 1
+                ver_message = ver['message']
+                ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
+                    "$push": {
+                        "version_details": {
+                            "message": ver_message,
+                            "version": ver['version']
+                        }
+                    },
+                    "$set": {
+                        "message": MSG,
+                        "message_key": MSG_KEY,
+                        "working": working,
+                        "mobile_message" : mobile_message,
+                        "message_origin": message_origin,
+                        "message_subject": MSG_SUBJECT,
+                        "version": version,
+                        "for": for_detail,
+                        "default": default,
+                        "recruit_details":recruit_details,
+                        "Doc_type": Doc_type
+                    }
+                })
+                if 'num_attachment' in request.form:
+                    if request.form['num_attachment'] != 0:
+                        for i in range(0,int(request.form['num_attachment'])):
+                            file = request.files['attachment_file_{}'.format(i)]
+                            if file and allowed_file(file.filename):
+                                filename = secure_filename(file.filename)
+                                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                                attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                                attachment_file_name = filename
+                                mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                                "$push": {
+                                    "attachment_files":{
+                                        "file_id": str(uuid.uuid4()),
+                                        "file_name": attachment_file_name,
+                                        "file": attachment_file
+                                    }
+                                    }
+                                })
+                else:
+                    pass
+
+                return jsonify({
+                    "message": "Template Updated",
+                    "status": True
+                }), 200
+            
             else:
-                pass
-                                
-            return jsonify({"message": "Template Added", "status": True}), 200
+                ret = mongo.db.mail_template.insert_one({
+                    "message": MSG,
+                    "message_key": MSG_KEY,
+                    "working": working,
+                    "mobile_message" : mobile_message,
+                    "message_origin": message_origin,
+                    "message_subject": MSG_SUBJECT,
+                    "version": 1,
+                    "default": default,
+                    "for": for_detail,
+                    "recruit_details":recruit_details,
+                    "Doc_type": Doc_type, 
+                }).inserted_id
+
+                if 'num_attachment' in request.form:
+                    if request.form['num_attachment'] != 0:
+                        for i in range(0,int(request.form['num_attachment'])):
+                            file = request.files['attachment_file_{}'.format(i)]
+                            if file and allowed_file(file.filename):
+                                filename = secure_filename(file.filename)
+                                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
+                                attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                                attachment_file_name = filename
+                                mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                                "$push": {
+                                    "attachment_files":{
+                                        "file_id": str(uuid.uuid4()),
+                                        "file_name": attachment_file_name,
+                                        "file": attachment_file
+                                    }
+                                    }
+                                })
+                else:
+                    pass
+                                    
+                return jsonify({"message": "Template Added", "status": True}), 200
 
 @bp.route('/delete_file/<string:id>/<string:file_id>',methods=["DELETE"])
 @token.SecretKeyAuth
@@ -323,7 +426,7 @@ def slack_channel_test():
 def get_triggers():
     duplicate = []
     triggers = []
-
+    holdTriger = ["when candidate is on hold"]
     ret = mongo.db.mail_template.find({"message_origin": "RECRUIT"})
     ret = [serialize_doc(doc) for doc in ret]
     if ret:
@@ -332,7 +435,7 @@ def get_triggers():
     for elem in duplicate:
         if elem not in triggers:
             triggers.append(elem)
-    return jsonify({"triggers": triggers}), 200
+    return jsonify({"triggers": triggers+holdTriger}), 200
 
 
 #Api for update channel code for all messages.

@@ -7,13 +7,31 @@ dotenv_path = os.path.join(APP_ROOT, '.env')
 load_dotenv(dotenv_path)
 
 default_unsub = "<div style='text-align: center'><a href='{}unsubscribe_mail/{}/{}'>Unsubscribe</a></div>"
-
+"""
 #Sharing slack app with other workspace related urls
 slack_redirect_url = 'https://app.slack.com/'
 oauth_url = 'https://slack.com/api/oauth.v2.access'
-client_id = '124720392913.862592480496'
-client_secret = '0405e4f1150a7a9dcbaa4442e3aeea4f'
+client_id = '124720392913.1351927574339'
+client_secret = '456458283bbb8cdd7e4dc8edeaa77ff5'
+"""
 
+if "pytest" in sys.modules:
+    oauth_url = "https://slack.com/api/oauth.v2.access"
+    client_id = "xyz"
+    client_secret = "xyz"
+else:
+    if os.getenv("oauth_url") is not None:
+        oauth_url = os.getenv("oauth_url")
+    else:
+        raise Exception ('missing oauth_url')
+    if os.getenv("client_id") is not None:
+        client_id = os.getenv("client_id")
+    else:
+        raise Exception ('missing client_id')
+    if os.getenv("client_secret") is not None:
+        client_secret = os.getenv("client_secret")
+    else:
+        raise Exception ('missing client_secret')
 #this is base url for pytest
 if "pytest" in sys.modules:
     base_url = "http://127.0.0.1:5000/"
@@ -82,4 +100,7 @@ message_needs={
             }
 
 
-fcm_api_key = "AIzaSyBO2S6xvT5qD2KuTYw-emCpNaJMVFZrzU0"
+if os.getenv("fcm_api_key") is None:
+    fcm_api_key = "AAAAFHNjgwc:APA91bFKVxkuZIoK5qA1zSHTIe9cAE45pcbwegefBMSYRYBOti8dCk0JsFVW0BmfEKwf3Y4s-RbPdMF7rjEWX9Igl99OcUjS9btZe_cWR-rsqeHug6KG7x32mWa1ElMvIogQoNH3c01r"
+else:
+    fcm_api_key = os.getenv("fcm_api_key")

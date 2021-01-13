@@ -9,11 +9,16 @@ import datetime
 
 def interview_rejection(req,message_str,message_subject,smtp_email):
     reject_mail = None
+    if "sender_name" in req:
+        sender_name = req['sender_name']
+    else:
+        sender_name = None
     if app.config['ENV'] == 'production':
         if 'email' in req['data']:
             reject_mail = req['data']['email']
         else:
-            return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
+            return False
+            #return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
     else:
         if app.config['ENV'] == 'development':
             email = req['data']['email']
@@ -29,9 +34,13 @@ def interview_rejection(req,message_str,message_subject,smtp_email):
                     'send_status': False,
                     'message': message_str,
                     'subject': message_subject,
+                    'sender_name':sender_name,
                     'smtp_email': smtp_email
             }).inserted_id  
-    return jsonify({"status":True,"*Note":"Added for Rejection"}),200
+    return True
+    #return jsonify({"status":True,"*Note":"Added for Rejection"}),200
+
+
 
 def interview_reminder_set(req,message_str,message_subject,smtp_email):
     jobId = req.get('jobId')

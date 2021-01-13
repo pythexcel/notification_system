@@ -58,8 +58,11 @@ def send_or_preview_mail():
         Subject = req.get("subject",None)
         smtp_email = req.get("smtp_email",None)
         phone = req.get("phone", None)
-
-        message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY}) #calling function for message details by message key
+        if "JobProfileId" in req: 
+            JobProfileId = req.get("JobProfileId", None)
+            message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY,"JobProfileId":JobProfileId})
+        else:
+            message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY,'JobProfileId':{'$exists':False}}) #calling function for message details by message key
 
         if message_detail is not None:
             if Message is not None:
@@ -112,7 +115,12 @@ def send_or_preview_mail():
                     pass
         to,bcc,cc = get_recipients_from_request(req)
         if message_detail['message_key'] == "interviewee_reject":
-            interview_rejection(req,message_str,message_subject,smtp_email)
+            status = interview_rejection(req,message_str,message_subject,smtp_email)
+            if status == False:
+                return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
+            else:
+                return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
+                #return jsonify({"status":True,"*Note":"Added for Rejection"}),200
         else:
             if message_detail['message_key'] == "Interview Reminder":
                 status = interview_reminder_set(req,message_str,message_subject,smtp_email)
@@ -120,16 +128,24 @@ def send_or_preview_mail():
                     return jsonify({"status":False,"*Note":"Job_ID missing"}),400
                 else:
                     pass
+            if "sender_name" in req:
+                sender_name = req['sender_name']
+            else:
+                sender_name = None
             if to is not None:
                 if smtp_email is not None:
                     mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
                     if mail_details is None:
-                        return jsonify({"status":False,"Message": "Smtp not available in db"})
+                        mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
+                        #return jsonify({"status":False,"Message": "Smtp not available in db"})
+                        send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+                        return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
                     else:
-                        send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+                        send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
                         return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
                 else:
-                    send_email(message=message_str,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
+                    #mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
+                    send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
                     return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str,"phone_status" : phone_status, "phone_issue": phone_issue}),200
             else:
                 return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str, "phone_status" : phone_status, "phone_issue": phone_issue}),200
@@ -196,9 +212,16 @@ def mails():
             if mail_details is None:
                 mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
                 #return jsonify({"status":False,"Message": "No smtp active in DB"})
+        if "sender_name" in request.json:
+            sender_name = request.json['sender_name']
+        else:
+            sender_name = None
         try:
-            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
-            return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username'],"phone_status" : phone_status, "phone_issue": phone_issue}),200 
+            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,sender_name=sender_name,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
+            if mail_details['mail_username'] == "apikey":
+                return jsonify({"status":True,"Message":"Sended","smtp":"noreply@excellencetechnologies.in","phone_status" : phone_status, "phone_issue": phone_issue}),200    
+            else:
+                return jsonify({"status":True,"Message":"Sended","smtp":mail_details['mail_username'],"phone_status" : phone_status, "phone_issue": phone_issue}),200 
         except smtplib.SMTPServerDisconnected:
             return jsonify({"status":False,"Message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
@@ -218,12 +241,20 @@ def mails():
 @token.SecretKeyAuth
 def required_message(message_key):
     if request.method == "GET":
-        ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
-        if ret is not None:
-            ret = [template_requirement(serialize_doc(doc)) for doc in ret]
-            return jsonify(ret), 200
-        else:
-            return jsonify ({"message": "no template exist"}), 200    
+        if message_key == "All":
+            ret = mongo.db.mail_template.find({},{"version":0,"version_details":0})
+            if ret is not None:
+                ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+                return jsonify(ret), 200
+            else:
+                return jsonify ({"message": "no template exist"}), 200    
+        else:    
+            ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
+            if ret is not None:
+                ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+                return jsonify(ret), 200
+            else:
+                return jsonify ({"message": "no template exist"}), 200    
 
 
 #Api for test mailing service is working or not
@@ -249,3 +280,26 @@ def mail_test():
     except Exception:
         return jsonify({"status":False,"message": "Something went wrong with smtp"}), 400                                                         
 
+
+
+@bp.route('/recruit_variable', methods=["GET", "PUT"])
+@token.SecretKeyAuth
+def recruit_var():
+    if request.method == "GET":
+        ret = mongo.db.mail_variables.find({"recruit_variable":{"$exists":True}})
+        ret = [serialize_doc(doc) for doc in ret]
+        return jsonify(ret)
+    if request.method == "PUT":
+        name = request.json.get("name", None)
+        value = request.json.get("value", None)
+        variable_type = request.json.get("variable_type", None)
+        recruit_variable = request.json.get("recruit_variable", None)
+        ret = mongo.db.mail_variables.update({"name": name}, {
+            "$set": {
+                "name": name,
+                "value": value,
+                "recruit_variable":recruit_variable,
+                "variable_type": variable_type
+            }
+        },upsert=True)
+        return jsonify({"message": "upsert"}), 200

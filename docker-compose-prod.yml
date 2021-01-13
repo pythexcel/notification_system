@@ -21,6 +21,9 @@ services:
             - cc=cc_testing_recruit@mailinator.com
             - send_grid_key=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
             - Secretkey=MBw[;Rv]-6M]&3P2Grb
+            - oauth_url=https://slack.com/api/oauth.v2.access
+            - client_id=124720392913.1351927574339
+            - client_secret=456458283bbb8cdd7e4dc8edeaa77ff5
     mongo:
         image: mongo
         container_name: mongodb_notify

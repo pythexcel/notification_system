@@ -17,7 +17,7 @@ import datetime
 
 
 
-def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
+def send_email(message,recipients,subject,sender_name=None,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
@@ -32,7 +32,8 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
         elif os.getenv('origin') == "tms":    
             mail_details = mongo.db.mail_settings.find_one({"origin": "TMS","active": True},{"_id":0})
 
-
+    if mail_details is None:
+        mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
     username = None
     if sending_mail is None:    
         username = mail_details["mail_username"]
@@ -83,12 +84,20 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
                 username = mail_details['mail_from']
     if mail_from is not None:
         username = mail_from
-
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject
-    msg['From'] = username
-    msg['To'] = ','.join(recipients) 
-    msg['Cc'] = cc
+    from email.header import Header
+    from email.utils import formataddr
+    if sender_name is not None:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = formataddr((str(Header(str(sender_name), 'utf-8')), username))
+        msg['To'] = ','.join(recipients) 
+        msg['Cc'] = cc
+    else:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = username
+        msg['To'] = ','.join(recipients) 
+        msg['Cc'] = cc
 
     if files is not None:
         for f in files:
@@ -130,7 +139,7 @@ def send_email(message,recipients,subject,bcc=None,cc=None,mail_from = None,file
             message = message + url 
         else:
             message = message + url + unsuscribe_url 
-
+            
     main = MIMEText(message,'html')
     msg.attach(main)
     mail.sendmail(username,delivered, msg.as_string()) 

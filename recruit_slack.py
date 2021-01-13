@@ -2,26 +2,10 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
-    "message" : "Interview is Scheduled for !! Job Profile: @tag title: \n Candidate Name: @candidate_name: \n On Dated date At schedule time \n Cv: @link: ",
-    "message_color" : None,
-    "message_key" : "Exam Candidate Email Process If Tag Type Is Default",
-    "key_text":"This notification is sent out when a exam candidate email in process",
-    "message_origin" : "RECRUIT",
-    "message_type" : "simple_message",
-    "sended_to" : "public",
-    "slack_channel" : None,
-    "working" : True
-    },
-    {
-    "channels" : "private",
-    "email_group" : None,
-    "for_email" : False,
-    "for_phone" : False,
-    "for_slack" : True,
-    "message" : "A candidate have been moved with details \n Job Profile: @tag_title: \n Candidate Name: @candidatename: \n Tag Moved To: @tagetitle: \n Assignee: @assignee_email: On Dated @date: ",
+    "message" : "A candidate named @candidate_name: have been moved to: @tag_title: Tag by @user: of @job_profile: job profile on Dated @date:",
     "message_color" : None,
     "message_key" : "Candidate Tag Change",
     "key_text":"This notification is sent out when a candidate profile will move",
@@ -34,7 +18,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@candidate_name: note has been added \n for @job_profile: by @user: \n Note: \n @note:",
@@ -50,71 +34,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
-    "for_phone" : False,
-    "for_slack" : True,
-    "message" : "<!here> *A candidate submitted the exam*  Email: @candidate_email:  Max Marks: @marks:  Marks scored: @score:  Group wise scores- @grp_score:  Candidate url: @candidate_url: ",
-    "message_color" : None,
-    "message_key" : "Exam Result",
-    "key_text":"This notification is sent out when a candidate submit exam",
-    "message_origin" : "RECRUIT",
-    "message_type" : "simple_message",
-    "sended_to" : "public",
-    "slack_channel" : None,
-    "working" : True
-    },
-    {
-    "channels" : "private",
-    "email_group" : None,
-    "for_email" : False,
-    "for_phone" : False,
-    "for_slack" : True,
-    "message" : "@email: is calling for help while giving test <!here> ``  @message: `` ",
-    "message_color" : None,
-    "message_key" : "Ask For Help",
-    "key_text":"This notification is sent out when a candidate will ask for help",
-    "message_origin" : "RECRUIT",
-    "message_type" : "simple_message",
-    "sended_to" : "public",
-    "slack_channel" : None,
-    "working" : True
-    },
-    {
-    "channels" : "private",
-    "email_group" : None,
-    "for_email" : False,
-    "for_phone" : False,
-    "for_slack" : True,
-    "message" : "A new candidate  @email:  has applied for job .",
-    "message_color" : None,
-    "message_key" : "Add Candidate: If Candidate Already Exist",
-    "key_text":"This notification is sent out when a candidate will already Exists",
-    "message_origin" : "RECRUIT",
-    "message_type" : "simple_message",
-    "sended_to" : "public",
-    "slack_channel" : None,
-    "working" : True
-    },
-    {
-    "channels" : "private",
-    "email_group" : None,
-    "for_email" : False,
-    "for_phone" : False,
-    "for_slack" : True,
-    "message" : "A new candidate  @email: is in pending list for exam. Kindly approve.",
-    "message_color" : None,
-    "message_key" : "Add Candidate: If Candidate Is New",
-    "key_text":"This notification is sent out when a candidate will add",
-    "message_origin" : "RECRUIT",
-    "message_type" : "simple_message",
-    "sended_to" : "public",
-    "slack_channel" : None,
-    "working" : True
-    },
-    {
-    "channels" : "private",
-    "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@candidate_name: has been scheduled for `interview` \n on @date: at @time: \n for @jobprofile: by @user: \n Interview Round @round: to be taken by @assignee: via @planed: ",
@@ -130,23 +50,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
-    "for_phone" : False,
-    "for_slack" : True,
-    "message" : " <!here> A candidate just started his/her exam by exam link \n name: @name: \n email: @email: ",
-    "message_color" : None,
-    "message_key" : "Candidate Exam Detail",
-    "key_text":"This notification is sent out when a candidate will send exam details",
-    "message_origin" : "RECRUIT",
-    "message_type" : "simple_message",
-    "sended_to" : "public",
-    "slack_channel" : None,
-    "working" : True
-    },
-    {
-    "channels" : "private",
-    "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "A @job_profile: job profile has been closed by @user: ",
@@ -162,7 +66,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "A candidate named @candidate: is assigned to @user: for interview purpose on @date:",
@@ -178,7 +82,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@job_profile: job profile has been created by @user:",
@@ -194,7 +98,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "`CRITICAL` error in source @source_name:.Go to manage \n source menu to fix it",
@@ -210,7 +114,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@candidate_name: just applied who has been referred \n to the job @job_profile:",
@@ -226,7 +130,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@candidate_name: just applied who has been referred \n to the job @job_profile:",
@@ -242,23 +146,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
-    "for_phone" : False,
-    "for_slack" : True,
-    "message" : "@jobprofile:",
-    "message_color" : None,
-    "message_key" : "Interview Summary For The Day",
-    "key_text":"This notification is sent out when our AI classifies a candidate with high score",
-    "message_origin" : "RECRUIT",
-    "message_type" : "simple_message",
-    "sended_to" : "public",
-    "slack_channel" :None,
-    "working" : True
-    },
-    {
-    "channels" : "private",
-    "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "<!here> @candidate_name: has applied found with score of @score: for @job_profile: \n Education Details: @edu_details: \n Work Experiance: @work_exp: \n Skills: @skills: ",
@@ -274,7 +162,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@candidate_name: has been `shortlisted` \n for @job_profile: by @user:",
@@ -290,7 +178,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@candidate_name: has been `rejected` \n for @job_profile: by @user: for @reject_reason:",
@@ -306,7 +194,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@candidate_name: has been `cv rejected` \n for @job_profile: by @user: for reason \n @reject_reason:",
@@ -322,7 +210,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "@candidate_name: has been put on hold for \n @job_profile: by @user: for reason \n @hold_reason: ",
@@ -338,7 +226,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
     "message" : "This is a testing message from @user: for @reason:",
@@ -349,8 +237,158 @@ rec_message = [
     "sended_to" : "public",
     "slack_channel":None,
     "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : "@candidate_name: is moved to @job_profile: job profile by @user:",
+    "key_text":"This sent out when candidate is moved over sub tags.",
+    "message_color" : None,
+    "message_key" : "Candidate Moved",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel":None,
+    "working" : True
     }
 ]
+
+
+
+'''
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : "Interview is Scheduled for !! Job Profile: @tag title: \n Candidate Name: @candidate_name: \n On Dated date At schedule time \n Cv: @link: ",
+    "message_color" : None,
+    "message_key" : "Exam Candidate Email Process If Tag Type Is Default",
+    "key_text":"This notification is sent out when a exam candidate email in process",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel" : None,
+    "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : "@email: is calling for help while giving test <!here> ``  @message: `` ",
+    "message_color" : None,
+    "message_key" : "Ask For Help",
+    "key_text":"This notification is sent out when a candidate will ask for help",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel" : None,
+    "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : "A new candidate  @email:  has applied for job .",
+    "message_color" : None,
+    "message_key" : "Add Candidate: If Candidate Already Exist",
+    "key_text":"This notification is sent out when a candidate will already Exists",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel" : None,
+    "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : "A new candidate  @email: is in pending list for exam. Kindly approve.",
+    "message_color" : None,
+    "message_key" : "Add Candidate: If Candidate Is New",
+    "key_text":"This notification is sent out when a candidate will add",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel" : None,
+    "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : " <!here> A candidate just started his/her exam by exam link \n name: @name: \n email: @email: ",
+    "message_color" : None,
+    "message_key" : "Candidate Exam Detail",
+    "key_text":"This notification is sent out when a candidate will send exam details",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel" : None,
+    "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : "@jobprofile:",
+    "message_color" : None,
+    "message_key" : "Interview Summary For The Day",
+    "key_text":"This notification is sent out when our AI classifies a candidate with high score",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel" :None,
+    "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : "<!here> *A candidate submitted the exam*  Email: @candidate_email:  Max Marks: @marks:  Marks scored: @score:  Group wise scores- @grp_score:  Candidate url: @candidate_url: ",
+    "message_color" : None,
+    "message_key" : "Exam Result",
+    "key_text":"This notification is sent out when a candidate submit exam",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel" : None,
+    "working" : True
+    },
+    {
+    "channels" : "private",
+    "email_group" : None,
+    "for_email" : True,
+    "for_phone" : False,
+    "for_slack" : True,
+    "message" : " Hi @user: \n You need to take interview of @candidate_name: for @round: on date @date: @time: and profile of candidate is this \n @candidate_link: ",
+    "message_color" : None,
+    "message_key" : "candidate_interview",
+    "message_origin" : "RECRUIT",
+    "message_type" : "simple_message",
+    "sended_to" : "public",
+    "slack_channel":None,
+    "working" : True
+    }
+
+
+'''
 
 
 
@@ -359,7 +397,7 @@ rec_message = [
     {
         "channels" : "private",
         "email_group" : None,
-        "for_email" : False,
+        "for_email" : True,
         "for_phone" : False,
         "for_slack" : False,
         "message" : "Interview is Scheduled for !! Job Profile: @tag title: \n Candidate Name: @candidate_name: \n On Dated date At schedule time \n Cv: @link: ",
@@ -374,7 +412,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "A candidate have been moved with details \n Job Profile: @tag_title: \n Candidate Name: @candidatename: \n Tag Moved To: @tagetitle: \n Assignee: @assignee_email: On Dated @date: ",
@@ -391,7 +429,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@candidate_name: note has been added \n for @job_profile: by @user: \n Note: \n @note:",
@@ -408,7 +446,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "<!here> *A candidate submitted the exam*  Email: @candidate_email:  Max Marks: @marks:  Marks scored: @score:  Group wise scores- @grp_score:  Candidate url: @candidate_url: ",
@@ -423,7 +461,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@email: is calling for help while giving test <!here> ``  @message: `` ",
@@ -438,7 +476,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "A new candidate  @email:  has applied for job .",
@@ -453,7 +491,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "A new candidate  @email: is in pending list for exam. Kindly approve.",
@@ -468,7 +506,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@candidate_name: has been scheduled for interview \n on @date: at @time: \n for @jobprofile: by @user: \n Interview Round @round: to be taken by @assignee: via @planed: ",
@@ -485,7 +523,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : " <!here> A candidate just started his/her exam by exam link \n name: @name: \n email: @email: ",
@@ -500,7 +538,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "A @job_profile: job profile has been closed by @user: ",
@@ -517,7 +555,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "A candidate named @candidate: is assigned to @user: for interview purpose on @date:",
@@ -534,7 +572,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@job_profile: job profile has been created by @user:",
@@ -551,7 +589,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "*CRITICAL* error in source @source_name:.Go to manage \n source menu to fix it",
@@ -568,7 +606,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@candidate_name: just applied who has been referred \n to the job @job_profile:",
@@ -585,7 +623,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "<!here> @candidate_name: has applied with score of @score: for @job_profile: \n Education Details: @edu_details: \n Work Experiance: @work_exp: \n Skills: @skills: ",
@@ -602,7 +640,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@candidate_name: has been shortlisted \n for @job_profile: by @user:",
@@ -619,7 +657,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@candidate_name: has been rejected \n for @job_profile: by @user: for @reject_reason:",
@@ -636,7 +674,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@candidate_name: has been cv rejected \n for @job_profile: by @user: for reason \n @reject_reason:",
@@ -653,7 +691,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "@candidate_name: has been put on hold for \n @job_profile: by @user: for reason \n @hold_reason: ",
@@ -670,7 +708,7 @@ rec_message = [
     {
     "channels" : "private",
     "email_group" : None,
-    "for_email" : False,
+    "for_email" : True,
     "for_phone" : False,
     "for_slack" : False,
     "message" : "This is a testing message from @user: for @reason:",
@@ -883,7 +921,7 @@ message = person has been put on hold for
 {
 "channels" : "private",
 "email_group" : None,
-"for_email" : False,
+"for_email" : True,
 "for_phone" : False,
 "for_slack" : True,
 "message" : "@candidate_name: has been scheduled for interview \n on @date: at @time: \n for @jobprofile: by @user: \n Interview Round @round: to be taken by @assignee: via @planed: ",
