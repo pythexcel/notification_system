@@ -133,6 +133,10 @@ def mail_message(message_origin):
         MSG_KEY = request.form["message_key"]
         mobile_message = request.form["mobile_message"]
         working = True
+        if "reminder" in request.form:
+            reminder = request.form["reminder"]
+        else:
+            reminder =False
         if "working" in request.form:
             working = request.form["working"]
         MSG_SUBJECT = request.form["message_subject"]
@@ -177,6 +181,7 @@ def mail_message(message_origin):
                         "message_origin": message_origin,
                         "message_subject": MSG_SUBJECT,
                         "version": version,
+                        "reminder":reminder,
                         "JobProfileId": JobProfileId,
                         "for": for_detail,
                         "default": default,
@@ -218,6 +223,7 @@ def mail_message(message_origin):
                     "mobile_message" : mobile_message,
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
+                    "reminder":reminder,
                     "version": 1,
                     "default": default,
                     "JobProfileId": JobProfileId,
@@ -275,6 +281,7 @@ def mail_message(message_origin):
                         "message_origin": message_origin,
                         "message_subject": MSG_SUBJECT,
                         "version": version,
+                        "reminder":reminder,
                         "for": for_detail,
                         "default": default,
                         "recruit_details":recruit_details,

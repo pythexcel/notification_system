@@ -173,6 +173,7 @@ def mails():
     smtp_email = request.json.get("smtp_email",None)
     phone = request.json.get("phone", None)
     phone_message = request.json.get("phone_message",None)
+    reply_to = request.json.get("reply_to",None)
 
     if not MAIL_SEND_TO and message:
         return jsonify({"status":False,"Message": "Invalid Request"}), 400
@@ -217,7 +218,7 @@ def mails():
         else:
             sender_name = None
         try:
-            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,sender_name=sender_name,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
+            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,reply_to =reply_to,sender_name=sender_name,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
             if mail_details['mail_username'] == "apikey":
                 return jsonify({"status":True,"Message":"Sended","smtp":"noreply@excellencetechnologies.in","phone_status" : phone_status, "phone_issue": phone_issue}),200    
             else:

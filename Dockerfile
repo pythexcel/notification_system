@@ -29,6 +29,16 @@ RUN mkdir /workspace/logs
 
 COPY ./docker/supervisor/conf.d/notify.conf /etc/supervisor/conf.d/notify.conf
 
+RUN apt-get install -y debconf-utils
+ENV TZ=Asia/Kolkata
+RUN echo $TZ > /etc/timezone
+# RUN rm /etc/localtime
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+RUN export DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y tzdata
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+RUN apt-get clean
+
 CMD ["/usr/bin/supervisord"]
 
 RUN pytest
