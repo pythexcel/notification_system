@@ -70,6 +70,16 @@ def notification_message(message_origin):
         },upsert=True)
         return jsonify({"message": "upsert"}), 200
 
+@bp.route('/configuration/channel', methods=["PUT"])
+#@token.admin_required
+def assign_channel():
+    channel = request.json.get('channel')
+    assign = mongo.db.notification_msg.update({}, {
+        "$set": {
+            "slack_channel": channel
+        }
+    })
+    return jsonify ({'message': 'channel added'}), 200
 
 @bp.route('/enable_message', methods=["PUT"])
 @token.SecretKeyAuth
@@ -108,7 +118,12 @@ def special_var():
             }
         },upsert=True)
         return jsonify({"message": "upsert"}), 200
-
+@bp.route('/get_email_template', methods=["GET"])
+#@token.admin_required
+def all_mail_message():
+    ret = mongo.db.mail_template.find({})
+    ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+    return jsonify(ret), 200
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET","POST","PUT"])
 @token.SecretKeyAuth
