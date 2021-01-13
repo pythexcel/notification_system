@@ -19,5 +19,13 @@ RUN pip install -r requirements.txt
 
 ENV FLASK_APP=app
 ENV FLASK_ENV=development
-
+RUN apt-get install -y debconf-utils
+ENV TZ=Asia/Kolkata
+RUN echo $TZ > /etc/timezone
+# RUN rm /etc/localtime
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+RUN export DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y tzdata
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+RUN apt-get clean
 CMD ["gunicorn", "app:create_app()", "--bind=0.0.0.0:5000"]
