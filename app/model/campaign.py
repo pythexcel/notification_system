@@ -31,9 +31,13 @@ def user_data(campaign_details):
                             hit_data.append(hit_details)
         data['hit_details'] = hit_data
         data['mail_message'] = None
-
     campaign_details['users'] = details
-
+    varificationstatus = mongo.db.campaigns.find_one({"_id": ObjectId(campaign_details['_id'])})
+    status = "Stop"
+    if varificationstatus:
+        if "verification" in varificationstatus:
+            status = varificationstatus['verification']
+        
     validate = mongo.db.campaign_clicked.find({"campaign_id": campaign_details['_id']})
     if validate:
         clicking_details = mongo.db.campaign_clicked.aggregate([
@@ -90,6 +94,7 @@ def user_data(campaign_details):
         campaign_details['clicking_details'] = clicking_data
     else:
         campaign_details['clicking_details'] = []
+    campaign_details['verification'] = status
     return campaign_details
 
 

@@ -18,7 +18,7 @@ def update_completion_time():
     for campaign in campaigns:
         delay= campaign['delay']
         smtp = campaign['smtps']
-        campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"send_status": False})
+        campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"send_status": False,"status":True})
         campaign_users = [serialize_doc(doc) for doc in campaign_users]
         ids = len(campaign_users)
         total_time = (float(ids)* delay / float(len(smtp)))

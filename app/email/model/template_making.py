@@ -56,12 +56,16 @@ def template_requirement(user):
     message_variables = []
     rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
     for elem in message:
-        varb = re.split(rex, elem)
+        varb = re.split(rex, elem)        
         if "#" + varb[0] in special_val:
             message_variables.append(varb[0])    
+        """
+        print(message_variables,"message_variables")
         if varb[0] not in message_variables:
-            if "#" + varb[0] not in unrequired:
+            if "#"+varb[0] not in unrequired:
+                print("#" + varb[0],"655555555555555555")
                 message_variables.append(varb[0])
+        """
     for data in message_variables:
         if data not in unique_variables:
             unique_variables.append(data) 
