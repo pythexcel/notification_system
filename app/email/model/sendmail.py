@@ -17,7 +17,7 @@ import datetime
 
 
 
-def send_email(mongo,message,recipients,subject,sender_name=None,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
+def send_email(mongo,message,recipients,subject,reply_to=None,sender_name=None,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
@@ -142,5 +142,8 @@ def send_email(mongo,message,recipients,subject,sender_name=None,bcc=None,cc=Non
             
     main = MIMEText(message,'html')
     msg.attach(main)
+    print(delivered)
+    if reply_to is not None:
+        msg.add_header('reply-to', reply_to)
     mail.sendmail(username,delivered, msg.as_string()) 
     mail.quit()

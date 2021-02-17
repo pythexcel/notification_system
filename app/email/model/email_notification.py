@@ -23,7 +23,12 @@ def email_notification(user_detail,message,message_detail,message_variables,syst
             subject = message_detail['message_key']             
     else:
         subject = message_detail['message_key']             
+    sender_name = None
     if "to" in user_detail:
+        if "sender_name" in user_detail:
+            sender_name = user_detail['sender_name']
+        else:
+            sender_name = None
         if "SlackEmail" in user_detail:
             if 'fcm_registration_id' in user_detail:
                 pushmsg =message_str
@@ -45,5 +50,6 @@ def email_notification(user_detail,message,message_detail,message_variables,syst
         "recipients":recipient,
         "subject": subject,
         "req_json": user_detail,
+        "sender_name":sender_name,
         "message_detail":message_detail
     }).inserted_id

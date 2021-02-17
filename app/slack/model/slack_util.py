@@ -13,13 +13,17 @@ def slack_load_token(mongo):
 
 def slack_id(email,mongo):
     slack_token = slack_load_token(mongo)
-    sc = SlackClient(slack_token)
-    sl_user_id = sc.api_call("users.lookupByEmail",
-                       email=email)
-    if sl_user_id['ok'] is True:                   
-        return (sl_user_id['user']['id'])
+    if slack_token is not None:
+        sc = SlackClient(slack_token)
+        sl_user_id = sc.api_call("users.lookupByEmail",
+                        email=email)
+        if sl_user_id['ok'] is True:                   
+            return (sl_user_id['user']['id'])
+        else:
+            raise Exception("Slack profile not available in workspace")  
     else:
-        raise Exception("Slack profile not available in workspace")  
+        raise Exception("Slack token not available in database")
+
 
 def recruit_slack_id(email,mongo):
     slack_token = slack_load_token(mongo)
@@ -30,8 +34,6 @@ def recruit_slack_id(email,mongo):
         return (sl_user_id['user']['id'])
     else:
         return None
-        #raise Exception("Slack profile not available in workspace")  
-
 
 
 def slack_message(mongo,channel, message,req_json=None,message_detail=None):

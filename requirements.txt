@@ -87,3 +87,4 @@ xhtml2pdf==0.2.3
 yapf==0.28.0
 pyzmail36==1.0.4
 six==1.14.0
+email-validator==1.1.2

@@ -56,12 +56,16 @@ def template_requirement(user,mongo):
     message_variables = []
     rex = re.compile('!|@|\$|\%|\^|\&|\*|\:|\;')
     for elem in message:
-        varb = re.split(rex, elem)
+        varb = re.split(rex, elem)        
         if "#" + varb[0] in special_val:
             message_variables.append(varb[0])    
+        """
+        print(message_variables,"message_variables")
         if varb[0] not in message_variables:
-            if "#" + varb[0] not in unrequired:
+            if "#"+varb[0] not in unrequired:
+                print("#" + varb[0],"655555555555555555")
                 message_variables.append(varb[0])
+        """
     for data in message_variables:
         if data not in unique_variables:
             unique_variables.append(data) 
@@ -162,8 +166,8 @@ def slack_fetch_recipients_by_mode(request=None):
                 if MAIL_SEND_TO:
                     MAIL_SEND.append(MAIL_SEND_TO[0])
         else:
-            if app.config['ENV'] == 'production':
-                MAIL_SEND = request.get("to",None)
+            #if app.config['ENV'] == 'production':
+            MAIL_SEND = request.get("to")
         return MAIL_SEND
     else:
         raise Exception("Request not should be None")

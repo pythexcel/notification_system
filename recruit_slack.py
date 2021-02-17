@@ -21,7 +21,7 @@ rec_message = [
     "for_email" : True,
     "for_phone" : False,
     "for_slack" : True,
-    "message" : "@candidate_name: note has been added \n for @job_profile: by @user: \n Note: \n @note:",
+    "message" : "Note has been added for candidate with name @candidate_name: \n for @job_profile: by @user: \n Note: \n @note: \n >>>>>>>>>>>>>>>>>>>> \n Candidate Url : @candidateLink: \n Candidate Job-profile : @candidateJobProfile: \n Candidate Tag : @candidateTag: \n >>>>>>>>>>>>>>>>>>>> ",
     "message_color" : None,
     "message_key" : "Note Added For Candidate",
     "key_text":"A note has been added for candidate",

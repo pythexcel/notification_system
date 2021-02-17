@@ -30,7 +30,7 @@ mongo = db.init_db()
 
 from app.auth import token
 
-from app.crons.campaign import campaign_mail
+from app.crons.campaign import campaign_mail,MailValidator
 from app.crons.reject_mail import reject_mail
 from app.crons.send_notification import cron_messages,recruit_cron_messages,tms_cron_messages,zapier_cron_messages
 from app.crons.calculatebounces import calculate_bounce_rate
@@ -173,6 +173,10 @@ def create_app(test_config=None):
         reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
         reject_mail_scheduler.start()
 
+        email_validator_scheduler = BackgroundScheduler()
+        email_validator_scheduler.add_job(MailValidator, trigger='interval', seconds=10)
+        email_validator_scheduler.start()
+
         campaign_mail_scheduler = BackgroundScheduler()
         #campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
         campaign_mail_scheduler.start()
@@ -209,6 +213,7 @@ def create_app(test_config=None):
             bounced_mail_scheduler.shutdown()
             update_completion_time_scheduler.shutdown()
             campaign_details_update_scheduler.shutdown()
+            email_validator_scheduler.shutdown()
     
 @click.command("seed_hr")
 @with_appcontext

@@ -17,8 +17,106 @@ import uuid
 import time
 import email
 import requests
+from email_validator import validate_email, EmailNotValidError
+from dns import resolver 
+import dns
+import socket 
+import smtplib
 
 
+def MailValidator():
+    verificationstatus = mongo.db.campaigns.find_one({"verification":"Running"})
+    if verificationstatus:
+        status = mongo.db.campaign_users.find({"is_verified":False,"campaign":str(verificationstatus['_id'])}).limit(5)
+        emails = [serialize_doc(doc) for doc in status]
+        if emails:
+            for emaildata in emails:
+                try:
+                    valid = validate_email(emaildata['email'],check_deliverability=True)
+                    email = valid.email
+                    try:
+                        emailvalid = Emailvalidate(emaildata['email'])
+                    except Exception:
+                        emailvalid = False
+
+                    if emailvalid == True:
+                        try:
+                            response = requests.get(
+                                "https://isitarealemail.com/api/email/validate",
+                                params = {'email': emaildata['email']})
+                            status = response.json()['status']
+                            if not status == "valid":
+                                mongo.db.campaign_users.update({"_id": ObjectId(emaildata['_id'])},{
+                                    "$set":{
+                                        "status" : False
+                                    }
+                                })
+                        except Exception:
+                            pass
+                    else:
+                        mongo.db.campaign_users.update({"_id": ObjectId(emaildata['_id'])},{
+                            "$set":{
+                                "status" : False
+                            }
+                        })
+                except EmailNotValidError as e:
+                    mongo.db.campaign_users.update({"_id": ObjectId(emaildata['_id'])},{
+                        "$set":{
+                            "status" : False
+                        }
+                    })
+                mongo.db.campaign_users.update({"_id": ObjectId(emaildata['_id'])},{
+                    "$set":{
+                        "is_verified" : True
+                    }
+                })
+        else:
+            mongo.db.campaigns.update({"_id": ObjectId(verificationstatus['_id'])},{
+                "$set":{
+                    "verification" : "Completed"
+                }
+            })
+
+
+def Emailvalidate(email_address):
+    #Step 1: Check email
+    #Check using Regex that an email meets minimum requirements, throw an error if not
+    addressToVerify = email_address
+    match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', addressToVerify)
+
+    if match == None:
+        return False
+    #Step 2: Getting MX record
+    #Pull domain name from email address
+    domain_name = email_address.split('@')[1]
+
+    #get the MX record for the domain
+    records = dns.resolver.query(domain_name, 'MX')
+    mxRecord = records[0].exchange
+    mxRecord = str(mxRecord)
+
+    #Step 3: ping email server
+    #check if the email address exists
+
+    # Get local server hostname
+    host = socket.gethostname()
+
+    # SMTP lib setup (use debug level for full output)
+    server = smtplib.SMTP()
+    server.set_debuglevel(0)
+
+    # SMTP Conversation
+    server.connect(mxRecord)
+    server.helo(host)
+    server.mail(email_address)
+    code, message = server.rcpt(str(addressToVerify))
+    server.quit()
+
+    # Assume 250 as Success
+    if code == 250:
+        return True
+    else:
+        return False
 
 def campaign_mail():
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -26,7 +124,6 @@ def campaign_mail():
     load_dotenv(dotenv_path)
     campaigns = mongo.db.campaigns.find({"status":"Running"})
     campaigns = [serialize_doc(doc) for doc in campaigns]
-    
     for campaign in campaigns:
         if campaign is not None:
             message_subject_details = []
@@ -37,7 +134,7 @@ def campaign_mail():
                         if message_detail['count'] == highest_count_message['count']:
                             message_subject_details.append(message_detail)
                     
-            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'], "unsubscribe_status" : False})
+            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'], "unsubscribe_status" : False,"status":True})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
             total_users = 0
             for user in campaign_users:
@@ -128,7 +225,8 @@ def campaign_mail():
                                                 message_subject = re.sub(rexWithSystem, element['value'], message_subject)  
                                 digit = str(uuid.uuid4())
                                 to = []
-                                to.append(mail)
+                                if mail not in to:
+                                    to.append(mail)
                                 working_status = True
                                 try:        
                                     send_email(message=message_str,
@@ -224,7 +322,7 @@ def campaign_mail():
                                                     })
                                             else:
                                                 pass
-                                    time.sleep(campaign['delay'])
+                                    time.sleep(campaign['delay'])                                   
                         else:
                             pass
                     else:
