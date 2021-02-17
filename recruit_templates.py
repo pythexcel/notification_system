@@ -213,3 +213,22 @@ rec_templates = [
 ]
 
 
+
+
+
+"""
+    {
+    "message" : "<div>Hi #name:,</div><div><br></div><div>You are on Hold for #job_profile: with #company:</div>",
+    "message_key" : "Candidate Hold",
+    "working" : True,
+    "mobile_message" : "Candidate is on hold for #job_profile: with #company:",
+    "message_origin" : "RECRUIT",
+    "message_subject" : "Candidate Hold for #job_profile:",
+    "version" : 1,
+    "default" : False,
+    "for" : "when candidate is on hold",
+    "recruit_details" : "Candidate is on hold",
+    "Doc_type" : "email",
+    "jobProfileId":None
+    }
+"""
