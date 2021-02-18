@@ -133,6 +133,10 @@ def mail_message(message_origin):
         MSG_KEY = request.form["message_key"]
         mobile_message = request.form["mobile_message"]
         working = True
+        if "reminder" in request.form:
+            reminder = request.form["reminder"]
+        else:
+            reminder =False
         if "working" in request.form:
             working = request.form["working"]
         MSG_SUBJECT = request.form["message_subject"]
@@ -177,6 +181,7 @@ def mail_message(message_origin):
                         "message_origin": message_origin,
                         "message_subject": MSG_SUBJECT,
                         "version": version,
+                        "reminder":reminder,
                         "JobProfileId": JobProfileId,
                         "for": for_detail,
                         "default": default,
@@ -218,6 +223,7 @@ def mail_message(message_origin):
                     "mobile_message" : mobile_message,
                     "message_origin": message_origin,
                     "message_subject": MSG_SUBJECT,
+                    "reminder":reminder,
                     "version": 1,
                     "default": default,
                     "JobProfileId": JobProfileId,
@@ -275,6 +281,7 @@ def mail_message(message_origin):
                         "message_origin": message_origin,
                         "message_subject": MSG_SUBJECT,
                         "version": version,
+                        "reminder":reminder,
                         "for": for_detail,
                         "default": default,
                         "recruit_details":recruit_details,
@@ -410,8 +417,8 @@ def slack_channel_test():
 @token.SecretKeyAuth
 def get_triggers():
     duplicate = []
-    triggers = []
-    holdTriger = ["when candidate is on hold"]
+    triggers = ["when candidate is on hold"]
+    #holdTriger = []
     ret = mongo.db.mail_template.find({"message_origin": "RECRUIT"})
     ret = [serialize_doc(doc) for doc in ret]
     if ret:
@@ -420,7 +427,7 @@ def get_triggers():
     for elem in duplicate:
         if elem not in triggers:
             triggers.append(elem)
-    return jsonify({"triggers": triggers+holdTriger}), 200
+    return jsonify({"triggers": triggers}), 200
 
 
 #Api for update channel code for all messages.

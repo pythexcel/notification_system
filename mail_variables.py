@@ -1,5 +1,11 @@
 variables = [
     {
+        "name": "#interview_test",
+        "value": None,
+        "recruit_variable":"[interview_test]",
+        "variable_type": "user"
+    },
+    {
         "name": "#candidate_link",
         "value": None,
         "recruit_variable":"[candidate_link]",

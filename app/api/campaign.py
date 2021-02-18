@@ -61,6 +61,7 @@ def create_campaign():
                 "creation_date": datetime.datetime.utcnow(),
                 "Campaign_description": description,
                 "status":status,
+                "verification":"Stop",
                 "generated_from_recruit":generated
         }).inserted_id
 
@@ -143,6 +144,15 @@ def delete_campaign(Id):
     status = mongo.db.mail_status.remove({ "campaign": Id })
     return jsonify({"message":"Campaign deleted"}),200
 
+@bp.route('/validate_users/<string:Id>', methods=["POST"])
+@token.SecretKeyAuth
+def validate_users(Id):
+    a = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+        "$set":{
+            "verification" : "Running"
+        }
+    })
+    return jsonify({"message":"Updated"}),200
 
 @bp.route('/list_campaign', methods=["GET"])
 @token.SecretKeyAuth
@@ -233,6 +243,8 @@ def add_user_campaign():
         campaign = request.json.get("campaign")
         for data in users:
             data['send_status'] = False
+            data['is_verified'] = False
+            data['status'] = True
             data['campaign'] = campaign
             data['block'] = False
             unsub_status = mongo.db.unsubscribed_users.find_one({"email":data['email']})
@@ -322,9 +334,8 @@ def campaign_start_mail(campaign):
         
             else:
                 for data in ids:
-                    unsub_detail =  mongo.db.campaign_users.find_one({"_id": ObjectId(data)})
+                    unsub_detail =  mongo.db.campaign_users.find_one({"_id": ObjectId(data),"status":True})
                     if unsub_detail['unsubscribe_status'] is False:
-                        print(data)
                         final_ids.append(ObjectId(data))
                 
                 ret = mongo.db.campaign_users.update({  "_id" : { "$in": final_ids }},
@@ -418,7 +429,7 @@ def hit_rate(variable,campaign_message,user):
             "seen_date": datetime.datetime.utcnow(),
             "seen": True
         }
-        })   
+        })
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
 
 @bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
@@ -433,7 +444,10 @@ def redirectes(unique_key,campaign_id):
         "campaign_id": campaign_id,
         "clicked_time": datetime.datetime.now()
     })
-    return redirect(url), 302
+    if not "https" in url:
+        url = "https://"+url
+    return redirect(url, code=302)
+
 
 @bp.route('edit_templates/<string:template_id>',methods=["POST"])
 @token.SecretKeyAuth
