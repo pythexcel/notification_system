@@ -10,7 +10,7 @@ import datetime
 from app import mongo
 from app.config import account_name,secret_key
 
-class AllTestMailsettingApis(unittest.TestCase):
+class AllTestMailsettingApiss(unittest.TestCase):
 
     def setUp(self):
         app.testing = True
@@ -40,7 +40,7 @@ class AllTestMailsettingApis(unittest.TestCase):
                 "mobile_message" : "Hi,#name: Your First round with #company: has been schedule on #date: at the #venue: for #job_profile:"
                 }
         mongo.db.mail_template.insert_one(payload).inserted_id
-
+    
     def create_mail_variables(self):
         payload = [{"name" : "#venue","value" : "C-86 B Excellence Technosoft Pvt. Ltd Noida Sector 8","variable_type" : "system"},
                    {"name" : "#map_location","value" : "https://www.google.co.in/maps/place/Excellence+Technologies/@28.5959817,77.3260043,17z/data=!3m1!4b1!4m5!3m4!1s0x390ce4fc8c75d9e:0x4ea29a8e67042fb9!8m2!3d28.595977!4d77.328193?hl=en","variable_type" : "system"},
@@ -71,7 +71,6 @@ class AllTestMailsettingApis(unittest.TestCase):
 
 
 
-    
     #testing send mail test api
     def test_send_mail_api(self):
         payload = json.dumps({

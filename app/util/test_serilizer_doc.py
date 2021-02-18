@@ -1,4 +1,4 @@
-'''
+
 from bson.objectid import ObjectId
 from app.util.serializer import serialize_doc
 
@@ -18,4 +18,3 @@ class TestSerializeDoc:
         doc1 = {"_id":str("507f1f77bcf86cd799439011"),"data":"data"}
         serialize = serialize_doc(doc1) 
         assert type(serialize['_id']) == str
-'''

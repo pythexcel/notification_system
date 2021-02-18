@@ -1,4 +1,4 @@
-'''
+
 from app import create_app as app
 from app.email.util.template_util import attach_letter_head
 
@@ -25,4 +25,3 @@ class TestAttachLetterHead:
         template = attach_letter_head(header,footer,message)
         assert template
         assert type(template) == str
-'''

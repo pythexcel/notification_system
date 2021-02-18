@@ -1,4 +1,4 @@
-'''
+
 from app.email.util.date_convertor import convert_dates_to_format
 
 
@@ -39,4 +39,3 @@ class TestConvertDatesToFormat:
                 }
         updated_data = convert_dates_to_format(dates_converter=self.dates_converter,req=request)
         assert updated_data is not None
-'''

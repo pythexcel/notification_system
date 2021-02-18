@@ -1,4 +1,4 @@
-'''
+
 from app.email.util.template_util import construct_mobile_message_str
 from bson.objectid import ObjectId
 
@@ -22,4 +22,3 @@ class TestConstructMobileMessage:
         request = {'message_key': 'user_timesheet_entry', 'message_type': 'simple_message','smtp_email': ['aayush_saini@excellencetechnologies.in'], 'to': ['aayush_saini@excellencetechnologies.in'], 'subject': 'user_timesheet_entry', 'phone': '8445679788', 'user': {'email': 'aayush_saini@excellencetechnolgies.in', 'name': 'aish'}, 'data': {'hours': '9', 'date': '05 Jun 2020'}}
         mobile_message_str = construct_mobile_message_str(message_detail = message_detail,request=request,system_variable=self.system_variables)
         assert mobile_message_str is not None
-'''

@@ -1,4 +1,4 @@
-'''
+
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -7,7 +7,7 @@ import json
 from app import mongo
 from app.api_tests.test_message_create_apis import app
 from bson import ObjectId
-
+from app.config import secret_key,account_name
 
 class AllTestMailsettingApis(unittest.TestCase):
 
@@ -40,7 +40,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         mongo.db.mail_settings.insert_many(payload)
 
         #act
-        response = self.app.get('/smtp/settings/'+origin,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get('/smtp/settings/'+origin+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -57,7 +57,7 @@ class AllTestMailsettingApis(unittest.TestCase):
             self.assertIn('type',jsonResponses)
 
 
-
+    
     #testing delete mail settings api
     def test_delete_mail_settings(self):
 
@@ -66,14 +66,14 @@ class AllTestMailsettingApis(unittest.TestCase):
         origin = "RECRUIT"
 
         #act
-        response = self.app.delete('/smtp/settings/'+origin+'/'+str(id),headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.delete('/smtp/settings/'+origin+'/'+str(id)+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
 
         #assert
         self.assertEqual(response.status_code, 200)
         self.assertIn('Smtp conf deleted',response.get_data(as_text=True))
 
 
-
+    
     #testing update mail settings api
     def test_update_mail_settings(self):
 
@@ -85,7 +85,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.put('/smtp/settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=jsonpayload)
+        response = self.app.put('/smtp/settings/'+origin+'/'+str(id)+'?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=jsonpayload)
 
         #assert
         self.assertEqual(response.status_code, 200)
@@ -101,7 +101,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         id = mongo.db.mail_settings.insert_one(payload).inserted_id
 
         #act
-        response = self.app.post('/smtp/smtp_priority/'+str(id)+'/'+position,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.post('/smtp/smtp_priority/'+str(id)+'/'+position+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("priority changed",response.get_data(as_text=True))
@@ -120,7 +120,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id)+'?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         self.assertEqual(response.status_code, 400)
 
@@ -138,7 +138,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         })
 
         #act
-        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id),headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.put('/smtp/update_settings/'+origin+'/'+str(id)+'?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("Smtp password updated",response.get_data(as_text=True))
@@ -154,7 +154,7 @@ class AllTestMailsettingApis(unittest.TestCase):
             })
 
         #act
-        response = self.app.post('/smtp/validate_smtp',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.post('/smtp/validate_smtp?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         #assert
         self.assertEqual(response.status_code, 200)
@@ -170,8 +170,8 @@ class AllTestMailsettingApis(unittest.TestCase):
             })
 
         #act
-        response = self.app.post('/smtp/validate_smtp',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.post('/smtp/validate_smtp?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("smtp login and password failed",response.get_data(as_text=True))
-'''
+    
