@@ -6,7 +6,7 @@ from app.slack.util.fetch_channels import FetchChannels
 
 
 
-def slack_notification(user_detail,message,message_detail,message_variables,system_require,system_variable):
+def slack_notification(user_detail,message,message_detail,message_variables,system_require,system_variable,mongo):
     if 'user' in user_detail and user_detail['user'] is not None:
         slack_details = True
         slack = ""
@@ -36,7 +36,7 @@ def slack_notification(user_detail,message,message_detail,message_variables,syst
 
     #If channels available for send notification it will insert notification info in collection.
     if channels:                                                   
-        mongo.db.messages_cron.insert_one({
+        mongo.messages_cron.insert_one({
             "cron_status":False,
             "type": "slack",
             "message":message_str,

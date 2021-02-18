@@ -116,8 +116,8 @@ def Template_details(details,mongo):
 
 
 
-def assign_letter_heads( letterhead_id ):
-    letter_head_details = mongo.db.letter_heads.find_one({ "_id": ObjectId(letterhead_id) })
+def assign_letter_heads( letterhead_id,mongo ):
+    letter_head_details = mongo.letter_heads.find_one({ "_id": ObjectId(letterhead_id) })
     if letter_head_details is not None:
         header = letter_head_details['header_value']
         footer = letter_head_details['footer_value']

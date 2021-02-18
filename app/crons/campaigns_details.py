@@ -12,13 +12,13 @@ import time
 
 
 
-def update_completion_time():
-    campaigns = mongo.db.campaigns.find({"$or": [{"status": "Running"}, {"status": "Completed"}]})
+def update_completion_time(mongo):
+    campaigns = mongo.campaigns.find({"$or": [{"status": "Running"}, {"status": "Completed"}]})
     campaigns = [serialize_doc(doc) for doc in campaigns]
     for campaign in campaigns:
         delay= campaign['delay']
         smtp = campaign['smtps']
-        campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"send_status": False,"status":True})
+        campaign_users = mongo.campaign_users.find({"campaign":campaign['_id'],"send_status": False,"status":True})
         campaign_users = [serialize_doc(doc) for doc in campaign_users]
         ids = len(campaign_users)
         total_time = (float(ids)* delay / float(len(smtp)))
@@ -37,37 +37,37 @@ def update_completion_time():
             total_time = total_time/86400
             total_time = round(total_time,1)
             total_expected_time = "{} days".format(total_time)
-        campaign = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
+        campaign = mongo.campaigns.update({"_id": ObjectId(campaign['_id'])},{
             "$set": {
                 "total_expected_time_of_completion": total_expected_time
             }
         })
 
 
-def campaign_details():
-    campaigns = mongo.db.campaigns.find({})
+def campaign_details(mongo):
+    campaigns = mongo.campaigns.find({})
     campaigns = [serialize_doc(doc) for doc in campaigns]
     for campaign in campaigns:
         if campaign is not None:
-            campaign_users = mongo.db.campaign_users.find({"campaign":campaign['_id'],"already_unsub" : False})
+            campaign_users = mongo.campaign_users.find({"campaign":campaign['_id'],"already_unsub" : False})
             campaign_users = [serialize_doc(doc) for doc in campaign_users]
             if campaign_users:
-                seen_users = mongo.db.mail_status.find({"campaign":campaign['_id'],"seen": True})
+                seen_users = mongo.mail_status.find({"campaign":campaign['_id'],"seen": True})
                 seen_users = [serialize_doc(doc) for doc in seen_users]
                 seen_rate = 0
                 if seen_users:
                     seen_rate = len(seen_users) * 100 / len(campaign_users)
-                clicked_user = mongo.db.mail_status.find({"campaign":campaign['_id'],"clicked": True})
+                clicked_user = mongo.mail_status.find({"campaign":campaign['_id'],"clicked": True})
                 clicked_user = [serialize_doc(doc) for doc in clicked_user]
                 clicked_rate = 0
                 if clicked_user:
                     clicked_rate = len(clicked_user) * 100 / len(campaign_users)
-                unsubscribe_users =  mongo.db.campaign_users.find({"campaign":campaign['_id'],"unsubscribe_status" : True})
+                unsubscribe_users =  mongo.campaign_users.find({"campaign":campaign['_id'],"unsubscribe_status" : True})
                 unsubscribe_users = [serialize_doc(doc) for doc in unsubscribe_users]
                 unsub = 0
                 if unsubscribe_users:
                     unsub = len(unsubscribe_users) 
-                campaign_update = mongo.db.campaigns.update({"_id": ObjectId(campaign['_id'])},{
+                campaign_update = mongo.campaigns.update({"_id": ObjectId(campaign['_id'])},{
                     "$set": {
                         "open_rate" : clicked_rate,
                         "seen_rate" : seen_rate,

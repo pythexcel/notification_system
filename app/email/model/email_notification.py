@@ -5,7 +5,7 @@ import json
 from app.email.model.template_making import fetch_recipients_by_mode,slack_fetch_recipients_by_mode
 from app.push_notification.util.push_notification import Push_notification
 
-def email_notification(user_detail,message,message_detail,message_variables,system_require,system_variable):
+def email_notification(user_detail,message,message_detail,message_variables,system_require,system_variable,mongo):
     if 'user' in user_detail and user_detail['user'] is not None:
         username = json.loads(json.dumps(user_detail['user']['email']))
         name = username.split('@')[0]
@@ -43,7 +43,7 @@ def email_notification(user_detail,message,message_detail,message_variables,syst
         if not recipient:
             recipient = [username]
         #If channels available for send notification it will insert notification info in collection.
-    mongo.db.messages_cron.insert_one({
+    mongo.messages_cron.insert_one({
         "cron_status":False,
         "type": "email",
         "message":message_str,

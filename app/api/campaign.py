@@ -27,7 +27,7 @@ import uuid
 from app.crons.imap_util import bounced_mail
 from app.account import initDB
 from app.utils import check_and_validate_account
-from app.crons import send_notification,reject_mail
+from app.crons import send_notification,reject_mail,campaign as campaign_crons,imap_util,calculatebounces,campaigns_details
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
 
@@ -37,16 +37,30 @@ bp = Blueprint('campaigns', __name__, url_prefix='/')
 @check_and_validate_account
 def master_cron(type):
     mongo = initDB(request.account_name, request.account_config)
-    if type == "hr":    
+    if type == "hr_slack_notification":    
         send_notification.cron_messages(mongo)
-    if type == "tms":    
+    if type == "tms_slack_notification":    
         send_notification.tms_cron_messages(mongo)
-    if type == "recruit":    
+    if type == "recruit_slack_notification":    
         send_notification.recruit_cron_messages(mongo)
     if type == "reject_mail":    
         reject_mail.reject_mail(mongo)
-    if type == "reject_mail":    
-        reject_mail.reject_mail(mongo)
+    if type == "mail_validator":           
+        campaign_crons.MailValidator(mongo)
+    if type == "campaign_mail":           
+        campaign_crons.campaign_mail(mongo)
+    if type == "bounced_mail":           
+        imap_util.bounced_mail(mongo)
+    if type == "calculate_bounce_rate":           
+        calculatebounces.calculate_bounce_rate(mongo)
+    if type == "update_completion_time":           
+        campaigns_details.update_completion_time(mongo)
+    if type == "campaign_details":           
+        campaigns_details.campaign_details(mongo)
+    if type == "mail_reminder":           
+        imap_util.mail_reminder(mongo)
+    return jsonify({"campaign_id":"status"}),200
+
 
 
 
@@ -169,8 +183,10 @@ def delete_campaign(Id):
 
 @bp.route('/validate_users/<string:Id>', methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def validate_users(Id):
-    a = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+    mongo = initDB(request.account_name, request.account_config)
+    a = mongo.campaigns.update({"_id": ObjectId(Id)},{
         "$set":{
             "verification" : "Running"
         }

@@ -76,7 +76,7 @@ def slack_redirect():
         print(token.json())
         token_resp = token.json().get('access_token') 
         """
-        save_token = mongo.db.slack_settings.update({}, {
+        save_token = mongo.slack_settings.update({}, {
             '$set': {
                 'slack_token': token_resp
             }

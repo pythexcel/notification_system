@@ -33,7 +33,7 @@ def user_data(campaign_details,mongo):
         data['mail_message'] = None
     campaign_details['users'] = details
 
-    varificationstatus = mongo.db.campaigns.find_one({"_id": ObjectId(campaign_details['_id'])})
+    varificationstatus = mongo.campaigns.find_one({"_id": ObjectId(campaign_details['_id'])})
     status = "Stop"
     if varificationstatus:
         if "verification" in varificationstatus:

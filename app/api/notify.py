@@ -29,7 +29,7 @@ def reminder_details(jobId):
     date = (datetime.datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
     before_date = dateutil.parser.parse(date)
     try:
-        details = fetch_interview_reminders(date=before_date,jobId=jobId) #Here calling function for fetch interview reminder records from db by date
+        details = fetch_interview_reminders(mongo,date=before_date,jobId=jobId) #Here calling function for fetch interview reminder records from db by date
         if (details):
             sum = 0
             if (len(details) > 1):

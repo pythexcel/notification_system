@@ -123,9 +123,9 @@ def create_app(test_config=None):
     app.register_blueprint(campaign.bp)
     app.register_blueprint(settings.bp)
     
-    app.cli.add_command(seed_hr)
-    app.cli.add_command(seed_recruit)
-    app.cli.add_command(seed_system)
+    #app.cli.add_command(seed_hr)
+    #app.cli.add_command(seed_recruit)
+    #app.cli.add_command(seed_system)
 
     if "pytest" in sys.modules:
         return app
@@ -158,7 +158,7 @@ def create_app(test_config=None):
             tms_schduled_messages_scheduler.shutdown()
             zapier_scheduler.shutdown()
     """        
-    elif app.config['origin'] == "recruit":
+    if app.config['origin'] == "recruit":
         """
         try:
             seed_recruit_data()
@@ -166,15 +166,15 @@ def create_app(test_config=None):
             pass
         """
         recruit_schduled_messages_scheduler = BackgroundScheduler()
-        recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
+        #recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
         recruit_schduled_messages_scheduler.start()
 
         reject_mail_scheduler = BackgroundScheduler()
-        reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
+        #reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
         reject_mail_scheduler.start()
 
         email_validator_scheduler = BackgroundScheduler()
-        email_validator_scheduler.add_job(MailValidator, trigger='interval', seconds=10)
+        #email_validator_scheduler.add_job(MailValidator, trigger='interval', seconds=10)
         email_validator_scheduler.start()
 
         campaign_mail_scheduler = BackgroundScheduler()
@@ -214,7 +214,7 @@ def create_app(test_config=None):
             update_completion_time_scheduler.shutdown()
             campaign_details_update_scheduler.shutdown()
             email_validator_scheduler.shutdown()
-    
+"""
 @click.command("seed_hr")
 @with_appcontext
 def seed_hr():
@@ -278,3 +278,4 @@ def seed_system():
         mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
     else:
         mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
+"""
