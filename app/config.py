@@ -19,6 +19,8 @@ if "pytest" in sys.modules:
     oauth_url = "https://slack.com/api/oauth.v2.access"
     client_id = "xyz"
     client_secret = "xyz"
+    account_name = "excellencerecruit"
+    secret_key = "gUuWrJauOiLcFSDCL5TM1heITeBVcL"
 else:
     if os.getenv("oauth_url") is not None:
         oauth_url = os.getenv("oauth_url")

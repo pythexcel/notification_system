@@ -1,4 +1,4 @@
-'''
+
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -7,7 +7,7 @@ import json
 from app import create_app
 from bson import ObjectId
 from app import mongo
-
+from app.config import account_name,secret_key
 app = create_app()
 app.app_context().push()
 
@@ -37,16 +37,16 @@ class AllDataTestCase(unittest.TestCase):
 
         #data making
         ret = mongo.db.mail_variables.insert_many(payload)
-        return ret
 
+        return ret
+    
     #testing for special variables api
     def test_special_variables(self):
         #making data
         self.create_mail_variables()
         # act
-        response = self.app.get('/message/special_variable',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get('/message/special_variable?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         jsonResponse = self.json_of_response(response)
-
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list,type(jsonResponse))
@@ -56,8 +56,8 @@ class AllDataTestCase(unittest.TestCase):
             self.assertIn('name', jsonRespons)
             self.assertIn('value', jsonRespons)
             self.assertIn('variable_type', jsonRespons)
-
-
+        
+    
     #Tesing for put special variable api
     def test_put_special_variables(self):
         payload = json.dumps({
@@ -67,13 +67,13 @@ class AllDataTestCase(unittest.TestCase):
         })
 
         # act
-        response = self.app.put('/message/special_variable',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.put('/message/special_variable?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn('upsert',response.get_data(as_text=True))
 
-
+    
     #Testing get notification api
     def test_get_notification_message(self):
         #making data
@@ -84,7 +84,7 @@ class AllDataTestCase(unittest.TestCase):
         message_origin = "TMS"
         
         # act
-        response = self.app.get(f'/message/configuration/'+message_origin,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get(f'/message/configuration/'+message_origin+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -100,7 +100,7 @@ class AllDataTestCase(unittest.TestCase):
             self.assertIn('slack_channel', jsonRespons)
 
 
-
+    
     #Testing put notification message api
     def test_put_notification_message(self):
 
@@ -125,13 +125,13 @@ class AllDataTestCase(unittest.TestCase):
         })
 
         # act
-        response = self.app.put(f'/message/configuration/'+message_origin,headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.put(f'/message/configuration/'+message_origin+'?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
         
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn('upsert',response.get_data(as_text=True))
 
-
+    
     #Testing get email tempalate api
     def test_get_email_template(self):
         #making data
@@ -145,7 +145,7 @@ class AllDataTestCase(unittest.TestCase):
         message_origin = "RECRUIT"
         
         # act
-        response = self.app.get(f'/message/get_email_template/'+message_origin,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get(f'/message/get_email_template/'+message_origin+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -163,7 +163,7 @@ class AllDataTestCase(unittest.TestCase):
             self.assertIn('template_variables', jsonRespons)
             self.assertIn('working', jsonRespons)
 
-
+    
     #testing delete email template apis
     def test_delete_email_template(self):
         #making data
@@ -176,13 +176,13 @@ class AllDataTestCase(unittest.TestCase):
         })
         
         # act
-        response = self.app.post(f'/message/get_email_template/'+message_origin,headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.post(f'/message/get_email_template/'+message_origin+'?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn("Template Deleted",response.get_data(as_text=True))
 
-
+    
     #testing delete attachment api
     def test_delete_attachment_file(self):
         #making data
@@ -191,13 +191,13 @@ class AllDataTestCase(unittest.TestCase):
         file_id = "9d10b8ee-2b3d-4449-a1ab-d1a61bbff8dd"
 
         # act
-        response = self.app.delete(f'/message/delete_file/'+str(id)+'/'+file_id,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.delete(f'/message/delete_file/'+str(id)+'/'+file_id+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
 
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn("File deleted",response.get_data(as_text=True))
 
-
+    
     #testing put letter head api
     def test_put_letter_head(self):
 
@@ -210,20 +210,20 @@ class AllDataTestCase(unittest.TestCase):
         })
 
         # act
-        response = self.app.put(f'/message/letter_heads',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.put(f'/message/letter_heads?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
         
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn("Letter Head Created",response.get_data(as_text=True))
 
-
+    
     #testing get letter head api
     def test_get_letter_head(self):
         #making data
         self.test_put_letter_head()
 
         # act
-        response = self.app.get(f'/message/letter_heads',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get(f'/message/letter_heads?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -236,7 +236,7 @@ class AllDataTestCase(unittest.TestCase):
             self.assertIn('name', jsonRespons)
             self.assertIn('working', jsonRespons)
 
-
+    
     #test case for delete letter head api
     def test_delete_letter_head(self):
         payload = {
@@ -247,13 +247,13 @@ class AllDataTestCase(unittest.TestCase):
         }
         id = mongo.db.letter_heads.insert_one(payload).inserted_id
 
-        response = self.app.delete(f'/message/letter_heads/'+str(id),headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.delete(f'/message/letter_heads/'+str(id)+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
 
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn("Letter Head Deleted",response.get_data(as_text=True))
 
-
+    
     #test case for assign letter head api
     def test_assign_letter_head(self):
         #making data
@@ -264,13 +264,13 @@ class AllDataTestCase(unittest.TestCase):
         letter_head_id = "5f0c16db3fbe9cf9946700df"
 
         # act
-        response = self.app.put(f'/message/assign_letter_heads/'+str(template_id)+'/'+letter_head_id,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.put(f'/message/assign_letter_heads/'+str(template_id)+'/'+letter_head_id+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn("Letter Head Added To Template",response.get_data(as_text=True))
 
-
+    
     #Test case for trigger api
     def test_get_triggers(self):
         #making data
@@ -278,7 +278,7 @@ class AllDataTestCase(unittest.TestCase):
         mongo.db.mail_template.insert_one(payload).inserted_id
 
         # act
-        response = self.app.get(f'/message/triggers',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get(f'/message/triggers?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         jsonResponse = self.json_of_response(response)
 
         # assert
@@ -287,7 +287,7 @@ class AllDataTestCase(unittest.TestCase):
         self.assertGreater(len(jsonResponse),0)
         self.assertIn('triggers', jsonResponse)
 
-
+    
     #Test case for get email template api
     def test_get_email_templates(self):
         payload = {"Doc_type":"email","for":"Interviwee Hold","message":"<p>Dear Applicant<br/>Hope you are doing good!<br/>This is to inform you that with respect your application and subsequent interview with #company: your candidature has been put on hold for a while due to unavoidable circumstance.<br/>We will surely get back to you once the position re-opens. Thank you so much for showing your pleasant interest with the company and the job.<br/>Regards<br/> #hr_signature: </p>","message_key":"interviewee_onhold","message_origin":"RECRUIT","message_subject":"interviewee put on hold","recruit_details":"Interviewee On Hold","version":1,"working":True,"template_head":"5f0c16db3fbe9cf9946700df"}
@@ -299,7 +299,7 @@ class AllDataTestCase(unittest.TestCase):
         payload = {"name":"test_letter_head","footer_value":"<div id=\"footer\" style=\"bottom: 0; position: absolute; width: 100%;\"><hr /> <div>ExcellenceTechnosoft Pvt Ltd</div> <div>CIN: U72200DL2010PTC205087</div> <div>Corp Office:C84-A, Sector 8,Noida, U.P. - 201301</div> <div>Regd Office: 328 GAGAN VIHAR IST MEZZAZINE,NEW DELHI-110051</div> <div style=\"height: 5px; margin-top: 5px; margin-bottom: 2px; background-color: #4bb698;\">&nbsp;</div> </div>","header_value":"<p> <div id=\"header\"> <div style=\"height: 5px; background-color: #4bb698;\">&nbsp;</div> <div style=\"height: 8px; margin-top: 1px; background-color: #4bb698;\">&nbsp;</div> <div style=\"height: 5px; margin-top: 1px; background-color: #4bb698;\">&nbsp;</div> <br /> <div style=\"text-align: right; padding-right:40px\"><img src=\"https://res.cloudinary.com/dp0y84e66/image/upload/v1568791251/logo.e5be347d_yf4q90.png\" style=\"width: 150px;\" /></div> </div>","working":True}
 
         # act
-        response = self.app.get(f'/message/get_email_template',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get(f'/message/get_email_template?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         jsonResponses = self.json_of_response(response)
 
         # assert
@@ -311,4 +311,3 @@ class AllDataTestCase(unittest.TestCase):
             self.assertIn('message_subject', jsonResponse)
             self.assertIn('template_variables', jsonResponse)
 
-'''

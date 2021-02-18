@@ -1,3 +1,10 @@
+import os
+from dotenv import load_dotenv
+from flask_pymongo import PyMongo
+from pymongo_inmemory import MongoClient
+import sys
+
+
 has_mongo = False
 try:
     from pymongo import MongoClient
@@ -8,13 +15,17 @@ except ModuleNotFoundError as e:
 
 db_hosts = {}
 def initDB(account_name, account_config):
-    if not has_mongo:
-        return None
+    if "pytest" in sys.modules:
+        client = MongoClient()  # No need to provide host
+        return client.db
+    else:
+        if not has_mongo:
+            return None
         
-    global db_hosts
-    if account_name not in db_hosts:
-        client = MongoClient(account_config["mongodb"]["host"])
-        db_hosts[account_name] = client[account_config["mongodb"]["db"]]
+        global db_hosts
+        if account_name not in db_hosts:
+            client = MongoClient(account_config["mongodb"]["host"])
+            db_hosts[account_name] = client[account_config["mongodb"]["db"]]
 
 
-    return db_hosts[account_name]
+        return db_hosts[account_name]

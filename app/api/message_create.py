@@ -125,7 +125,7 @@ def mail_message(message_origin):
     mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
         ret = mongo.mail_template.find({"message_origin": message_origin})
-        ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+        ret = [template_requirement(serialize_doc(doc),mongo) for doc in ret]
         return jsonify(ret), 200
     if request.method == "POST":
         MSG_KEY = request.json.get("message_key", None)

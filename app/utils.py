@@ -7,6 +7,7 @@ from app.config import BASE_PATH
 import json
 import os
 import time
+import sys
 
 account_json_path = os.path.join(BASE_PATH , "account.config.json")
 def check_and_validate_account(f):
@@ -42,7 +43,9 @@ def check_and_validate_account(f):
                 
         request.account_name = account_name
         request.account_config = account_config[account_name]
-
+        if "pytest" in sys.modules:
+            request.account_name = "pytest"
+            request.account_config = "pytest"
         return f(*args, **kwargs)
     
 
