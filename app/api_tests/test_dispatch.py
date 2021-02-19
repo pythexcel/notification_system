@@ -1,4 +1,4 @@
-'''
+
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -8,7 +8,7 @@ from app.api_tests.test_message_create_apis import app
 from bson import ObjectId
 from app import mongo
 from app.config import account_name,secret_key
-
+'''
 class AllTestMailsettingApis(unittest.TestCase):
 
     def setUp(self):
@@ -43,7 +43,7 @@ class AllTestMailsettingApis(unittest.TestCase):
         self.assertIn('Slack Token Tested',response.get_data(as_text=True))
         self.assertIn('true',response.get_data(as_text=True))
     
-
+    
     #testing slack token test api with invalid payload
     def test_slack_token_test_api_if_token_not_valid(self):
         payload = json.dumps({

@@ -1,4 +1,4 @@
-'''
+
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -10,7 +10,7 @@ import datetime
 from app import mongo
 from app.config import account_name,secret_key
 
-class AllTestMailsettingApiss(unittest.TestCase):
+class AllTestMailsettingApis(unittest.TestCase):
 
     def setUp(self):
         app.testing = True
@@ -51,26 +51,35 @@ class AllTestMailsettingApiss(unittest.TestCase):
         return ret
 
     def create_mail_settings(self):
-        payload = {"mail_server" : "smtp.gmail.com","mail_port" : 465,"origin" : "RECRUIT","mail_use_tls" : True,"mail_username" : "testingattach0@gmail.com","mail_password" : "opweseqxpncpaock","active" : True,"type" : "tls","mail_from" : "testingattach0@gmail.com"}
+        payload = {"mail_server" : "smtp.gmail.com","mail_port" : 465,"origin" : "RECRUIT","mail_use_tls" : True,"mail_username" : "testhr69@gmail.com","mail_password" : "otyjsyxaykgronsm","active" : True,"type" : "tls","mail_from" : None}
         mongo.db.mail_settings.insert_one(payload).inserted_id
-
     
     def test_preview_api(self):
         self.create_mail_template()
         self.create_mail_variables()
         self.create_mail_settings()
 
-        payload = json.dumps({"message_key":"first_round","message":" Hi,#name: <br/> Your First round with Excellence Technosoft Pvt. Ltd has been schedule on #date: at the C-86 B Excellence Technosoft Pvt. Ltd Noida Sector 8 for #job_profile: <br/> <p>HR <br/> Juhi Singh <br/> Landline No: 0120-4113772 <br/> https://excellencetechnologies.in/<br/>https://www.facebook.com/ExcellenceTechnologies<br/>https://itunes.apple.com/in/app/career-app-by-etech/id1399557922?mt=8<br/>  ","subject":"#name!,your interview for First round of #job_profile: is scheduled","to":["aayush_saini@excellencetechnologies.in"],"cc":[],"bcc":[],"smtp_email":"testnt64@gmail.com","phone":None,"phone_message":None,"data":{"name":None}})
-
+        payload = json.dumps({"message_key": "first_round",
+                    "message_type": "simple_message",
+                    "data": {
+                        "name": "aayush",
+                        "job_profile": "python",
+                        "company": "exxsadsad",
+                        "user": "123"
+                    },
+                    "to": [ "aayush_saini@excellencetechnologies.in"],
+                    "smtp_email":"testhr69@gmail.com"
+                    }
+        )
         #act
         response = self.app.post('/notify/preview?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
-
+        
         # assert
         self.assertEqual(response.status_code, 200)
         self.assertIn('true',response.get_data(as_text=True))
+        
 
-
-
+    
     #testing send mail test api
     def test_send_mail_api(self):
         payload = json.dumps({
@@ -88,7 +97,7 @@ class AllTestMailsettingApiss(unittest.TestCase):
 
 
     
-
+    
     #testing send mail api
     def test_send_mail_api_to_not_available(self):
         payload = json.dumps({
@@ -97,7 +106,7 @@ class AllTestMailsettingApiss(unittest.TestCase):
         })
 
         #act
-        response = self.app.post('/notify/send_mail',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.post('/notify/send_mail?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 400)
@@ -112,7 +121,7 @@ class AllTestMailsettingApiss(unittest.TestCase):
         })
 
         #act
-        response = self.app.post('/notify/send_mail',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.post('/notify/send_mail?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 400)
@@ -121,7 +130,7 @@ class AllTestMailsettingApiss(unittest.TestCase):
     
     #testing get mail settings test api
     def test_smtp_mail_test_api(self):
-        mail_setting = {"mail_server":"smtp.gmail.com","mail_port":465,"origin":"CAMPAIGN","mail_use_tls":True,"mail_username":"testingattach0@gmail.com","mail_password":"opweseqxpncpaock","active":True,"type":"tls","daemon_mail":"mailer-daemon@googlemail.com","priority":3,"mail_from":None,"created_at":datetime.datetime.now()}
+        mail_setting = {"mail_server":"smtp.gmail.com","mail_port":465,"origin":"CAMPAIGN","mail_use_tls":True,"mail_username":"testhr69@gmail.com","mail_password":"otyjsyxaykgronsm","active":True,"type":"tls","daemon_mail":"mailer-daemon@googlemail.com","priority":3,"mail_from":None,"created_at":datetime.datetime.now()}
         mongo.db.mail_settings.insert_one(mail_setting).inserted_id
         self.create_mail_variables()
         letterpayload = {
@@ -131,19 +140,14 @@ class AllTestMailsettingApiss(unittest.TestCase):
             "working": True
         }
         id = mongo.db.letter_heads.insert_one(letterpayload).inserted_id
-
         payload = json.dumps({
-            "email": "testnt64@gmail.com"
+            "email": "aayush_saini@excellencetechnologies.in"
         })
 
         #act
         response = self.app.post('/notify/mail_test?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
-        # assert
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('Smtp working',response.get_data(as_text=True))
-    
-    """
+
     #testing mail template requirements test api
     def test_email_template_requirement(self):
         message_key = "Interviwee Hold"
@@ -152,7 +156,7 @@ class AllTestMailsettingApiss(unittest.TestCase):
         mongo.db.mail_template.insert_one(template_payload).inserted_id
 
         #act
-        response = self.app.get('/notify/email_template_requirement/'+message_key,headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get('/notify/email_template_requirement/'+message_key+'?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         
         #assert
         self.assertEqual(response.status_code, 200)
@@ -161,5 +165,4 @@ class AllTestMailsettingApiss(unittest.TestCase):
         self.assertIn('message',response.get_data(as_text=True))
         self.assertIn('message_key',response.get_data(as_text=True))
         self.assertIn('message_subject',response.get_data(as_text=True))
-    """
-'''
+
