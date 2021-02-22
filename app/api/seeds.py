@@ -21,7 +21,7 @@ bp = Blueprint('seeds', __name__, url_prefix='/')
 
 
 
-@bp.route('/crons/<string:type>', methods=["GET"])
+@bp.route('/crons/<string:type>', methods=["Post"])
 @token.SecretKeyAuth
 @check_and_validate_account
 def master_cron(type):
