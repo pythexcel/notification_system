@@ -82,10 +82,12 @@ class AllTestMailsettingApis(unittest.TestCase):
     
     #testing send mail test api
     def test_send_mail_api(self):
+        self.create_mail_settings()
         payload = json.dumps({
             "message": "This is api test cases testing",
             "subject": "Test cases Testing",
-            "to": ["aayush_saini@excellencetechnologies.in"]
+            "to": ["aayush_saini@excellencetechnologies.in"],
+            "smtp_email":"testhr69@gmail.com"
         })
 
         #act
