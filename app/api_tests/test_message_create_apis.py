@@ -310,4 +310,4 @@ class AllDataTestCase(unittest.TestCase):
             self.assertIn('message_origin', jsonResponse)
             self.assertIn('message_subject', jsonResponse)
             self.assertIn('template_variables', jsonResponse)
-
+    
