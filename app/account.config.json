@@ -11,10 +11,23 @@
             "db" : "notify_staging"
         }
     },
-    "notify_recruit" : {
+    "devrecruit" : {
+        "mongodb" : {
+            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
+            "db" : "notify_staging"
+        }
+    },
+    "excellencerecruit" : {
+        "mongodb" : {
+            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
+            "db" : "notify_staging"
+        }
+    },
+    "rocketrecruit" : {
         "mongodb" : {
             "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
             "db" : "notify_staging"
         }
     }
+
 }
