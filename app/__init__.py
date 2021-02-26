@@ -25,7 +25,7 @@ from app.crons.campaign import campaign_mail,MailValidator
 from app.crons.reject_mail import reject_mail
 from app.crons.send_notification import cron_messages,recruit_cron_messages,tms_cron_messages,zapier_cron_messages
 from app.crons.calculatebounces import calculate_bounce_rate
-from app.crons.imap_util import bounced_mail
+from app.crons.imap_util import bounced_mail,mail_reminder
 from app.crons.campaigns_details import update_completion_time,campaign_details
 
 def create_app(test_config=None):
@@ -118,10 +118,63 @@ def create_app(test_config=None):
     if "pytest" in sys.modules:
         return app
 
+    schduled_messages_scheduler = BackgroundScheduler()
+    schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=3)
+    schduled_messages_scheduler.start()
+
+    tms_schduled_messages_scheduler = BackgroundScheduler()
+    tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=3)
+    tms_schduled_messages_scheduler.start()
+
+    recruit_schduled_messages_scheduler = BackgroundScheduler()
+    recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=3)
+    recruit_schduled_messages_scheduler.start()
+
+    reject_mail_scheduler = BackgroundScheduler()
+    reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
+    reject_mail_scheduler.start()
+
+    email_validator_scheduler = BackgroundScheduler()
+    email_validator_scheduler.add_job(MailValidator, trigger='interval', seconds=10)
+    email_validator_scheduler.start()
+
+    campaign_mail_scheduler = BackgroundScheduler()
+    campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
+    campaign_mail_scheduler.start()
+
+    bounced_mail_scheduler = BackgroundScheduler()
+    bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=5)
+    bounced_mail_scheduler.start()
+
+    calculate_bounce_rate_scheduler = BackgroundScheduler()
+    calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=8)
+    calculate_bounce_rate_scheduler.start()
+
+    mail_reminder_scheduler = BackgroundScheduler()
+    mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=13,minute=7)
+    mail_reminder_scheduler.start()
+
+    update_completion_time_scheduler = BackgroundScheduler()
+    update_completion_time_scheduler.add_job(update_completion_time, trigger='interval', seconds=5)
+    update_completion_time_scheduler.start()
+
+    campaign_details_update_scheduler = BackgroundScheduler()
+    campaign_details_update_scheduler.add_job(campaign_details, trigger='interval', seconds=5)
+    campaign_details_update_scheduler.start()
+
     try:
         print("create app..")
         return app
     except:
-        pass
-
+        tms_schduled_messages_scheduler.shutdown()
+        schduled_messages_scheduler.shutdown()
+        recruit_schduled_messages_scheduler.shutdown()
+        reject_mail_scheduler.shutdown()
+        email_validator_scheduler.shutdown()
+        campaign_mail_scheduler.shutdown()
+        bounced_mail_scheduler.shutdown()
+        calculate_bounce_rate_scheduler.shutdown()
+        update_completion_time_scheduler.shutdown()
+        campaign_details_update_scheduler.shutdown()
+        
 
