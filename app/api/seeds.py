@@ -28,17 +28,18 @@ def master_cron(type):
     mongo = initDB(request.account_name, request.account_config)
     if type == "hr_slack_notification":    
         send_notification.cron_messages(mongo)
-    if type == "recruit_notification":    
+    if type == "send_notification":    
         send_notification.tms_cron_messages(mongo)
         send_notification.recruit_cron_messages(mongo)
-        reject_mail.reject_mail(mongo)
-        campaign_crons.MailValidator(mongo)
         campaign_crons.campaign_mail(mongo)
+        imap_util.mail_reminder(mongo)
+        reject_mail.reject_mail(mongo)
+    if type == "update_campaign_details":    
+        campaign_crons.MailValidator(mongo)
         imap_util.bounced_mail(mongo)
         calculatebounces.calculate_bounce_rate(mongo)
         campaigns_details.update_completion_time(mongo)
         campaigns_details.campaign_details(mongo)
-        imap_util.mail_reminder(mongo)
     return jsonify({"status":"success"}),200
 
 
