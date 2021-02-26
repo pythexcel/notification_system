@@ -50,3 +50,17 @@ def check_and_validate_account(f):
     
 
     return decorated_function
+
+
+
+def fetching_validated_account():
+        
+    with open(account_json_path) as ff:
+        account_config = json.load(ff)
+
+    accounts = list(account_config.keys())
+    return accounts,account_config
+
+
+    
+

@@ -10,7 +10,6 @@ from flask import current_app as app
 from bson.objectid import ObjectId
 from app.account import initDB
 from app.utils import check_and_validate_account
-from app.crons import send_notification,reject_mail,campaign as campaign_crons,imap_util,calculatebounces,campaigns_details
 from mail_templates import templates
 from mail_variables import variables
 from slack_messages import slack_message
@@ -18,29 +17,6 @@ from recruit_templates import rec_templates
 from recruit_slack import rec_message
 
 bp = Blueprint('seeds', __name__, url_prefix='/')
-
-
-
-@bp.route('/crons/<string:type>', methods=["Post"])
-@token.SecretKeyAuth
-@check_and_validate_account
-def master_cron(type):
-    mongo = initDB(request.account_name, request.account_config)
-    if type == "hr_slack_notification":    
-        send_notification.cron_messages(mongo)
-    if type == "send_notification":    
-        send_notification.tms_cron_messages(mongo)
-        send_notification.recruit_cron_messages(mongo)
-        campaign_crons.campaign_mail(mongo)
-        imap_util.mail_reminder(mongo)
-        reject_mail.reject_mail(mongo)
-    if type == "update_campaign_details":    
-        campaign_crons.MailValidator(mongo)
-        imap_util.bounced_mail(mongo)
-        calculatebounces.calculate_bounce_rate(mongo)
-        campaigns_details.update_completion_time(mongo)
-        campaigns_details.campaign_details(mongo)
-    return jsonify({"status":"success"}),200
 
 
 
