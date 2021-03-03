@@ -20,7 +20,7 @@ def get_db(app, mongo):
     if "pytest" in sys.modules:
         return mongo
     else:
-        app.config["MONGO_URI"] = os.getenv('database')    
+        app.config["MONGO_URI"] = "xyz"#os.getenv('database')    
         mongo.init_app(app)
 
 

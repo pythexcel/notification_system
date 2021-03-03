@@ -19,14 +19,14 @@
     },
     "excellencerecruit" : {
         "mongodb" : {
-            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
-            "db" : "notify_staging"
+            "host" : "mongodb://root:recruitai567@mongodb:27017/excellence_notify?authSource=admin",
+            "db" : "excellence_notify"
         }
     },
     "rocketrecruit" : {
         "mongodb" : {
-            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
-            "db" : "notify_staging"
+            "host" : "mongodb://root:recruitai567@mongodb:27017/rocket_notify?authSource=admin",
+            "db" : "rocket_notify"
         }
     }
 

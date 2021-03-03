@@ -53,11 +53,9 @@ def create_app(test_config=None):
         app.config['twilio_number'] = None
 
     else:
-        app.config['ENV'] = os.getenv('ENVIRONMENT')
         app.config['to'] = os.getenv('to')
         app.config['cc'] = os.getenv('cc')
         app.config['bcc'] = os.getenv('bcc')
-        app.config['origin'] = os.getenv('origin')
         app.config['service'] = os.getenv('service')
         app.config['localtextkey'] = os.getenv('localtextkey')
         app.config['twilioSid'] = os.getenv('twilioSid')

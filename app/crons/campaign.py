@@ -24,7 +24,7 @@ import socket
 import smtplib
 from app.utils import fetching_validated_account
 from app.account import initDB
-
+from app.config import dev_list
 
 def MailValidator():
     accounts,account_config = fetching_validated_account()
@@ -174,7 +174,7 @@ def campaign_mail():
                                     if "pytest" in sys.modules:
                                         mail = mail
                                     else:
-                                        if os.getenv('ENVIRONMENT') == "development":
+                                        if account in dev_list:
                                             full_domain = re.search("@[\w.]+", mail)  
                                             domain = full_domain.group().split(".")
                                             if domain[0] == "@excellencetechnologies":
