@@ -1,32 +1,38 @@
 {
-    "notify_hr" : {
+    "notify_hr_live" : {
         "mongodb" : {
-            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
+            "host" : null,
             "db" : "notify_staging"
         }
     },
-   "notify_tms" : {
+    "notify_hr_staging" : {
         "mongodb" : {
-            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
-            "db" : "notify_staging"
+            "host" : null,
+            "db" : null
+        }
+    },
+    "notify_tms" : {
+        "mongodb" : {
+            "host" : null,
+            "db" : null
         }
     },
     "devrecruit" : {
         "mongodb" : {
-            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
-            "db" : "notify_staging"
+            "host" : null,
+            "db" : null
         }
     },
     "excellencerecruit" : {
         "mongodb" : {
-            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
-            "db" : "notify_staging"
+            "host" : null,
+            "db" : null
         }
     },
     "rocketrecruit" : {
         "mongodb" : {
-            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
-            "db" : "notify_staging"
+            "host" : null,
+            "db" : null
         }
     }
 

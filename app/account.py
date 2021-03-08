@@ -24,8 +24,14 @@ def initDB(account_name, account_config):
         
         global db_hosts
         if account_name not in db_hosts:
-            client = MongoClient(account_config["mongodb"]["host"])
-            db_hosts[account_name] = client[account_config["mongodb"]["db"]]
-
-
+            if account_config["mongodb"]["host"] == None:
+                if account_config["mongodb"]["db"] != None:
+                    client = MongoClient(os.getenv('database'))
+                    db_hosts[account_name] = client[account_config["mongodb"]["db"]]
+                else:
+                    return None
+            else:
+                client = MongoClient(account_config["mongodb"]["host"])
+                db_hosts[account_name] = client[account_config["mongodb"]["db"]]
         return db_hosts[account_name]
+
