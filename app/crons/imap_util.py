@@ -60,7 +60,7 @@ def mail_reminder():
                                     subject = reminder_mails['subject']
                                     to = [mails]
                                     try:   #Sending same message as a reminder
-                                        send_email(message=message_str,recipients=to,subject=subject)
+                                        send_email(mongo,message=message_str,recipients=to,subject=subject)
                                         ret = mongo.recruit_mail.update({"_id":obj_id},{"$set":{"is_reminder" : False}}) #updating reminder status
                                     except Exception:
                                         ret = mongo.recruit_mail.update({"_id":obj_id},{"$set":{"is_reminder" : True}}) 

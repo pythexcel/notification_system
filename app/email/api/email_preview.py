@@ -279,7 +279,7 @@ def mail_test():
     else:
         email = request.json.get('email')
     try:
-        send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
+        send_email(mongo,message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
         return jsonify({"status":True,"message": "Smtp working"}), 200
     except smtplib.SMTPServerDisconnected:
         return jsonify({"status":False,"message": "Smtp server is disconnected"}), 400                

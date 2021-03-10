@@ -241,7 +241,8 @@ def campaign_mail():
                                             to.append(mail)
                                         working_status = True
                                         try:        
-                                            send_email(message=message_str,
+                                            send_email(mongo,
+                                            message=message_str,
                                             recipients=to,
                                             subject=message_subject,
                                             user=unique,

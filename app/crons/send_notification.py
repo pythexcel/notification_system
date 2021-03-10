@@ -31,9 +31,9 @@ def cron_messages():
                             })
 
                 if ret['type'] == "email":
-                    send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
+                    send_email(mongo,message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
                 elif ret['type'] == "slack":
-                    slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
+                    slack_message(mongo,message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
                 else:
                     pass    
             else:
@@ -56,9 +56,9 @@ def tms_cron_messages():
                             })
 
                 if ret['type'] == "email":
-                    send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
+                    send_email(mongo,message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
                 elif ret['type'] == "slack":
-                    slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
+                    slack_message(mongo,message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
                 else:
                     pass    
             else:

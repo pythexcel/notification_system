@@ -427,7 +427,7 @@ def slack_channel_test():
     ret = mongo.working_channels.insert_one({
         "channel_id" : channel,
     })
-    slack_message(channel=[channel],message="Your slack account is integrated")
+    slack_message(mongo,channel=[channel],message="Your slack account is integrated")
     return jsonify({"message": "Sended","status":True}), 200
 
 
