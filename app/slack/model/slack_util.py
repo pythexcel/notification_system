@@ -69,12 +69,13 @@ def slack_message(mongo,channel, message,req_json=None,message_detail=None):
         else:
             pass
     for data in channel:
-        sc.api_call(
+        a = sc.api_call(
             "chat.postMessage",
             channel=data,
             text=message,
             attachments=attachments
         )
+        print("8000000000000000000000000000000000",a)
 
 def slack_profile(mongo,email=None):
     slack_token = slack_load_token(mongo)
