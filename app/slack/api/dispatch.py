@@ -35,7 +35,7 @@ def construct_dispatch_message_to_slack():
         #a=notify.make_payload_from_request(message_detail,input)
         return jsonify({"status":True,"Message":"Sended"}),200 
     except Exception as error:
-        return(str(error)),400
+       return(str(error)),400
 
 
 #Api for test slack token and notifications is working or by email address

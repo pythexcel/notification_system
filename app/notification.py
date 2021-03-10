@@ -22,8 +22,8 @@ class notify_system:
     #4.Input : message_details,user json request...
     #5.Output : will return message with variables next step will be get message variables so will call another function
     #If everything available in request then it will return proper output else will raise exception
-    def make_payload_from_request(self,message_detail,input,mongo):
-        message,message_detail,req_json = contruct_payload_from_request(mongo,message_detail=message_detail,input=input)
+    def make_payload_from_request(self,mongo,message_detail,input):
+        message,message_detail,req_json = contruct_payload_from_request(message_detail=message_detail,input=input)
         return self.message_variables_validation(message,message_detail,req_json,mongo)
 
     #1.This function will call from first function from there we got message now will get message variables from message.

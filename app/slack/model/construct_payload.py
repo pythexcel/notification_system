@@ -4,7 +4,7 @@ from app.slack.model.validate_message import validate_message
 
 
 
-def contruct_payload_from_request(mongo,message_detail=None,input=None):
+def contruct_payload_from_request(message_detail=None,input=None):
     if message_detail and input is not None:
         if 'message' in message_detail:
             message = message_detail['message']
