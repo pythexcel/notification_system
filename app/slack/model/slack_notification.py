@@ -11,7 +11,7 @@ def slack_notification(user_detail,message,message_detail,message_variables,syst
         slack_details = True
         slack = ""
         try:
-            slack = slack_id(user_detail['user']['email']) # Fetching user slack id by email using slack api
+            slack = slack_id(user_detail['user']['email'],mongo) # Fetching user slack id by email using slack api
         except Exception:
             slack_details = False   
         #If there is slack id available then it will put slack it in message else will put username
