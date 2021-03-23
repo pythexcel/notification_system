@@ -40,6 +40,7 @@ from app.email.util.date_convertor import convert_dates_to_format
 from app.email.model.interview_rejection import interview_rejection,interview_reminder_set
 from app.account import initDB
 from app.utils import check_and_validate_account
+from app.config import dev_accounts
 
 
 bp = Blueprint('email_preview', __name__, url_prefix='/notify')
@@ -118,9 +119,9 @@ def send_or_preview_mail():
                     attachment_file = os.getcwd() + '/attached_documents/' + filename
                 else:
                     pass
-        to,bcc,cc = get_recipients_from_request(req)
+        to,bcc,cc = get_recipients_from_request(req,request.account_name)
         if message_detail['message_key'] == "interviewee_reject":
-            status = interview_rejection(mongo,req,message_str,message_subject,smtp_email)
+            status = interview_rejection(mongo,request.account_name,req,message_str,message_subject,smtp_email)
             if status == False:
                 return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
@@ -168,7 +169,7 @@ def mails():
     # if env is developemet will return only excellence mails
     #else return acurate requested to mail
     try:
-        MAIL_SEND_TO = fetch_recipients_by_mode(request=request.json)
+        MAIL_SEND_TO = fetch_recipients_by_mode(request.account_name,request=request.json)
     except Exception as error:
         return(str(error)),400
 
@@ -274,7 +275,7 @@ def required_message(message_key):
 def mail_test():
     mongo = initDB(request.account_name, request.account_config)
     email = None
-    if app.config['ENV']=='development':
+    if request.account_name in dev_accounts:
         email = app.config['to']
     else:
         email = request.json.get('email')

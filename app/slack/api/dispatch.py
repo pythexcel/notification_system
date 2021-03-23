@@ -31,7 +31,7 @@ def construct_dispatch_message_to_slack():
         if message_detail == False:
             return jsonify({"status":True,"Message":"This message key not enable"}),200
         notify = notify_system()
-        notify.make_payload_from_request(mongo,message_detail,request.json)
+        notify.make_payload_from_request(request.account_name,mongo,message_detail,request.json)
         #a=notify.make_payload_from_request(message_detail,input)
         return jsonify({"status":True,"Message":"Sended"}),200 
     except Exception as error:

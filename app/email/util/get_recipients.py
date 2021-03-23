@@ -1,12 +1,12 @@
 from flask import current_app as app
 import re
+from app.config import dev_accounts
 
-
-def get_recipients_from_request(req):
+def get_recipients_from_request(req,account_name):
     to = None
     bcc = None
     cc = None
-    if app.config['ENV'] == 'development':
+    if account_name in dev_accounts:
         if 'to' in req:
             for email in req.get('to'):
                 full_domain = re.search("@[\w.]+", email)  
@@ -18,27 +18,26 @@ def get_recipients_from_request(req):
         bcc = [app.config['bcc']]
         cc = [app.config['cc']]
     else:
-        if app.config['ENV'] == 'production':
-            if 'to' in req:
-                if not req['to']:
-                    to = None
-                else:     
-                    to = req['to']
-            else:
+        if 'to' in req:
+            if not req['to']:
                 to = None
-            if 'bcc' in req:    
-                if not req['bcc']:
-                    bcc = None
-                else:
-                    bcc = req['bcc']
-            else:
+            else:     
+                to = req['to']
+        else:
+            to = None
+        if 'bcc' in req:    
+            if not req['bcc']:
                 bcc = None
-            
-            if 'cc' in req: 
-                if not req['cc']:
-                    cc = None
-                else:
-                    cc = req['cc']
-            else:        
-                cc = None            
+            else:
+                bcc = req['bcc']
+        else:
+            bcc = None
+        
+        if 'cc' in req: 
+            if not req['cc']:
+                cc = None
+            else:
+                cc = req['cc']
+        else:        
+            cc = None            
     return to,bcc,cc

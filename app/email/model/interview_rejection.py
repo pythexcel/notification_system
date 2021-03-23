@@ -5,29 +5,29 @@ import re
 #from app import mongo
 from flask import jsonify
 import datetime
+from app.config import dev_accounts
 
-
-def interview_rejection(mongo,req,message_str,message_subject,smtp_email):
+def interview_rejection(mongo,account_name,req,message_str,message_subject,smtp_email):
     reject_mail = None
     if "sender_name" in req:
         sender_name = req['sender_name']
     else:
         sender_name = None
-    if app.config['ENV'] == 'production':
+    if account_name not in dev_accounts:
         if 'email' in req['data']:
             reject_mail = req['data']['email']
         else:
             return False
             #return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
     else:
-        if app.config['ENV'] == 'development':
-            email = req['data']['email']
-            full_domain = re.search("@[\w.]+", email)  
-            domain = full_domain.group().split(".")
-            if domain[0] == "@excellencetechnologies":
-                reject_mail = email
-            else:
-                reject_mail = app.config['to']   
+        
+        email = req['data']['email']
+        full_domain = re.search("@[\w.]+", email)  
+        domain = full_domain.group().split(".")
+        if domain[0] == "@excellencetechnologies":
+            reject_mail = email
+        else:
+            reject_mail = app.config['to']   
     reject_handling = mongo.rejection_handling.insert_one({
                     "email": reject_mail,
                     'rejection_time': req['data']['rejection_time'],
