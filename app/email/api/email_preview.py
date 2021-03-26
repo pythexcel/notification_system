@@ -185,13 +185,16 @@ def mails():
 
     if not MAIL_SEND_TO and message:
         return jsonify({"status":False,"Message": "Invalid Request"}), 400
-
-    bcc = None
-    if 'bcc' in request.json:
-        bcc = request.json['bcc']
-    cc = None
-    if 'cc' in request.json:
-        cc = request.json['cc'] 
+    if request.account_name not in dev_accounts:
+        bcc = None
+        if 'bcc' in request.json:
+            bcc = request.json['bcc']
+        cc = None
+        if 'cc' in request.json:
+            cc = request.json['cc'] 
+    else:
+        bcc = [app.config['bcc']]
+        cc = [app.config['cc']]
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
 
