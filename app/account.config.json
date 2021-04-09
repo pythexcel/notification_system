@@ -1,7 +1,7 @@
 {
     "notify_hr_live" : {
         "mongodb" : {
-            "host" : null,
+            "host" : "localhost",,
             "db" : "hrstagingnotify"
         }
     },
@@ -25,14 +25,14 @@
     },
     "excellencerecruit" : {
         "mongodb" : {
-            "host" : "mongodb://root:recruitai567@116.202.234.182:27070/excellence_recruit?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false",
-            "db" : "excellence_notify"
+            "host" : null,
+            "db" : null
         }
     },
     "rocketrecruit" : {
         "mongodb" : {
-            "host" : "mongodb://root:recruitai567@116.202.234.182:27070/rocket_notify?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false",
-            "db" : "rocket_notify"
+            "host" : null,
+            "db" : null
         }
     }
 }

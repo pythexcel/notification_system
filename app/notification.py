@@ -22,9 +22,9 @@ class notify_system:
     #4.Input : message_details,user json request...
     #5.Output : will return message with variables next step will be get message variables so will call another function
     #If everything available in request then it will return proper output else will raise exception
-    def make_payload_from_request(self,mongo,message_detail,input):
+    def make_payload_from_request(self,account_name,mongo,message_detail,input):
         message,message_detail,req_json = contruct_payload_from_request(message_detail=message_detail,input=input)
-        return self.message_variables_validation(message,message_detail,req_json,mongo)
+        return self.message_variables_validation(account_name,message,message_detail,req_json,mongo)
 
     #1.This function will call from first function from there we got message now will get message variables from message.
     #2.In this function we will get message and system variables which will replace by actual value.
@@ -32,16 +32,16 @@ class notify_system:
     #4.Input:message,message_detail,req_json
     #5.Output: message_variables,system_require
     #If everything available in request then it will return proper output else will raise exception
-    def message_variables_validation(self,message,message_detail,req_json,mongo):
+    def message_variables_validation(self,account_name,message,message_detail,req_json,mongo):
         message,message_variables,req_json,system_require,message_detail = validate_message(message,req_json,message_detail)
-        return self.get_user_details(message,req_json,message_variables,system_require,message_detail,mongo)
+        return self.get_user_details(account_name,message,req_json,message_variables,system_require,message_detail,mongo)
 
     #1.This function used for just dump the user details request.
     #2.Input: jsonrequest
     #3.Output: userdetails json dump
-    def get_user_details(self,message,req_json,message_variables,system_require,message_detail,mongo):
+    def get_user_details(self,account_name,message,req_json,message_variables,system_require,message_detail,mongo):
         user_slack_details,user_email_details,user_zapier_details = fetch_user_details(req_json)
-        return self.construct_message_in_database(user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail,mongo)
+        return self.construct_message_in_database(account_name,user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail,mongo)
 
     #1.This is the mail function which will insert message request into collection.
     #2.This function first will check for which platform message requested.
@@ -51,8 +51,8 @@ class notify_system:
     #6.If request for any off two it will insert request for both.
     #7.In these all there systems a common function used for message making "make message" it will create message by request accordingly if request for slack message will make with tag else with name
     #8.Not sure only about this function if anything need to change in this
-    def construct_message_in_database(self,user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail,mongo):
-        return construct_message(user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail,mongo)
+    def construct_message_in_database(self,account_name,user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail,mongo):
+        return construct_message(account_name,user_slack_details,user_email_details,user_zapier_details,message,req_json,message_variables,system_require,message_detail,mongo)
 
 
 #===============This class function work only insert message request in message_cron collection according to platform.======

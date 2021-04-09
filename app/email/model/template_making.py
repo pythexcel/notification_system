@@ -11,6 +11,7 @@ import re
 import dateutil.parser
 from app.util.serializer import serialize_doc
 from flask import current_app as app
+from app.config import dev_accounts
 
 def construct_attachments_in_by_msg_details(mongo,message_detail=None,req=None):
     attachment_file = None
@@ -131,10 +132,10 @@ def assign_letter_heads( letterhead_id,mongo ):
 
 
 #Here function for fetch recipients according to env
-def fetch_recipients_by_mode(request=None):
+def fetch_recipients_by_mode(account_name,request=None):
     if request is not None:
         MAIL_SEND_TO = None     
-        if app.config['ENV'] == 'development':
+        if account_name in dev_accounts:
             for email in request.get('to'):
                 full_domain = re.search("@[\w.]+", email)
                 domain = full_domain.group().split(".")
@@ -143,8 +144,8 @@ def fetch_recipients_by_mode(request=None):
                 else:
                     MAIL_SEND_TO = [app.config['to']]
         else:
-            if app.config['ENV'] == 'production':
-                MAIL_SEND_TO = request.get("to",None)
+
+            MAIL_SEND_TO = request.get("to",None)
         return MAIL_SEND_TO
     else:
         raise Exception("Request not should be None")
@@ -152,10 +153,10 @@ def fetch_recipients_by_mode(request=None):
 
 
 #Here function for fetch recipients according to env
-def slack_fetch_recipients_by_mode(request=None):
+def slack_fetch_recipients_by_mode(account_name,request=None):
     if request is not None:
         MAIL_SEND = []     
-        if app.config['ENV'] == 'development':
+        if account_name in dev_accounts:
             for email in request.get('to'):
                 full_domain = re.search("@[\w.]+", email)
                 domain = full_domain.group().split(".")

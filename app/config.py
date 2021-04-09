@@ -42,7 +42,7 @@ else:
         raise Exception ('missing base url')
     else:
         base_url = os.getenv("base_url")
-        
+dev_accounts = ['notify_hr_staging','devrecruit','rocketrecruit']
 
 smtp_counts = {
     'smtp.gmail.com' : 100,
