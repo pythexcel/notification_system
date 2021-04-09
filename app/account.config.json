@@ -2,7 +2,7 @@
     "notify_hr_live" : {
         "mongodb" : {
             "host" : null,
-            "db" : "notify_staging"
+            "db" : "hrstagingnotify"
         }
     },
     "notify_hr_staging" : {
