@@ -1,7 +1,7 @@
 {
     "notify_hr_live" : {
         "mongodb" : {
-            "host" : "localhost",,
+            "host" : null,
             "db" : "hrstagingnotify"
         }
     },
