@@ -15,7 +15,14 @@ import re
 from app.util.serializer import serialize_doc
 import datetime
 
-
+regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'  
+  
+def check(email):   
+  
+    if(re.search(regex,email)):   
+        return True   
+    else:   
+        return False 
 
 def send_email(mongo,message,recipients,subject,reply_to=None,sender_name=None,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
@@ -67,14 +74,28 @@ def send_email(mongo,message,recipients,subject,reply_to=None,sender_name=None,b
         mail.login(username,password)
     delivered = []
     for element in recipients:
+        # mail_validate = check(element)
+        # if mail_validate:
         delivered.append(element)
+        # else:
+        #     raise Exception ('This email is not valid '+str(element))
     if bcc is not None:
         for data in bcc:
+            # mail_validate = check(data)
+            # if mail_validate:
+            delivered.append(data)
+            # else:
+            #     raise Exception ('This email is not valid '+str(data))
             delivered.append(data) 
     else:
         bcc = None
     if cc is not None:
         for data in cc:
+            # mail_validate = check(data)
+            # if mail_validate:
+            delivered.append(data)
+            # else:
+            #     raise Exception ('This email is not valid '+str(data))
             delivered.append(data)
         cc =  ','.join(cc)
     else:

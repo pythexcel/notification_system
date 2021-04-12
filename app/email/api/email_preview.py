@@ -242,8 +242,8 @@ def mails():
             return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
         except smtplib.SMTPDataError:
             return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
-        except Exception:
-            return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
+        except Exception as e:
+            return jsonify({"status":False,"Message": str(e)}), 400                                                         
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
 

@@ -43,8 +43,8 @@ def create_app(test_config=None):
     if "pytest" in sys.modules:
         app.config['ENV'] = "production"
         app.config['to'] = "testingattach0@gmail.com"
-        app.config['cc'] = "cc_testing_recruit@mailinator.com"
-        app.config['bcc'] = "bcc_testing_recruit@mailinator.com"
+        app.config['cc'] = "cctestingrecruit@mailinator.com"
+        app.config['bcc'] = "bcctestingrecruit@mailinator.com"
         app.config['origin'] = "hr"
         app.config['service'] = None
         app.config['localtextkey'] = None

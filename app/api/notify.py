@@ -47,7 +47,7 @@ def reminder_details(jobId):
 """
 ENVIRONMENT=development
 to=testingattach0@gmail.com
-bcc=bcc_testing_recruit@mailinator.com
+bcc=bcctestingrecruit@mailinator.com
 cc=cc_testing_recruit@mailinator.com
 origin=recruit
 database=mongodb://notify_staging:notify_staging@127.0.0.1:27017/notify_staging

@@ -19,8 +19,8 @@
     },
     "devrecruit" : {
         "mongodb" : {
-            "host" : "mongodb://notify_staging:notify_staging@176.9.137.77:27017/notify_staging",
-            "db" : "notify_staging"
+            "host" : null,
+            "db" : null
         }
     },
     "excellencerecruit" : {
