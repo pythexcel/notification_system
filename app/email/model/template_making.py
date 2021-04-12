@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 import requests
 from slackclient import SlackClient
 from app.email.model.sendmail import send_email
@@ -11,8 +11,9 @@ import re
 import dateutil.parser
 from app.util.serializer import serialize_doc
 from flask import current_app as app
+from app.config import dev_accounts
 
-def construct_attachments_in_by_msg_details(message_detail=None,req=None):
+def construct_attachments_in_by_msg_details(mongo,message_detail=None,req=None):
     attachment_file = None
     attachment_file_name = None
     if 'attachment' in req:
@@ -32,7 +33,7 @@ def construct_attachments_in_by_msg_details(message_detail=None,req=None):
     header = None
     footer = None
     if 'template_head' in message_detail:        
-        var = mongo.db.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
+        var = mongo.letter_heads.find_one({"_id":ObjectId(message_detail['template_head'])})
         if var is not None:
             header = var['header_value']
             footer = var['footer_value']
@@ -40,11 +41,11 @@ def construct_attachments_in_by_msg_details(message_detail=None,req=None):
 
 
 # this function will send back variables of html templates with variable from templates if there are None in special variables collection
-def template_requirement(user):
+def template_requirement(user,mongo):
     special_val = []
     unrequired = []
     unique_variables = []
-    ret = mongo.db.mail_variables.find({})
+    ret = mongo.mail_variables.find({})
     ret = [serialize_doc(doc) for doc in ret]
     for data in ret:
         if data['value'] is None:
@@ -73,7 +74,7 @@ def template_requirement(user):
     header = None
     footer = None
     if 'template_head' in user:
-        var = mongo.db.letter_heads.find_one({"_id":ObjectId(user['template_head'])})
+        var = mongo.letter_heads.find_one({"_id":ObjectId(user['template_head'])})
         if var is not None:
             header = var['header_value']
             footer = var['footer_value']
@@ -85,7 +86,7 @@ def template_requirement(user):
             message_str = re.sub(footer_rex, footer, message_str)
 
     if 'template_head' in user:
-        ret = mongo.db.letter_heads.find({"_id":ObjectId(user['template_head'])})
+        ret = mongo.letter_heads.find({"_id":ObjectId(user['template_head'])})
         ret = [serialize_doc(doc) for doc in ret]
         user['template_head'] = [ret]
     else:
@@ -95,10 +96,10 @@ def template_requirement(user):
     user['template_variables'] = unique_variables 
     return user              
 
-def Template_details(details):
+def Template_details(details,mongo):
     users = 0
     Template_data = []
-    user_data = mongo.db.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
+    user_data = mongo.campaign_users.aggregate([{ "$match" : {"campaign":details['_id']}},{ "$group": { "_id": None, "count": { "$sum": 1 } } }])
     user_data = [serialize_doc(doc) for doc in user_data]
     if user_data:
         for data in user_data:
@@ -106,7 +107,7 @@ def Template_details(details):
     details['users'] = users    
     if 'Template' in details:
         for elem in details['Template']:
-            ret = mongo.db.mail_template.find_one({"_id":ObjectId(elem)})
+            ret = mongo.mail_template.find_one({"_id":ObjectId(elem)})
             ret = serialize_doc(ret)
             Template_data.append(ret)
         details['Template'] = Template_data
@@ -116,8 +117,8 @@ def Template_details(details):
 
 
 
-def assign_letter_heads( letterhead_id ):
-    letter_head_details = mongo.db.letter_heads.find_one({ "_id": ObjectId(letterhead_id) })
+def assign_letter_heads( letterhead_id,mongo ):
+    letter_head_details = mongo.letter_heads.find_one({ "_id": ObjectId(letterhead_id) })
     if letter_head_details is not None:
         header = letter_head_details['header_value']
         footer = letter_head_details['footer_value']
@@ -131,10 +132,10 @@ def assign_letter_heads( letterhead_id ):
 
 
 #Here function for fetch recipients according to env
-def fetch_recipients_by_mode(request=None):
+def fetch_recipients_by_mode(account_name,request=None):
     if request is not None:
         MAIL_SEND_TO = None     
-        if app.config['ENV'] == 'development':
+        if account_name in dev_accounts:
             for email in request.get('to'):
                 full_domain = re.search("@[\w.]+", email)
                 domain = full_domain.group().split(".")
@@ -143,8 +144,8 @@ def fetch_recipients_by_mode(request=None):
                 else:
                     MAIL_SEND_TO = [app.config['to']]
         else:
-            if app.config['ENV'] == 'production':
-                MAIL_SEND_TO = request.get("to",None)
+
+            MAIL_SEND_TO = request.get("to",None)
         return MAIL_SEND_TO
     else:
         raise Exception("Request not should be None")
@@ -152,10 +153,10 @@ def fetch_recipients_by_mode(request=None):
 
 
 #Here function for fetch recipients according to env
-def slack_fetch_recipients_by_mode(request=None):
+def slack_fetch_recipients_by_mode(account_name,request=None):
     if request is not None:
         MAIL_SEND = []     
-        if app.config['ENV'] == 'development':
+        if account_name in dev_accounts:
             for email in request.get('to'):
                 full_domain = re.search("@[\w.]+", email)
                 domain = full_domain.group().split(".")

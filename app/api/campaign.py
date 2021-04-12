@@ -1,5 +1,5 @@
 import os
-from app import mongo
+#from app import mongo
 from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request, send_from_directory,redirect)
 from app.util.serializer import serialize_doc
@@ -25,20 +25,23 @@ from app.config import smtp_counts
 from werkzeug import secure_filename
 import uuid
 from app.crons.imap_util import bounced_mail
-
+from app.account import initDB
+from app.utils import check_and_validate_account
 
 bp = Blueprint('campaigns', __name__, url_prefix='/')
 
 
 
 
+
 @bp.route('/create_campaign', methods=["GET", "POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def create_campaign():
-
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
-        ret = mongo.db.campaigns.aggregate([])
-        ret = [Template_details(serialize_doc(doc)) for doc in ret]
+        ret = mongo.campaigns.aggregate([])
+        ret = [Template_details(serialize_doc(doc),mongo) for doc in ret]
         return jsonify(ret)
 
     if request.method == "POST":
@@ -56,7 +59,7 @@ def create_campaign():
             message_id = str(uuid.uuid4())
             message_creation.update({"message_id": message_id, "message": message,"message_subject": message_subject,"count":0})
 
-        ret = mongo.db.campaigns.insert_one({
+        ret = mongo.campaigns.insert_one({
                 "Campaign_name": name,
                 "creation_date": datetime.datetime.utcnow(),
                 "Campaign_description": description,
@@ -66,21 +69,21 @@ def create_campaign():
         }).inserted_id
 
         if message_creation is not None:
-            create_campaign_message = mongo.db.campaigns.update({"_id": ObjectId(str(ret))},{
+            create_campaign_message = mongo.campaigns.update({"_id": ObjectId(str(ret))},{
                 "$push": {
                    "message_detail" : message_creation
                 }
             })
         else:
             pass
-    
         return jsonify({"campaign_id":str(ret),"message_id":message_id}),200
 
 
 @bp.route('/attached_file/<string:Id>/<string:message_id>', methods=["POST","DELETE"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def attache_campaign(Id,message_id):
-
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "POST":
         file = request.files['attachment_file']
         if file and allowed_file(file.filename):
@@ -88,7 +91,7 @@ def attache_campaign(Id,message_id):
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
             attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             attachment_file_name = filename   
-            ret = mongo.db.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
+            ret = mongo.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
                 "$set":{
                     "message_detail.$.attachment_file_name": attachment_file_name,
                     "message_detail.$.attachment_file": attachment_file
@@ -99,7 +102,7 @@ def attache_campaign(Id,message_id):
             return jsonify({"message": "Please select a file"}), 400
 
     elif request.method == "DELETE":
-        ret = mongo.db.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
+        ret = mongo.campaigns.update({"_id":ObjectId(Id),"message_detail.message_id":message_id},{
             "$unset":{
                 "message_detail.$.attachment_file_name": 1,
                 "message_detail.$.attachment_file": 1
@@ -111,8 +114,9 @@ def attache_campaign(Id,message_id):
 
 @bp.route('/pause_campaign/<string:Id>/<int:status>', methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def pause_campaign(Id,status):
-
+    mongo = initDB(request.account_name, request.account_config)
     working = None
     if status == 1:
         block = False
@@ -121,13 +125,13 @@ def pause_campaign(Id,status):
         block = True
         working = "Paused"
 
-    ret = mongo.db.campaigns.update({"_id":ObjectId(Id)},{
+    ret = mongo.campaigns.update({"_id":ObjectId(Id)},{
         "$set": {
             "status": working
         }
     })
 
-    users = mongo.db.campaign_users.update({"campaign":Id},{
+    users = mongo.campaign_users.update({"campaign":Id},{
         "$set": {
             "block": block
         }
@@ -138,16 +142,20 @@ def pause_campaign(Id,status):
 
 @bp.route('/delete_campaign/<string:Id>', methods=["DELETE"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def delete_campaign(Id):
-    ret = mongo.db.campaigns.remove({"_id":ObjectId(Id)})
-    user = mongo.db.campaign_users.remove({ "campaign": Id })
-    status = mongo.db.mail_status.remove({ "campaign": Id })
+    mongo = initDB(request.account_name, request.account_config)
+    ret = mongo.campaigns.remove({"_id":ObjectId(Id)})
+    user = mongo.campaign_users.remove({ "campaign": Id })
+    status = mongo.mail_status.remove({ "campaign": Id })
     return jsonify({"message":"Campaign deleted"}),200
 
 @bp.route('/validate_users/<string:Id>', methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def validate_users(Id):
-    a = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+    mongo = initDB(request.account_name, request.account_config)
+    a = mongo.campaigns.update({"_id": ObjectId(Id)},{
         "$set":{
             "verification" : "Running"
         }
@@ -156,17 +164,20 @@ def validate_users(Id):
 
 @bp.route('/list_campaign', methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def list_campaign():
-        ret = mongo.db.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
-        ret = [Template_details(serialize_doc(doc)) for doc in ret]
+        mongo = initDB(request.account_name, request.account_config)
+        ret = mongo.campaigns.aggregate([{"$sort" : { "creation_date" : -1}}])
+        ret = [Template_details(serialize_doc(doc),mongo) for doc in ret]
         return jsonify(ret), 200
 
 
 @bp.route('/update_campaign/<string:Id>', methods=["POST"])
 @bp.route('/update_campaign/<string:Id>/<string:message_id>', methods=["DELETE"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def update_campaign(Id,message_id=None):
-
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "POST":
         name = request.json.get("campaign_name")
         description = request.json.get("campaign_description")
@@ -177,7 +188,7 @@ def update_campaign(Id,message_id=None):
         message_detail = request.json.get("message_detail",[])
 
         if message_id is not None:
-            campaign = mongo.db.campaigns.update({"_id": ObjectId(Id),"message_detail.message_id": message_id},{
+            campaign = mongo.campaigns.update({"_id": ObjectId(Id),"message_detail.message_id": message_id},{
             "$set": {
                 "Campaign_name": name,
                 "Campaign_description": description,
@@ -196,7 +207,7 @@ def update_campaign(Id,message_id=None):
                     data['message_id'] = str(uuid.uuid4())
                     data['count'] = 0
                     message_ids.append(data['message_id'])
-                    campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+                    campaign = mongo.campaigns.update({"_id": ObjectId(Id)},{
                     "$set": {
                         "Campaign_name": name,
                         "Campaign_description": description,
@@ -209,7 +220,7 @@ def update_campaign(Id,message_id=None):
 
             else:
 
-                campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+                campaign = mongo.campaigns.update({"_id": ObjectId(Id)},{
                 "$set": {
                     "Campaign_name": name,
                     "Campaign_description": description,
@@ -220,7 +231,7 @@ def update_campaign(Id,message_id=None):
             return jsonify({"message":"Campaign Updated","message_id":message_ids}),200
 
     elif request.method == "DELETE":
-        campaign = mongo.db.campaigns.update({"_id": ObjectId(Id)},{
+        campaign = mongo.campaigns.update({"_id": ObjectId(Id)},{
         "$pull": {
             "message_detail":{
                 "message_id": message_id
@@ -233,10 +244,12 @@ def update_campaign(Id,message_id=None):
 
 @bp.route('/user_list_campaign',methods=["GET","POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def add_user_campaign():
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
-        ret = mongo.db.campaign_users.aggregate([])
-        ret = [campaign_details(serialize_doc(doc)) for doc in ret]
+        ret = mongo.campaign_users.aggregate([])
+        ret = [campaign_details(serialize_doc(doc),mongo) for doc in ret]
         return jsonify(ret), 200
     if request.method == "POST":
         users = request.json.get("users")
@@ -247,16 +260,16 @@ def add_user_campaign():
             data['status'] = True
             data['campaign'] = campaign
             data['block'] = False
-            unsub_status = mongo.db.unsubscribed_users.find_one({"email":data['email']})
+            unsub_status = mongo.unsubscribed_users.find_one({"email":data['email']})
             if unsub_status is not None:
                 data['unsubscribe_status'] = True
                 data['already_unsub'] = True
             else:
                 data['unsubscribe_status'] = False
                 data['already_unsub'] = False
-        mongo.db.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
+        mongo.campaign_users.create_index( [ ("email" , 1  ),( "campaign", 1 )], unique = True)
         try:
-            ret = mongo.db.campaign_users.insert_many(users)
+            ret = mongo.campaign_users.insert_many(users)
             return jsonify({"message":"Users added to campaign"}), 200
         except pymongo.errors.BulkWriteError as bwe:
             return jsonify({"message":"Users added to campaign and duplicate users will not be added"}), 200
@@ -264,29 +277,36 @@ def add_user_campaign():
 
 @bp.route('/user_delete_campaign/<string:campaign_id>/<string:user_id>',methods=["DELETE"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def delete_user_campaign(campaign_id,user_id):
-    ret = mongo.db.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
-    vet = mongo.db.mail_status.remove({"user_id":user_id,"campaign":campaign_id})
+    mongo = initDB(request.account_name, request.account_config)
+    ret = mongo.campaign_users.remove({"_id": ObjectId(user_id),"campaign":campaign_id})
+    vet = mongo.mail_status.remove({"user_id":user_id,"campaign":campaign_id})
     return jsonify({"message":"User deleted from campaign"}), 200
         
 
         
 @bp.route("/campaign_detail/<string:Id>", methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def campaign_detail(Id):
-    ret = mongo.db.campaigns.find_one({"_id": ObjectId(Id)})
+    mongo = initDB(request.account_name, request.account_config)
+    ret = mongo.campaigns.find_one({"_id": ObjectId(Id)})
     detail = serialize_doc(ret)
-    return jsonify(user_data(detail)),200
+    return jsonify(user_data(detail,mongo)),200
 
 @bp.route("/campaign_smtp_test", methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def campaign_smtp_test():
-    mail = mongo.db.mail_settings.find({"origin":"CAMPAIGN"})
+    mongo = initDB(request.account_name, request.account_config)
+    mail = mongo.mail_settings.find({"origin":"CAMPAIGN"})
     mail = [serialize_doc(doc) for doc in mail]
     working = []
     for data in mail:
         try:
             send_email(
+                mongo,
                 message=request.json.get('message'),
                 recipients=[request.json.get('email')],
                 subject=request.json.get('message_subject'),
@@ -310,14 +330,16 @@ def campaign_smtp_test():
 
 @bp.route("/campaign_mails/<string:campaign>", methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def campaign_start_mail(campaign):   
+    mongo = initDB(request.account_name, request.account_config)
     delay = request.json.get("delay",30)
     smtps = request.json.get("smtps",[])
     ids = request.json.get("ids",[])
     final_ids = []
     if smtps:
         for smtp in smtps:
-            smtp_values = mongo.db.mail_settings.find_one({"_id":ObjectId(smtp)})
+            smtp_values = mongo.mail_settings.find_one({"_id":ObjectId(smtp)})
             try:
                 validate_smtp(username=smtp_values['mail_username'],password=smtp_values['mail_password'],port=smtp_values['mail_port'],smtp=smtp_values['mail_server'])
             
@@ -334,11 +356,11 @@ def campaign_start_mail(campaign):
         
             else:
                 for data in ids:
-                    unsub_detail =  mongo.db.campaign_users.find_one({"_id": ObjectId(data),"status":True})
+                    unsub_detail =  mongo.campaign_users.find_one({"_id": ObjectId(data),"status":True})
                     if unsub_detail['unsubscribe_status'] is False:
                         final_ids.append(ObjectId(data))
                 
-                ret = mongo.db.campaign_users.update({  "_id" : { "$in": final_ids }},
+                ret = mongo.campaign_users.update({  "_id" : { "$in": final_ids }},
                 {
                     "$set":{
                         "mail_cron":False
@@ -346,7 +368,7 @@ def campaign_start_mail(campaign):
                 },multi=True)
                 smtp_count_value = []
                 for smtp in smtps:
-                    smtp_detail = mongo.db.mail_settings.find_one({"_id": ObjectId(smtp)})
+                    smtp_detail = mongo.mail_settings.find_one({"_id": ObjectId(smtp)})
                     if smtp_detail['mail_server'] in smtp_counts:
                         for key,value in smtp_counts.items():
                             if key == smtp_detail['mail_server']:
@@ -368,7 +390,7 @@ def campaign_start_mail(campaign):
                     total_time = total_time/86400
                     total_time = round(total_time,1)
                     total_expected_time = "{} days".format(total_time)
-                campaign_status = mongo.db.campaigns.update({"_id": ObjectId(campaign)},{
+                campaign_status = mongo.campaigns.update({"_id": ObjectId(campaign)},{
                     "$set": {
                         "status": "Running",
                         "delay": delay,
@@ -382,19 +404,23 @@ def campaign_start_mail(campaign):
 
 @bp.route("/mails_status",methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def mails_status():
+    mongo = initDB(request.account_name, request.account_config)
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
-    ret = mongo.db.mail_status.find({}).skip(skip).limit(limit)
+    ret = mongo.mail_status.find({}).skip(skip).limit(limit)
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
 @bp.route("/unsub_status",methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def unsub():
+    mongo = initDB(request.account_name, request.account_config)
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
-    ret = mongo.db.unsubscribed_users.find({}).sort('unsubscribe_at',-1).skip(skip).limit(limit)
+    ret = mongo.unsubscribed_users.find({}).sort('unsubscribe_at',-1).skip(skip).limit(limit)
     ret = [serialize_doc(doc) for doc in ret]
     totalUnsub = 0
     if ret:
@@ -407,21 +433,25 @@ def unsub():
 
 @bp.route("/delete_unsub_status/<string:Id>",methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def delete_unsub(Id):        
-    ret = mongo.db.unsubscribed_users.remove({"_id" : ObjectId(Id)})
+    mongo = initDB(request.account_name, request.account_config)
+    ret = mongo.unsubscribed_users.remove({"_id" : ObjectId(Id)})
     return jsonify({ "message" :"user removed from unsub" }), 200
 
 @bp.route("/template_hit_rate/<string:variable>/<string:campaign_message>/<string:user>",methods=['GET'])
+@check_and_validate_account
 def hit_rate(variable,campaign_message,user):
+    mongo = initDB(request.account_name, request.account_config)
     hit = request.args.get('hit_rate', default=0, type=int)
 
-    campaign_update = mongo.db.campaigns.update({"message_detail.message_id": campaign_message },{
+    campaign_update = mongo.campaigns.update({"message_detail.message_id": campaign_message },{
         "$inc": 
         {
             "message_detail.$.count":hit
         },
     })
-    hit_rate_calculation = mongo.db.mail_status.update({
+    hit_rate_calculation = mongo.mail_status.update({
         "user_id":user,
         "digit": variable
         },{
@@ -433,14 +463,16 @@ def hit_rate(variable,campaign_message,user):
     return send_from_directory(app.config['UPLOAD_FOLDER'],'1pxl.jpg')
 
 @bp.route("campaign_redirect/<string:unique_key>/<string:campaign_id>",methods=['GET'])
+@check_and_validate_account
 def redirectes(unique_key,campaign_id):
+    mongo = initDB(request.account_name, request.account_config)
     url =  request.args.get('url', type=str)
-    clicked = mongo.db.mail_status.update({"digit": unique_key},{
+    clicked = mongo.mail_status.update({"digit": unique_key},{
         "$set":{
             "clicked": True
         }
     })
-    campaign_clicked_details = mongo.db.campaign_clicked.insert_one({
+    campaign_clicked_details = mongo.campaign_clicked.insert_one({
         "campaign_id": campaign_id,
         "clicked_time": datetime.datetime.now()
     })
@@ -451,8 +483,10 @@ def redirectes(unique_key,campaign_id):
 
 @bp.route('edit_templates/<string:template_id>',methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def edit_template(template_id):
-    mongo.db.mail_template.update({"_id": ObjectId(template_id)}, {
+    mongo = initDB(request.account_name, request.account_config)
+    mongo.mail_template.update({"_id": ObjectId(template_id)}, {
     "$set": request.json
     })
     return jsonify({
@@ -462,23 +496,27 @@ def edit_template(template_id):
 
 @bp.route('/daily_validate_details',methods = ["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def validate_details():
+    mongo = initDB(request.account_name, request.account_config)
     limit = request.args.get('limit',default=0, type=int)
     skip = request.args.get('skip',default=0, type=int)         
-    ret = mongo.db.smtp_count_validate.find({}).skip(skip).limit(limit)
+    ret = mongo.smtp_count_validate.find({}).skip(skip).limit(limit)
     ret = [serialize_doc(doc) for doc in ret]        
     return jsonify(ret), 200
 
 @bp.route("/unsubscribe_mail/<string:unsubscribe_mail>/<string:campaign_id>",methods=['GET'])
+@check_and_validate_account
 def unsubscribe_mail(unsubscribe_mail,campaign_id):
-    unsubscribe = mongo.db.campaign_users.find_one_and_update({"campaign": campaign_id , "email":unsubscribe_mail },
+    mongo = initDB(request.account_name, request.account_config)
+    unsubscribe = mongo.campaign_users.find_one_and_update({"campaign": campaign_id , "email":unsubscribe_mail },
     {
         "$set":{
             "unsubscribe_status": True
         }
     },return_document = ReturnDocument.AFTER)
     name = unsubscribe.get('name','NO Name')
-    unsubscribe_details = mongo.db.unsubscribed_users.update({ "email" : unsubscribe_mail },
+    unsubscribe_details = mongo.unsubscribed_users.update({ "email" : unsubscribe_mail },
     {
         "$set":{
             "unsubscribe_at" : datetime.datetime.utcnow(),

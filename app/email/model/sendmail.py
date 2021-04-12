@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 from dotenv import load_dotenv
 import smtplib,ssl    
 import os 
@@ -15,22 +15,31 @@ import re
 from app.util.serializer import serialize_doc
 import datetime
 
+regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'  
+  
+def check(email):   
+  
+    if(re.search(regex,email)):   
+        return True   
+    else:   
+        return False 
 
-
-def send_email(message,recipients,subject,reply_to=None,sender_name=None,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
+def send_email(mongo,message,recipients,subject,reply_to=None,sender_name=None,bcc=None,cc=None,mail_from = None,filelink=None,filename=None,link=None,sending_mail=None,sending_password=None,sending_port=None,sending_server=None,user=None,digit=None,campaign_message_id=None,campaign=None,files=None):
     APP_ROOT = os.path.join(os.path.dirname(__file__), '..')
     dotenv_path = os.path.join(APP_ROOT, '.env')
     load_dotenv(dotenv_path)
     if "pytest" in sys.modules:
-        mail_details = mongo.db.mail_settings.find_one({"origin": "CAMPAIGN"},{"_id":0})
+        mail_details = mongo.mail_settings.find_one({"origin": "CAMPAIGN"},{"_id":0})
     else:
+        mail_details = mongo.mail_settings.find_one({"active": True},{"_id":0})
         # again below checking origin condition as this function sends mail so need to check and select right smtp for single mail sending
-        if os.getenv('origin') == "hr":
-            mail_details = mongo.db.mail_settings.find_one({"origin": "HR"},{"_id":0})
-        elif os.getenv('origin') == "recruit":    
-            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True},{"_id":0})
-        elif os.getenv('origin') == "tms":    
-            mail_details = mongo.db.mail_settings.find_one({"origin": "TMS","active": True},{"_id":0})
+        # if os.getenv('origin') == "hr":
+        #     mail_details = mongo.mail_settings.find_one({"origin": "HR"},{"_id":0})
+        # elif os.getenv('origin') == "recruit":    
+        #     mail_details = mongo.mail_settings.find_one({"origin": "RECRUIT","active": True},{"_id":0})
+        # elif os.getenv('origin') == "tms":    
+        #     mail_details = mongo.mail_settings.find_one({"origin": "TMS","active": True},{"_id":0})
+
 
     if mail_details is None:
         mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
@@ -65,14 +74,28 @@ def send_email(message,recipients,subject,reply_to=None,sender_name=None,bcc=Non
         mail.login(username,password)
     delivered = []
     for element in recipients:
+        # mail_validate = check(element)
+        # if mail_validate:
         delivered.append(element)
+        # else:
+        #     raise Exception ('This email is not valid '+str(element))
     if bcc is not None:
         for data in bcc:
+            # mail_validate = check(data)
+            # if mail_validate:
+            delivered.append(data)
+            # else:
+            #     raise Exception ('This email is not valid '+str(data))
             delivered.append(data) 
     else:
         bcc = None
     if cc is not None:
         for data in cc:
+            # mail_validate = check(data)
+            # if mail_validate:
+            delivered.append(data)
+            # else:
+            #     raise Exception ('This email is not valid '+str(data))
             delivered.append(data)
         cc =  ','.join(cc)
     else:

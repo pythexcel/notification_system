@@ -1,6 +1,6 @@
 import os
 import uuid
-from app import mongo
+#from app import mongo
 from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util.serializer import serialize_doc
@@ -16,15 +16,19 @@ from werkzeug.utils import secure_filename
 from flask import current_app as app
 from app.slack.model.slack_util import slack_message
 from app.slack.model.notification_msg import get_notification_function_by_key
+from app.account import initDB
+from app.utils import check_and_validate_account
 
 bp = Blueprint('notification_message', __name__, url_prefix='/message')
 
 
 @bp.route('/configuration/<string:message_origin>', methods=["GET", "PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def notification_message(message_origin):
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
-        ret = mongo.db.notification_msg.find(
+        ret = mongo.notification_msg.find(
             {"message_origin": message_origin})
         ret = [serialize_doc(doc) for doc in ret]
         return jsonify(ret)
@@ -49,7 +53,7 @@ def notification_message(message_origin):
         if not MSG and MSG_TYPE and MSG_KEY:
             return jsonify({"message": "Invalid Request"}), 400
 
-        ret = mongo.db.notification_msg.update({"message_key": MSG_KEY}, {
+        ret = mongo.notification_msg.update({"message_key": MSG_KEY}, {
             "$set": {
                 "message": MSG,
                 "message_key": MSG_KEY,
@@ -73,12 +77,14 @@ def notification_message(message_origin):
 
 @bp.route('/enable_message', methods=["PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def enable_message():
+    mongo = initDB(request.account_name, request.account_config)
     MSG_KEY = request.json.get("message_key", None)
     Working = request.json.get("working", True)
     try:
         message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
-        ret = mongo.db.notification_msg.update({"message_key": MSG_KEY}, {
+        ret = mongo.notification_msg.update({"message_key": MSG_KEY}, {
             "$set": {
                 "working": Working,
             }
@@ -91,16 +97,18 @@ def enable_message():
 
 @bp.route('/special_variable', methods=["GET", "PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def special_var():
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
-        ret = mongo.db.mail_variables.find({})
+        ret = mongo.mail_variables.find({})
         ret = [serialize_doc(doc) for doc in ret]
         return jsonify(ret)
     if request.method == "PUT":
         name = request.json.get("name", None)
         value = request.json.get("value", None)
         variable_type = request.json.get("variable_type", None)
-        ret = mongo.db.mail_variables.update({"name": name}, {
+        ret = mongo.mail_variables.update({"name": name}, {
             "$set": {
                 "name": name,
                 "value": value,
@@ -112,18 +120,20 @@ def special_var():
 
 @bp.route('/get_email_template/<string:message_origin>',methods=["GET","POST","PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def mail_message(message_origin):
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
-        ret = mongo.db.mail_template.find({"message_origin": message_origin})
-        ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+        ret = mongo.mail_template.find({"message_origin": message_origin})
+        ret = [template_requirement(serialize_doc(doc),mongo) for doc in ret]
         return jsonify(ret), 200
     if request.method == "POST":
         MSG_KEY = request.json.get("message_key", None)
         if "JobProfileId" in request.json:
             JobProfileId = request.json.get("JobProfileId", None)
-            ret = mongo.db.mail_template.remove({"JobProfileId": JobProfileId,"message_key": MSG_KEY,"default":False})      
+            ret = mongo.mail_template.remove({"JobProfileId": JobProfileId,"message_key": MSG_KEY,"default":False})      
         else:
-            ret = mongo.db.mail_template.remove({"message_key": MSG_KEY,"default":False})
+            ret = mongo.mail_template.remove({"message_key": MSG_KEY,"default":False})
         return jsonify({
                 "message": "Template Deleted",
                 "status": True
@@ -155,10 +165,10 @@ def mail_message(message_origin):
             return jsonify({"MSG": "Invalid Request"}), 400
         if "JobProfileId" in request.form:
             JobProfileId = request.form["JobProfileId"]
-            ver = mongo.db.mail_template.find_one({"JobProfileId": JobProfileId,"message_key": MSG_KEY})
+            ver = mongo.mail_template.find_one({"JobProfileId": JobProfileId,"message_key": MSG_KEY})
             if ver is not None:
                 forr = ver['for']
-                ret = mongo.db.mail_template.update({"for": forr,"JobProfileId": JobProfileId}, {
+                ret = mongo.mail_template.update({"for": forr,"JobProfileId": JobProfileId}, {
                     "$set": {
                         "default": False,
                     }
@@ -166,7 +176,7 @@ def mail_message(message_origin):
 
                 version = ver['version'] + 1
                 ver_message = ver['message']
-                ret = mongo.db.mail_template.update({"message_key": MSG_KEY,"JobProfileId": JobProfileId}, {
+                ret = mongo.mail_template.update({"message_key": MSG_KEY,"JobProfileId": JobProfileId}, {
                     "$push": {
                         "version_details": {
                             "message": ver_message,
@@ -198,7 +208,7 @@ def mail_message(message_origin):
                                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
                                 attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                                 attachment_file_name = filename
-                                mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                                mongo.mail_template.update({"message_key": MSG_KEY},{
                                 "$push": {
                                     "attachment_files":{
                                         "file_id": str(uuid.uuid4()),
@@ -216,7 +226,7 @@ def mail_message(message_origin):
                 }), 200
             
             else:
-                ret = mongo.db.mail_template.insert_one({
+                ret = mongo.mail_template.insert_one({
                     "message": MSG,
                     "message_key": MSG_KEY,
                     "working": working,
@@ -241,7 +251,7 @@ def mail_message(message_origin):
                                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
                                 attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                                 attachment_file_name = filename
-                                mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                                mongo.mail_template.update({"message_key": MSG_KEY},{
                                 "$push": {
                                     "attachment_files":{
                                         "file_id": str(uuid.uuid4()),
@@ -255,10 +265,10 @@ def mail_message(message_origin):
                                     
                 return jsonify({"message": "Template Added", "status": True}), 200
         else:    
-            ver = mongo.db.mail_template.find_one({"message_key": MSG_KEY})
+            ver = mongo.mail_template.find_one({"message_key": MSG_KEY})
             if ver is not None:
                 forr = ver['for']
-                ret = mongo.db.mail_template.update({"for": forr}, {
+                ret = mongo.mail_template.update({"for": forr}, {
                     "$set": {
                         "default": False,
                     }
@@ -266,7 +276,7 @@ def mail_message(message_origin):
 
                 version = ver['version'] + 1
                 ver_message = ver['message']
-                ret = mongo.db.mail_template.update({"message_key": MSG_KEY}, {
+                ret = mongo.mail_template.update({"message_key": MSG_KEY}, {
                     "$push": {
                         "version_details": {
                             "message": ver_message,
@@ -297,7 +307,7 @@ def mail_message(message_origin):
                                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
                                 attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                                 attachment_file_name = filename
-                                mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                                mongo.mail_template.update({"message_key": MSG_KEY},{
                                 "$push": {
                                     "attachment_files":{
                                         "file_id": str(uuid.uuid4()),
@@ -315,7 +325,7 @@ def mail_message(message_origin):
                 }), 200
             
             else:
-                ret = mongo.db.mail_template.insert_one({
+                ret = mongo.mail_template.insert_one({
                     "message": MSG,
                     "message_key": MSG_KEY,
                     "working": working,
@@ -338,7 +348,7 @@ def mail_message(message_origin):
                                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))    
                                 attachment_file = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                                 attachment_file_name = filename
-                                mongo.db.mail_template.update({"message_key": MSG_KEY},{
+                                mongo.mail_template.update({"message_key": MSG_KEY},{
                                 "$push": {
                                     "attachment_files":{
                                         "file_id": str(uuid.uuid4()),
@@ -354,8 +364,10 @@ def mail_message(message_origin):
 
 @bp.route('/delete_file/<string:id>/<string:file_id>',methods=["DELETE"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def delete_attached_file(id,file_id):
-    ret = mongo.db.mail_template.update({"_id": ObjectId(id)},{
+    mongo = initDB(request.account_name, request.account_config)
+    ret = mongo.mail_template.update({"_id": ObjectId(id)},{
         "$pull": {
             "attachment_files":{
                 "file_id": file_id
@@ -369,9 +381,11 @@ def delete_attached_file(id,file_id):
 @bp.route('/letter_heads', methods=["GET", "PUT"])
 @bp.route('/letter_heads/<string:id>', methods=["DELETE"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def letter_heads(id=None):
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
-        ret = mongo.db.letter_heads.find({})
+        ret = mongo.letter_heads.find({})
         ret = [serialize_doc(doc) for doc in ret]
         return jsonify(ret), 200
     if request.method == "PUT":
@@ -379,7 +393,7 @@ def letter_heads(id=None):
         header_value = request.json.get("header_value", None)
         footer_value = request.json.get("footer_value", None)
         Working = request.json.get("working", True)
-        ret = mongo.db.letter_heads.update({"name": name}, {
+        ret = mongo.letter_heads.update({"name": name}, {
             "$set": {
                 "name": name,
                 "header_value": header_value,
@@ -389,14 +403,16 @@ def letter_heads(id=None):
         },upsert=True)
         return jsonify({"message": "Letter Head Created","status":True}), 200
     if request.method == "DELETE":
-        ret = mongo.db.letter_heads.remove({"_id": ObjectId(id)})
+        ret = mongo.letter_heads.remove({"_id": ObjectId(id)})
         return jsonify({"message": "Letter Head Deleted","status":True}), 200
 
 
 @bp.route('/assign_letter_heads/<string:template_id>/<string:letter_head_id>',methods=["PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def assign_letter_heads(template_id, letter_head_id):
-    ret = mongo.db.mail_template.update(
+    mongo = initDB(request.account_name, request.account_config)
+    ret = mongo.mail_template.update(
         {"_id": ObjectId(template_id)},
         {"$set": {
             "template_head": letter_head_id
@@ -404,22 +420,26 @@ def assign_letter_heads(template_id, letter_head_id):
     return jsonify({"message": "Letter Head Added To Template"}), 200
 
 @bp.route('/slack_channel_test', methods=["POST"])
+@check_and_validate_account
 def slack_channel_test():
+    mongo = initDB(request.account_name, request.account_config)
     channel = request.json.get("channel")
-    ret = mongo.db.working_channels.insert_one({
+    ret = mongo.working_channels.insert_one({
         "channel_id" : channel,
     })
-    slack_message(channel=[channel],message="Your slack account is integrated")
+    slack_message(mongo,channel=[channel],message="Your slack account is integrated")
     return jsonify({"message": "Sended","status":True}), 200
 
 
 @bp.route('/triggers',methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def get_triggers():
+    mongo = initDB(request.account_name, request.account_config)
     duplicate = []
     triggers = ["when candidate is on hold"]
     #holdTriger = []
-    ret = mongo.db.mail_template.find({"message_origin": "RECRUIT"})
+    ret = mongo.mail_template.find({"message_origin": "RECRUIT"})
     ret = [serialize_doc(doc) for doc in ret]
     if ret:
         for data in ret:
@@ -433,9 +453,11 @@ def get_triggers():
 #Api for update channel code for all messages.
 @bp.route('/configuration/channel', methods=["PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def assign_channel():
+    mongo = initDB(request.account_name, request.account_config)
     channel = request.json.get('channel')
-    assign = mongo.db.notification_msg.update({}, {
+    assign = mongo.notification_msg.update({}, {
         "$set": {
             "slack_channel": channel
         }
@@ -445,7 +467,9 @@ def assign_channel():
 #Api for get email template
 @bp.route('/get_email_template', methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def all_mail_message():
-    ret = mongo.db.mail_template.find({})
-    ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+    mongo = initDB(request.account_name, request.account_config)
+    ret = mongo.mail_template.find({})
+    ret = [template_requirement(serialize_doc(doc),mongo) for doc in ret]
     return jsonify(ret), 200

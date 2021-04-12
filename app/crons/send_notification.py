@@ -1,5 +1,5 @@
 import re
-from app import mongo
+#from app import mongo
 from app.util.serializer import serialize_doc
 import datetime
 import dateutil.parser
@@ -10,85 +10,103 @@ from flask import current_app as app
 import time
 import email
 import requests
-
+from app.utils import fetching_validated_account
+from app.account import initDB
 
 
 
 def cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"HR"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
+    accounts,account_config = fetching_validated_account()
+    for account in accounts:  
+        account_mongo = account_config[account]
+        mongo = initDB(account,account_mongo)
+        if mongo is not None:
+            ret = mongo.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"HR"})
+            if ret is not None:
+                vet = mongo.messages_cron.update({"_id":ObjectId(ret['_id'])},
+                    {
+                        "$set": {
+                                "cron_status": True
+                            }
+                            })
 
-        if ret['type'] == "email":
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
-        elif ret['type'] == "slack":
-            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
-        else:
-            pass    
-    else:
-        pass 
+                if ret['type'] == "email":
+                    send_email(mongo,message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
+                elif ret['type'] == "slack":
+                    slack_message(mongo,message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
+                else:
+                    pass    
+            else:
+                pass 
 
 
 def tms_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"TMS"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
+    accounts,account_config = fetching_validated_account()
+    for account in accounts:  
+        account_mongo = account_config[account]
+        mongo = initDB(account,account_mongo)
+        if mongo is not None:
+            ret = mongo.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"TMS"})
+            if ret is not None:
+                vet = mongo.messages_cron.update({"_id":ObjectId(ret['_id'])},
+                    {
+                        "$set": {
+                                "cron_status": True
+                            }
+                            })
 
-        if ret['type'] == "email":
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
-        elif ret['type'] == "slack":
-            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
-        else:
-            pass    
-    else:
-        pass 
+                if ret['type'] == "email":
+                    send_email(mongo,message=ret['message'],recipients=ret['recipients'],subject=ret['subject'])
+                elif ret['type'] == "slack":
+                    slack_message(mongo,message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
+                else:
+                    pass    
+            else:
+                pass 
+
+
 
 def recruit_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"RECRUIT"})
-    if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
-            {
-                "$set": {
-                        "cron_status": True
-                    }
-                    })
+    accounts,account_config = fetching_validated_account()
+    for account in accounts:  
+        account_mongo = account_config[account]
+        mongo = initDB(account,account_mongo)
+        if mongo is not None:
+            ret = mongo.messages_cron.find_one({"cron_status":False,"message_detail.message_origin":"RECRUIT"})
+            if ret is not None:
+                vet = mongo.messages_cron.update({"_id":ObjectId(ret['_id'])},
+                    {
+                        "$set": {
+                                "cron_status": True
+                            }
+                            })
 
-        if ret['type'] == "email":
-            if "sender_name" in ret:
-                sender_name = ret['sender_name']
+                if ret['type'] == "email":
+                    if "sender_name" in ret:
+                        sender_name = ret['sender_name']
+                    else:
+                        sender_name = None
+                    send_email(mongo,message=ret['message'],recipients=ret['recipients'],subject=ret['subject'],sender_name=sender_name)
+                elif ret['type'] == "slack":
+                    slack_message(mongo,message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
+                else:
+                    pass    
             else:
-                sender_name = None
-            send_email(message=ret['message'],recipients=ret['recipients'],subject=ret['subject'],sender_name=sender_name)
-        elif ret['type'] == "slack":
-            slack_message(message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
-        else:
-            pass    
-    else:
-        pass 
+                pass 
 
 
 #Zapier cron for fetch payload from collection and hit webhook
-def zapier_cron_messages():
-    ret = mongo.db.messages_cron.find_one({"zapier_cron_status":False,"type":"zapier"})
+def zapier_cron_messages(mongo):
+    ret = mongo.messages_cron.find_one({"zapier_cron_status":False,"type":"zapier"})
     if ret is not None:
-        vet = mongo.db.messages_cron.update({"_id":ObjectId(ret['_id'])},
+        vet = mongo.messages_cron.update({"_id":ObjectId(ret['_id'])},
             {
                 "$set": {
                         "zapier_cron_status": True
                     }
                     })
         #calling function webhook which will return avaliable webhook from db by notification message key
-        hookurlDetails = webhook(data=ret)
+        hookurlDetails = webhook(mongo,data=ret)
         if hookurlDetails is not None:
             hookurl = hookurlDetails['webhook']
             payload = {'slackmessage': ret['slackmessage'], "defaultmessage": ret['defaultmessage'], "recipients": ret['recipients'], "channel": ret['channel'], "phone":ret['phone'], "subject":ret['subject']}
@@ -105,11 +123,11 @@ def zapier_cron_messages():
 
 
 #Webhook function which will return webhook by message key
-def webhook(data=None):
+def webhook(mongo,data=None):
     if data is not None:
         if 'message_detail' in data:
             message_key = data['message_detail']['message_key']
-            ret = mongo.db.webhooks.find_one({"message_key":message_key})
+            ret = mongo.webhooks.find_one({"message_key":message_key})
             return ret
         else:
             return None

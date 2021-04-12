@@ -1,5 +1,5 @@
 from app.auth import token
-from app import mongo
+#from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.util.serializer import serialize_doc
 from app.slack.model.slack_util import slack_message,slack_id,recruit_slack_id
@@ -12,34 +12,41 @@ from flask import current_app as app
 from app.slack.model.construct_payload import contruct_payload_from_request
 from app.slack.model.notification_msg import get_notification_function_by_key
 from app.notification import notify_system
+from app.account import initDB
+from app.utils import check_and_validate_account
+
 
 bp = Blueprint('dispatch', __name__, url_prefix='/notify')
 
 #dispatch was made to send particular message on slack but those message can be sended on email too
 @bp.route('/dispatch', methods=["POST"])
+@check_and_validate_account
 def construct_dispatch_message_to_slack():
     if not request.json:
         abort(500)
+    mongo = initDB(request.account_name, request.account_config)
     MSG_KEY = request.json.get("message_key", None)
     try:
-        message_detail = get_notification_function_by_key(MSG_KEY=MSG_KEY)
+        message_detail = get_notification_function_by_key(mongo,MSG_KEY=MSG_KEY)
         if message_detail == False:
             return jsonify({"status":True,"Message":"This message key not enable"}),200
         notify = notify_system()
-        notify.make_payload_from_request(message_detail,request.json)
+        notify.make_payload_from_request(request.account_name,mongo,message_detail,request.json)
         #a=notify.make_payload_from_request(message_detail,input)
         return jsonify({"status":True,"Message":"Sended"}),200 
     except Exception as error:
-        return(str(error)),400
+       return(str(error)),400
 
 
 #Api for test slack token and notifications is working or by email address
 @bp.route('/slack_test',methods=["POST"])
+@check_and_validate_account
 def token_test():
+    mongo = initDB(request.account_name, request.account_config)
     email = request.json.get('email')
     try:
-        slack = slack_id(email)
-        slack_message(channel=[slack],message="Testing Slack Notification from HR System")
+        slack = slack_id(email,mongo)
+        slack_message(mongo,channel=[slack],message="Testing Slack Notification from HR System")
         return jsonify({"status":True,"message": "Slack Token Tested"}), 200
     except Exception:
         return jsonify({"status":False,"message": "Slack User not exist or invalid token"}), 400
@@ -60,10 +67,12 @@ def get_slackid():
 
 #Api for test slack token and notifications is working or by email address
 @bp.route('/recruit_slack_test',methods=["POST"])
+@check_and_validate_account
 def recruit_token_test():
+    mongo = initDB(request.account_name, request.account_config)
     slack_channel = request.json.get('channel')
     try:
-        slack_message(channel=[slack_channel],message="Testing Slack Notification from Recruit System")
+        slack_message(mongo,channel=[slack_channel],message="Testing Slack Notification from Recruit System")
         return jsonify({"status":True,"message": "Slack Token Tested"}), 200
     except Exception:
         return jsonify({"status":False,"message": "Slack channel not exist or invalid token"}), 400

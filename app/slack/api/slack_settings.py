@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,redirect)
 from app.util.serializer import serialize_doc
 from app.auth import token
@@ -9,6 +9,8 @@ from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
 import datetime
 from app.config import oauth_url,client_id,client_secret,base_url
 import requests 
+from app.account import initDB
+from app.utils import check_and_validate_account
 
 bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
 
@@ -16,16 +18,18 @@ bp = Blueprint('slack_settings', __name__, url_prefix='/slack')
 
 @bp.route('/settings', methods=['PUT', 'GET'])
 #@token.admin_required
+@check_and_validate_account
 def slack_seting():
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == 'GET':
-        slack = mongo.db.slack_settings.find_one({},{'_id':0})
+        slack = mongo.slack_settings.find_one({},{'_id':0})
         return jsonify(slack)
 
     if request.method == 'PUT':
         slack_token = request.json.get('slack_token')
         if not slack_token:
             return jsonify({'message': 'Slack Token missing'}), 400
-        ret = mongo.db.slack_settings.update({}, {
+        ret = mongo.slack_settings.update({}, {
             '$set': {
                 'slack_token': slack_token
             }
@@ -37,14 +41,16 @@ def slack_seting():
 
 #Api for check app installed app status how many workspaces installed our app. 
 @bp.route('/app_state', methods = ['GET','POST'])
+@check_and_validate_account
 def app_state():
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == 'GET': #If method get
-        availabe_app = mongo.db.app_state.find({}) #Fetching app state information from db.
+        availabe_app = mongo.app_state.find({}) #Fetching app state information from db.
         availabe_app = [serialize_doc(doc) for doc in availabe_app]
         return jsonify (availabe_app), 200
     if request.method == 'POST': #If method post checking app installed or not by app code
         code = request.json.get('code')
-        app_state = mongo.db.app_state.find_one({ 'code': code })
+        app_state = mongo.app_state.find_one({ 'code': code })
         if app_state is not None:
             return jsonify ({'message': 'app installed'})
         else:
@@ -52,11 +58,13 @@ def app_state():
 
 
 @bp.route('/redirect', methods=['GET'])
+@check_and_validate_account
 def slack_redirect():
+    mongo = initDB(request.account_name, request.account_config)
     code = request.args.get('code')
     state = request.args.get('state')
     client_redirect_uri = base_url+'slack/redirect'
-    remove_previous_state = mongo.db.app_state.remove({'code': code})
+    remove_previous_state = mongo.app_state.remove({'code': code})
     try:
         oauth_details = {
             'code': code,
@@ -68,14 +76,14 @@ def slack_redirect():
         print(token.json())
         token_resp = token.json().get('access_token') 
         """
-        save_token = mongo.db.slack_settings.update({}, {
+        save_token = mongo.slack_settings.update({}, {
             '$set': {
                 'slack_token': token_resp
             }
         },upsert=True)
         """
         if token_resp:
-            state_save = mongo.db.app_state.update({"code":code}, {
+            state_save = mongo.app_state.update({"code":code}, {
                 '$set': {
                     'slack_token': token_resp,
                     'state': state,

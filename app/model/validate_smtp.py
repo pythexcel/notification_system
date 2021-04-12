@@ -1,6 +1,6 @@
 
 import datetime
-from app import mongo
+#from app import mongo
 from app.config import smtp_counts,default_unsub
 from bson import ObjectId
 import re
@@ -8,11 +8,11 @@ from app.util.serializer import serialize_doc
 
 
 
-def validate_smtp_counts(ids):
+def validate_smtp_counts(ids,mongo):
     final_ids = []
     for id in ids:
         final_ids.append(ObjectId(id))
-    smtp_mail = mongo.db.mail_settings.find({"origin": "CAMPAIGN","_id": {"$in":final_ids}})
+    smtp_mail = mongo.mail_settings.find({"origin": "CAMPAIGN","_id": {"$in":final_ids}})
     smtp_mail = [serialize_doc(doc) for doc in smtp_mail]
     valid_smtp = dict()
     if smtp_mail:
@@ -21,7 +21,7 @@ def validate_smtp_counts(ids):
                 # here below is the condtions we will check for smtp counts and values 
                 today = datetime.datetime.today()
                 next_day = datetime.datetime.today() + datetime.timedelta(days=1)
-                smtp_validate = mongo.db.smtp_count_validate.find_one({"smtp":mail['mail_server'],"email":mail['mail_username'],
+                smtp_validate = mongo.smtp_count_validate.find_one({"smtp":mail['mail_server'],"email":mail['mail_username'],
                 "created_at":{
                 "$gte": datetime.datetime(today.year, today.month, today.day),
                 "$lte": datetime.datetime(next_day.year, next_day.month, next_day.day)}})
@@ -37,7 +37,7 @@ def validate_smtp_counts(ids):
                     elif len(smtp_mail) == index + 1:
                         raise Exception("SMTP OVER") 
                 else:
-                    smtp_validate_insert = mongo.db.smtp_count_validate.insert_one({
+                    smtp_validate_insert = mongo.smtp_count_validate.insert_one({
                         "smtp":mail['mail_server'],
                         "email":mail['mail_username'],
                         "created_at": today,

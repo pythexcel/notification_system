@@ -1,4 +1,4 @@
-from app import mongo
+#from app import mongo
 from app.auth import token
 from flask import (Blueprint, flash, jsonify, abort, request)
 from app.util.serializer import serialize_doc
@@ -14,27 +14,30 @@ from app.email.model.sendmail import send_email
 from app.util.validate_smtp import validate_smtp
 import smtplib
 import datetime
-
+from app.account import initDB
+from app.utils import check_and_validate_account
 
 bp = Blueprint('mail_settings', __name__, url_prefix='/smtp')
 
 @bp.route('/settings/<string:origin>', methods=["POST", "GET"])
 @bp.route('/settings/<string:origin>/<string:id>', methods=["DELETE","PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def mail_setings(origin,id=None):
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
-       mail = mongo.db.mail_settings.find({"origin":origin},{"mail_password":0})
+       mail = mongo.mail_settings.find({"origin":origin},{"mail_password":0})
        mail = [serialize_doc(doc) for doc in mail]
        return jsonify (mail)
     if request.method == "DELETE":
-        prior = mongo.db.mail_settings.find_one({"origin":origin,"_id": ObjectId(str(id))})
+        prior = mongo.mail_settings.find_one({"origin":origin,"_id": ObjectId(str(id))})
         if origin == "CAMPAIGN":
             priority = prior['priority']
         else:
             pass     
-        mail = mongo.db.mail_settings.remove({"origin":origin,"_id": ObjectId(str(id))})
+        mail = mongo.mail_settings.remove({"origin":origin,"_id": ObjectId(str(id))})
         if origin == "CAMPAIGN":
-            campaign_smtp = mongo.db.mail_settings.update({"origin":origin,"priority":{ "$gt": priority } },{
+            campaign_smtp = mongo.mail_settings.update({"origin":origin,"priority":{ "$gt": priority } },{
                         "$inc" :{
                             "priority": -1
                         }
@@ -43,7 +46,7 @@ def mail_setings(origin,id=None):
         return jsonify ({"message": "Smtp conf deleted"}), 200
     if request.method == "PUT":
         active = request.json.get("active", None)
-        mail = mongo.db.mail_settings.update({"origin":origin,"_id": ObjectId(str(id))},{
+        mail = mongo.mail_settings.update({"origin":origin,"_id": ObjectId(str(id))},{
             "$set":{
                 "active" : active
             }
@@ -71,7 +74,7 @@ def mail_setings(origin,id=None):
         else:
             email = mail_username  
         try:
-            send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
+            send_email(mongo,message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=mail_username,sending_password=mail_password,sending_port=mail_port,sending_server=mail_server)
         except smtplib.SMTPServerDisconnected:
             return jsonify({"message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
@@ -84,7 +87,7 @@ def mail_setings(origin,id=None):
             return jsonify({"message": "Something went wrong with smtp"}), 400
         else:   
             if origin == "HR": 
-                    ret = mongo.db.mail_settings.update({}, {
+                    ret = mongo.mail_settings.update({}, {
                         "$set": {
                             "mail_server": mail_server,
                             "mail_port": mail_port,
@@ -100,10 +103,10 @@ def mail_setings(origin,id=None):
                     return jsonify({"message":"upsert"}),200
 
             elif origin == "RECRUIT":
-                vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
+                vet = mongo.mail_settings.find_one({"mail_username":mail_username,
                         "mail_password":mail_password,"origin":origin})
                 if vet is None:
-                    ret = mongo.db.mail_settings.insert_one({
+                    ret = mongo.mail_settings.insert_one({
                         "mail_server": mail_server,
                             "mail_port": mail_port,
                             "origin": origin,
@@ -126,16 +129,16 @@ def mail_setings(origin,id=None):
                     daemon_mail = "mailer-daemon@yahoo.com"
                 elif mail_server == "smtp.office365.com":
                     daemon_mail = "postmaster@outlook.com"
-                vet = mongo.db.mail_settings.find_one({"mail_username":mail_username,
+                vet = mongo.mail_settings.find_one({"mail_username":mail_username,
                         "mail_password":mail_password,"origin":origin})
                 if vet is None:
                     priority = 1
-                    previous =  mongo.db.mail_settings.find({"origin":"CAMPAIGN"}).sort("priority", -1).limit(1)
+                    previous =  mongo.mail_settings.find({"origin":"CAMPAIGN"}).sort("priority", -1).limit(1)
                     prior_check = [serialize_doc(doc) for doc in previous]
                     if prior_check:
                         for data in prior_check:
                             priority = data['priority'] + 1
-                    ret = mongo.db.mail_settings.insert_one({
+                    ret = mongo.mail_settings.insert_one({
                             "mail_server": mail_server,
                             "mail_port": mail_port,
                             "origin": origin,
@@ -156,8 +159,10 @@ def mail_setings(origin,id=None):
 
 @bp.route('/smtp_priority/<string:Id>/<int:position>', methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def smtp_priority(Id,position):
-    prior_check = mongo.db.mail_settings.find({"origin": "CAMPAIGN"}).sort("priority",1)
+    mongo = initDB(request.account_name, request.account_config)
+    prior_check = mongo.mail_settings.find({"origin": "CAMPAIGN"}).sort("priority",1)
     prior_check = [serialize_doc(doc) for doc in prior_check]
     index = 0
     value = 0
@@ -172,12 +177,12 @@ def smtp_priority(Id,position):
         val = value + 1    
     final = prior_check[val]
     current = prior_check[value]
-    ret = mongo.db.mail_settings.update({"_id":ObjectId(Id)},{
+    ret = mongo.mail_settings.update({"_id":ObjectId(Id)},{
         "$set":{
             "priority": final['priority']
         }
     },upsert=False)
-    vet = mongo.db.mail_settings.update({"_id":ObjectId(final['_id'])},{
+    vet = mongo.mail_settings.update({"_id":ObjectId(final['_id'])},{
         "$set":{
             "priority": current['priority']
         }
@@ -187,9 +192,11 @@ def smtp_priority(Id,position):
 
 @bp.route('/update_settings/<string:origin>/<string:id>', methods=["PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def update_smtp(origin,id):
+    mongo = initDB(request.account_name, request.account_config)
     new_password = request.json.get('new_password',"password")
-    mail_details = mongo.db.mail_settings.find_one({"_id": ObjectId(str(id))})
+    mail_details = mongo.mail_settings.find_one({"_id": ObjectId(str(id))})
     if mail_details is None:
         return jsonify({"message": "No smtp exists"}),400
     else:
@@ -205,7 +212,7 @@ def update_smtp(origin,id):
         else:
             email = username 
         try:
-            send_email(message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=username,sending_password=new_password,sending_port=port,sending_server=mail_server)
+            send_email(mongo,message="SMTP WORKING!",recipients=[email],mail_from = mail_from,subject="SMTP TESTING MAIL!",sending_mail=username,sending_password=new_password,sending_port=port,sending_server=mail_server)
         except smtplib.SMTPServerDisconnected:
             return jsonify({"message": "Smtp server is disconnected"}), 400                
         except smtplib.SMTPConnectError:
@@ -217,7 +224,7 @@ def update_smtp(origin,id):
         except Exception:
             return jsonify({"message": "Something went wrong with smtp"}), 400
         else:
-            mail = mongo.db.mail_settings.update({"origin":origin,"_id": ObjectId(str(id))},{
+            mail = mongo.mail_settings.update({"origin":origin,"_id": ObjectId(str(id))},{
                 "$set":{
                     "mail_password": new_password
                 }
@@ -226,7 +233,9 @@ def update_smtp(origin,id):
 
 @bp.route('/validate_smtp', methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def validate_smtp_check():
+    mongo = initDB(request.account_name, request.account_config)
     email = request.json.get('email')
     password = request.json.get('password')
     if email is None:

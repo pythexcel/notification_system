@@ -2,11 +2,11 @@ from app.slack.util.make_message import MakeMessage
 from app.slack.util.fetch_channels import FetchRecipient,FetchChannels
 from app.slack.model.slack_util import slack_message,slack_id
 import json
-from app import mongo
+#from app import mongo
 
 
 
-def zapier_notification(user_detail,message,message_detail,message_variables,system_require,system_variable):
+def zapier_notification(user_detail,message,message_detail,message_variables,system_require,system_variable,mongo):
         email = ""
         #Fetching username from tms request data.
         if "user" in user_detail:
@@ -78,7 +78,7 @@ def zapier_notification(user_detail,message,message_detail,message_variables,sys
             recipient = [email]
         #Will inser mesaage payload in collection from there zapier cron will take it and hit webhook
         if channels or recipient is not None:
-            mongo.db.messages_cron.insert_one({
+            mongo.messages_cron.insert_one({
                 "zapier_cron_status":False,
                 "type": "zapier",
                 "slackmessage":slackmessage,

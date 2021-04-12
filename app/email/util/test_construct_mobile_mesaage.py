@@ -1,3 +1,4 @@
+
 from app.email.util.template_util import construct_mobile_message_str
 from bson.objectid import ObjectId
 

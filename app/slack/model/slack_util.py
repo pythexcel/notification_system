@@ -1,20 +1,18 @@
-from app import mongo
+#from app import mongo
 import requests
 from slackclient import SlackClient
 from flask import jsonify
 import datetime
 
-def slack_load_token():
-    token = mongo.db.slack_settings.find_one({
+def slack_load_token(mongo):
+    token = mongo.slack_settings.find_one({
         "slack_token": {"$exists": True}
     }, {"slack_token": 1, '_id': 0})
-    if token:
-        sl_token = token['slack_token']
-        return sl_token
-    else:
-        return None
-def slack_id(email):
-    slack_token = slack_load_token()
+    sl_token = token['slack_token']
+    return sl_token
+
+def slack_id(email,mongo):
+    slack_token = slack_load_token(mongo)
     if slack_token is not None:
         sc = SlackClient(slack_token)
         sl_user_id = sc.api_call("users.lookupByEmail",
@@ -25,8 +23,10 @@ def slack_id(email):
             raise Exception("Slack profile not available in workspace")  
     else:
         raise Exception("Slack token not available in database")
-def recruit_slack_id(email):
-    slack_token = slack_load_token()
+
+
+def recruit_slack_id(email,mongo):
+    slack_token = slack_load_token(mongo)
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)
@@ -34,12 +34,10 @@ def recruit_slack_id(email):
         return (sl_user_id['user']['id'])
     else:
         return None
-        #raise Exception("Slack profile not available in workspace")  
 
 
-
-def slack_message(channel, message,req_json=None,message_detail=None):
-    slack_token = slack_load_token()
+def slack_message(mongo,channel, message,req_json=None,message_detail=None):
+    slack_token = slack_load_token(mongo)
     sc = SlackClient(slack_token)
     if req_json is not None:
         if 'button' in req_json:
@@ -71,15 +69,16 @@ def slack_message(channel, message,req_json=None,message_detail=None):
         else:
             pass
     for data in channel:
-        sc.api_call(
+        a = sc.api_call(
             "chat.postMessage",
             channel=data,
             text=message,
             attachments=attachments
         )
+        print("8000000000000000000000000000000000",a)
 
-def slack_profile(email=None):
-    slack_token = slack_load_token()
+def slack_profile(mongo,email=None):
+    slack_token = slack_load_token(mongo)
     sc = SlackClient(slack_token)
     sl_user_id = sc.api_call("users.lookupByEmail",
                        email=email)

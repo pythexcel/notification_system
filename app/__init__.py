@@ -16,15 +16,6 @@ import sys
 
 from dotenv import load_dotenv
 
-from mail_templates import templates
-
-from mail_variables import variables
-
-from slack_messages import slack_message
-
-from recruit_templates import rec_templates
-
-from recruit_slack import rec_message
 
 mongo = db.init_db()
 
@@ -34,7 +25,7 @@ from app.crons.campaign import campaign_mail,MailValidator
 from app.crons.reject_mail import reject_mail
 from app.crons.send_notification import cron_messages,recruit_cron_messages,tms_cron_messages,zapier_cron_messages
 from app.crons.calculatebounces import calculate_bounce_rate
-from app.crons.imap_util import bounced_mail
+from app.crons.imap_util import bounced_mail,mail_reminder
 from app.crons.campaigns_details import update_completion_time,campaign_details
 
 def create_app(test_config=None):
@@ -52,8 +43,8 @@ def create_app(test_config=None):
     if "pytest" in sys.modules:
         app.config['ENV'] = "production"
         app.config['to'] = "testingattach0@gmail.com"
-        app.config['cc'] = "cc_testing_recruit@mailinator.com"
-        app.config['bcc'] = "bcc_testing_recruit@mailinator.com"
+        app.config['cc'] = "cctestingrecruit@mailinator.com"
+        app.config['bcc'] = "bcctestingrecruit@mailinator.com"
         app.config['origin'] = "hr"
         app.config['service'] = None
         app.config['localtextkey'] = None
@@ -101,7 +92,6 @@ def create_app(test_config=None):
     def error_500(error):
         return make_response({}, 500)
 
-    db.get_db(mongo=mongo, app=app)
     
     from app.api import notify
     from app.slack.api import dispatch
@@ -112,6 +102,7 @@ def create_app(test_config=None):
     from app.api import message_create
     from app.api import campaign
     from app.api import settings
+    from app.api import seeds
     
     app.register_blueprint(notify.bp)
     app.register_blueprint(dispatch.bp)
@@ -122,158 +113,68 @@ def create_app(test_config=None):
     app.register_blueprint(message_create.bp)
     app.register_blueprint(campaign.bp)
     app.register_blueprint(settings.bp)
+    app.register_blueprint(seeds.bp)
     
-    app.cli.add_command(seed_hr)
-    app.cli.add_command(seed_recruit)
-    app.cli.add_command(seed_system)
-
     if "pytest" in sys.modules:
         return app
 
-    if app.config['origin'] == "hr":
+    schduled_messages_scheduler = BackgroundScheduler()
+    schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=3)
+    schduled_messages_scheduler.start()
+
+    tms_schduled_messages_scheduler = BackgroundScheduler()
+    tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=3)
+    tms_schduled_messages_scheduler.start()
+
+    recruit_schduled_messages_scheduler = BackgroundScheduler()
+    recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=3)
+    recruit_schduled_messages_scheduler.start()
+
+    reject_mail_scheduler = BackgroundScheduler()
+    reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
+    reject_mail_scheduler.start()
+
+    email_validator_scheduler = BackgroundScheduler()
+    email_validator_scheduler.add_job(MailValidator, trigger='interval', seconds=10)
+    email_validator_scheduler.start()
+
+    campaign_mail_scheduler = BackgroundScheduler()
+    campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
+    campaign_mail_scheduler.start()
+
+    bounced_mail_scheduler = BackgroundScheduler()
+    bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=5)
+    bounced_mail_scheduler.start()
+
+    calculate_bounce_rate_scheduler = BackgroundScheduler()
+    calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=8)
+    calculate_bounce_rate_scheduler.start()
+
+    mail_reminder_scheduler = BackgroundScheduler()
+    mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=13,minute=7)
+    mail_reminder_scheduler.start()
+
+    update_completion_time_scheduler = BackgroundScheduler()
+    update_completion_time_scheduler.add_job(update_completion_time, trigger='interval', seconds=5)
+    update_completion_time_scheduler.start()
+
+    campaign_details_update_scheduler = BackgroundScheduler()
+    campaign_details_update_scheduler.add_job(campaign_details, trigger='interval', seconds=5)
+    campaign_details_update_scheduler.start()
+
+    try:
+        print("create app..")
+        return app
+    except:
+        tms_schduled_messages_scheduler.shutdown()
+        schduled_messages_scheduler.shutdown()
+        recruit_schduled_messages_scheduler.shutdown()
+        reject_mail_scheduler.shutdown()
+        email_validator_scheduler.shutdown()
+        campaign_mail_scheduler.shutdown()
+        bounced_mail_scheduler.shutdown()
+        calculate_bounce_rate_scheduler.shutdown()
+        update_completion_time_scheduler.shutdown()
+        campaign_details_update_scheduler.shutdown()
         
-        schduled_messages_scheduler = BackgroundScheduler()
-        schduled_messages_scheduler.add_job(cron_messages,trigger='interval',seconds=1)
-        schduled_messages_scheduler.start()
-        try:
-            print("create app..")
-            return app
-        except:
-            schduled_messages_scheduler.shutdown()
-    
-    elif app.config['origin'] == "tms":
-        
-        tms_schduled_messages_scheduler = BackgroundScheduler()
-        tms_schduled_messages_scheduler.add_job(tms_cron_messages,trigger='interval',seconds=1)
-        tms_schduled_messages_scheduler.start()
-        #Added zapier cron will run in every 2 seconds
-        zapier_scheduler = BackgroundScheduler()
-        zapier_scheduler.add_job(zapier_cron_messages, trigger='interval', seconds=3)
-        zapier_scheduler.start()
 
-        try:
-            print("create app..")
-            return app
-        except:
-            tms_schduled_messages_scheduler.shutdown()
-            zapier_scheduler.shutdown()
-            
-    elif app.config['origin'] == "recruit":
-        try:
-            seed_recruit_data()
-        except Exception:
-            pass
-
-        recruit_schduled_messages_scheduler = BackgroundScheduler()
-        recruit_schduled_messages_scheduler.add_job(recruit_cron_messages,trigger='interval',seconds=1)
-        recruit_schduled_messages_scheduler.start()
-
-        reject_mail_scheduler = BackgroundScheduler()
-        reject_mail_scheduler.add_job(reject_mail, trigger='interval', minutes=5)
-        reject_mail_scheduler.start()
-
-        email_validator_scheduler = BackgroundScheduler()
-        email_validator_scheduler.add_job(MailValidator, trigger='interval', seconds=10)
-        email_validator_scheduler.start()
-
-        campaign_mail_scheduler = BackgroundScheduler()
-        campaign_mail_scheduler.add_job(campaign_mail, trigger='interval', seconds=5)
-        campaign_mail_scheduler.start()
-
-        bounced_mail_scheduler = BackgroundScheduler()
-        bounced_mail_scheduler.add_job(bounced_mail, trigger='interval', minutes=3)
-        bounced_mail_scheduler.start()
-
-
-        mail_reminder_scheduler = BackgroundScheduler()
-        #mail_reminder_scheduler.add_job(mail_reminder, trigger='cron', day_of_week='mon-sat',hour=13,minute=7)
-        mail_reminder_scheduler.start()
-
-        calculate_bounce_rate_scheduler = BackgroundScheduler()
-        calculate_bounce_rate_scheduler.add_job(calculate_bounce_rate, trigger='interval', seconds=5)
-        calculate_bounce_rate_scheduler.start()
-
-        update_completion_time_scheduler = BackgroundScheduler()
-        update_completion_time_scheduler.add_job(update_completion_time, trigger='interval', seconds=5)
-        update_completion_time_scheduler.start()
-
-        campaign_details_update_scheduler = BackgroundScheduler()
-        campaign_details_update_scheduler.add_job(campaign_details, trigger='interval', seconds=2)
-        campaign_details_update_scheduler.start()
-
-        try:
-            print("create app..")
-            return app
-        except:
-            reject_mail_scheduler.shutdown()
-            campaign_mail_scheduler.shutdown()
-            recruit_schduled_messages_scheduler.shutdown()
-            calculate_bounce_rate_scheduler.shutdown()
-            bounced_mail_scheduler.shutdown()
-            update_completion_time_scheduler.shutdown()
-            campaign_details_update_scheduler.shutdown()
-            email_validator_scheduler.shutdown()
-    
-@click.command("seed_hr")
-@with_appcontext
-def seed_hr():
-    template_exist = mongo.db.mail_template.find({"message_origin": "HR"})
-    if template_exist:
-        mongo.db.mail_template.remove({"message_origin":"HR"})
-        mail_template = mongo.db.mail_template.insert_many(templates)
-    else:    
-        mail_template = mongo.db.mail_template.insert_many(templates)
-    mail_variable_exist = mongo.db.mail_variables.find({})
-    if mail_variable_exist:
-        mongo.db.mail_variables.remove({})
-        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
-    else:
-        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
-
-    notification_message_exist = mongo.db.notification_msg.find({"message_origin": "HR"})
-    if notification_message_exist:
-        mongo.db.notification_msg.remove({"message_origin": "HR"})
-        notification_message = mongo.db.notification_msg.insert_many(slack_message)
-    else:
-        notification_message = mongo.db.notification_msg.insert_many(slack_message)
-
-
-
-def seed_recruit_data():
-    print("uploading.......")
-    for rec_template in rec_templates:
-        template_exist = mongo.db.mail_template.find_one({"message_key":rec_template.get("message_key")})
-        if template_exist is None:
-            mail_template = mongo.db.mail_template.insert_one(rec_template)
-
-    for rec_messag in rec_message:
-        notification_message_exist = mongo.db.notification_msg.find_one({"message_key":rec_messag.get("message_key")})
-        if notification_message_exist is None:
-            notification_message = mongo.db.notification_msg.insert_one(rec_messag)
-
-    for variable in variables:
-        mail_variable_exist = mongo.db.mail_variables.find_one({"name":variable.get("name")})
-        if mail_variable_exist is None:
-            mail_variable = mongo.db.mail_variables.insert_one(variable)
-
-    mail_settings_exist = mongo.db.mail_settings.find({"origin":"RECRUIT","active":True}).count()
-    if not mail_settings_exist:
-        update_mail_settings = mongo.db.mail_settings.insert_one({"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"})
-        print("added smtp")
-    print("------>>>>Successfully uploaded data..............")
-
-
-@click.command("seed_recruit")
-@with_appcontext
-def seed_recruit():
-    seed_recruit_data()
-
-@click.command("seed_system")
-@with_appcontext
-def seed_system():
-    mail_variable_exist = mongo.db.mail_variables.find({})
-    if mail_variable_exist:
-        mongo.db.mail_variables.remove({})
-        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)
-    else:
-        mail_variable_exist = mongo.db.mail_variables.insert_many(variables)

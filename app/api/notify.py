@@ -1,5 +1,5 @@
 from app.auth import token
-from app import mongo
+#from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,
                                 get_jwt_identity, get_current_user,
@@ -11,6 +11,8 @@ import dateutil.parser
 import datetime
 from datetime import timedelta
 from app.model.interview_reminders import fetch_interview_reminders
+from app.account import initDB
+from app.utils import check_and_validate_account
 
 bp = Blueprint('notify', __name__, url_prefix='/notify')
 
@@ -21,11 +23,13 @@ bp = Blueprint('notify', __name__, url_prefix='/notify')
 #But as i read code its for return total sum of interview reminder by one day before day
 @bp.route('/reminder_details/<string:jobId>', methods=["GET"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def reminder_details(jobId):
+    mongo = initDB(request.account_name, request.account_config)
     date = (datetime.datetime.today() - timedelta(days=1)).strftime('%Y-%m-%d')
     before_date = dateutil.parser.parse(date)
     try:
-        details = fetch_interview_reminders(date=before_date,jobId=jobId) #Here calling function for fetch interview reminder records from db by date
+        details = fetch_interview_reminders(mongo,date=before_date,jobId=jobId) #Here calling function for fetch interview reminder records from db by date
         if (details):
             sum = 0
             if (len(details) > 1):
@@ -43,7 +47,7 @@ def reminder_details(jobId):
 """
 ENVIRONMENT=development
 to=testingattach0@gmail.com
-bcc=bcc_testing_recruit@mailinator.com
+bcc=bcctestingrecruit@mailinator.com
 cc=cc_testing_recruit@mailinator.com
 origin=recruit
 database=mongodb://notify_staging:notify_staging@127.0.0.1:27017/notify_staging

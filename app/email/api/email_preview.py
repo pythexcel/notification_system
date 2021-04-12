@@ -1,5 +1,5 @@
 from app.auth import token
-from app import mongo
+#from app import mongo
 from flask import (Blueprint, flash, jsonify, abort, request,url_for,send_from_directory)
 from app.email.model.sendmail import send_email
 from app.util.serializer import serialize_doc 
@@ -38,6 +38,10 @@ from app.email.util.get_recipients import get_recipients_from_request
 from app.slack.model.notification_msg import get_notification_function_by_key
 from app.email.util.date_convertor import convert_dates_to_format
 from app.email.model.interview_rejection import interview_rejection,interview_reminder_set
+from app.account import initDB
+from app.utils import check_and_validate_account
+from app.config import dev_accounts
+
 
 bp = Blueprint('email_preview', __name__, url_prefix='/notify')
 
@@ -45,7 +49,9 @@ bp = Blueprint('email_preview', __name__, url_prefix='/notify')
 #1preview is used in recruit and hr to generate message for the templates and can also be used to send email if details are provided
 @bp.route('/preview', methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def send_or_preview_mail():
+    mongo = initDB(request.account_name, request.account_config)
     if not request.json:
         abort(500)
     req = request.json
@@ -60,9 +66,9 @@ def send_or_preview_mail():
         phone = req.get("phone", None)
         if "JobProfileId" in req: 
             JobProfileId = req.get("JobProfileId", None)
-            message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY,"JobProfileId":JobProfileId})
+            message_detail = mongo.mail_template.find_one({"message_key": MSG_KEY,"JobProfileId":JobProfileId})
         else:
-            message_detail = mongo.db.mail_template.find_one({"message_key": MSG_KEY,'JobProfileId':{'$exists':False}}) #calling function for message details by message key
+            message_detail = mongo.mail_template.find_one({"message_key": MSG_KEY,'JobProfileId':{'$exists':False}}) #calling function for message details by message key
 
         if message_detail is not None:
             if Message is not None:
@@ -75,11 +81,11 @@ def send_or_preview_mail():
             else:
                 pass    
 
-            system_variable = mongo.db.mail_variables.find({})
+            system_variable = mongo.mail_variables.find({})
             system_variable = [serialize_doc(doc) for doc in system_variable]
 
             #here calling function for filter attachments,header,footer etc details from message details
-            attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(message_detail=message_detail,req=req)
+            attachment_file,attachment_file_name,files,header,footer = construct_attachments_in_by_msg_details(mongo,message_detail=message_detail,req=req)
             
             #Here calling function for filter message,mobile message,subject and any missing payload value
             message_str,message_subject,mobile_message_str,missing_payload = generate_full_template_from_string_payload(message_detail= message_detail, request= req,system_variable=system_variable)
@@ -104,7 +110,7 @@ def send_or_preview_mail():
 
     else:
         if message_detail['message_key'] == "Payslip":
-            system_settings = mongo.db.system_settings.find_one({},{"_id":0})
+            system_settings = mongo.system_settings.find_one({},{"_id":0})
             if system_settings is not None:
                 if system_settings['pdf'] is True:
                     filename = "{}.pdf".format(str(uuid.uuid4()))
@@ -113,9 +119,9 @@ def send_or_preview_mail():
                     attachment_file = os.getcwd() + '/attached_documents/' + filename
                 else:
                     pass
-        to,bcc,cc = get_recipients_from_request(req)
+        to,bcc,cc = get_recipients_from_request(req,request.account_name)
         if message_detail['message_key'] == "interviewee_reject":
-            status = interview_rejection(req,message_str,message_subject,smtp_email)
+            status = interview_rejection(mongo,request.account_name,req,message_str,message_subject,smtp_email)
             if status == False:
                 return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400
             else:
@@ -123,7 +129,7 @@ def send_or_preview_mail():
                 #return jsonify({"status":True,"*Note":"Added for Rejection"}),200
         else:
             if message_detail['message_key'] == "Interview Reminder":
-                status = interview_reminder_set(req,message_str,message_subject,smtp_email)
+                status = interview_reminder_set(mongo,req,message_str,message_subject,smtp_email)
                 if status == False:
                     return jsonify({"status":False,"*Note":"Job_ID missing"}),400
                 else:
@@ -134,18 +140,18 @@ def send_or_preview_mail():
                 sender_name = None
             if to is not None:
                 if smtp_email is not None:
-                    mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
+                    mail_details = mongo.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
                     if mail_details is None:
                         mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
                         #return jsonify({"status":False,"Message": "Smtp not available in db"})
-                        send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+                        send_email(mongo,message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
                         return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
                     else:
-                        send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
+                        send_email(mongo,message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])
                         return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"phone_status" : phone_status, "phone_issue": phone_issue,"mobile_message": mobile_message_str}),200
                 else:
                     #mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
-                    send_email(message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
+                    send_email(mongo,message=message_str,sender_name=sender_name,recipients=to,subject=message_subject,bcc=bcc,cc=cc,filelink=attachment_file,filename=attachment_file_name,files=files)
                     return jsonify({"status":True,"Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str,"phone_status" : phone_status, "phone_issue": phone_issue}),200
             else:
                 return jsonify({"status":True,"*Note":"No mail will be sended!","Subject":message_subject,"Message":download_pdf,"attachment_file_name":attachment_file_name,"attachment_file":attachment_file,"missing_payload":missing_payload,"mobile_message": mobile_message_str, "phone_status" : phone_status, "phone_issue": phone_issue}),200
@@ -154,14 +160,16 @@ def send_or_preview_mail():
 #Api for send mail
 @bp.route('/send_mail', methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def mails():
+    mongo = initDB(request.account_name, request.account_config)
     if not request.json:
         abort(500) 
     #Here calling function for fetch recipients according to env 
     # if env is developemet will return only excellence mails
     #else return acurate requested to mail
     try:
-        MAIL_SEND_TO = fetch_recipients_by_mode(request=request.json)
+        MAIL_SEND_TO = fetch_recipients_by_mode(request.account_name,request=request.json)
     except Exception as error:
         return(str(error)),400
 
@@ -177,13 +185,16 @@ def mails():
 
     if not MAIL_SEND_TO and message:
         return jsonify({"status":False,"Message": "Invalid Request"}), 400
-
-    bcc = None
-    if 'bcc' in request.json:
-        bcc = request.json['bcc']
-    cc = None
-    if 'cc' in request.json:
-        cc = request.json['cc'] 
+    if request.account_name not in dev_accounts:
+        bcc = None
+        if 'bcc' in request.json:
+            bcc = request.json['bcc']
+        cc = None
+        if 'cc' in request.json:
+            cc = request.json['cc'] 
+    else:
+        bcc = [app.config['bcc']]
+        cc = [app.config['cc']]
     if 'fcm_registration_id' in request.json:
         Push_notification(message=message,subject=subject,fcm_registration_id=request.json['fcm_registration_id'])
 
@@ -199,17 +210,17 @@ def mails():
         for mail_store in MAIL_SEND_TO:
             #Here calling function for update recruit mails into a collection
             try:
-                update_recruit_mail_msg(phone=phone,phone_message=phone_message,phone_issue=phone_issue,message=message,subject=subject,to=mail_store,is_reminder=is_reminder)
+                update_recruit_mail_msg(mongo,phone=phone,phone_message=phone_message,phone_issue=phone_issue,message=message,subject=subject,to=mail_store,is_reminder=is_reminder)
             except Exception as error:
                 return(str(error)),400
 
         if smtp_email is not None:
-            mail_details = mongo.db.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
+            mail_details = mongo.mail_settings.find_one({"mail_username":str(smtp_email),"origin": "RECRUIT"})
             if mail_details is None:
                 mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
                 #return jsonify({"status":False,"Message": "Smtp not available in db"})
         else:
-            mail_details = mongo.db.mail_settings.find_one({"origin": "RECRUIT","active": True})
+            mail_details = mongo.mail_settings.find_one({"origin": "RECRUIT","active": True})
             if mail_details is None:
                 mail_details = {"mail_server":"smtp.sendgrid.net","mail_port":587,"origin":"RECRUIT","mail_use_tls":True,"mail_username":"apikey","mail_password":os.getenv('send_grid_key'),"active":True,"type":"tls","mail_from":"noreply@excellencetechnologies.in"}
                 #return jsonify({"status":False,"Message": "No smtp active in DB"})
@@ -218,7 +229,7 @@ def mails():
         else:
             sender_name = None
         try:
-            send_email(message=message,recipients=MAIL_SEND_TO,subject=subject,reply_to =reply_to,sender_name=sender_name,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
+            send_email(mongo,message=message,recipients=MAIL_SEND_TO,subject=subject,reply_to =reply_to,sender_name=sender_name,bcc=bcc,cc=cc,filelink=filelink,filename=filename,sending_mail=mail_details['mail_username'],sending_password=mail_details['mail_password'],sending_port=mail_details['mail_port'],sending_server=mail_details['mail_server'])   
             if mail_details['mail_username'] == "apikey":
                 return jsonify({"status":True,"Message":"Sended","smtp":"noreply@excellencetechnologies.in","phone_status" : phone_status, "phone_issue": phone_issue}),200    
             else:
@@ -231,8 +242,8 @@ def mails():
             return jsonify({"status":False,"Message": "Smtp login and password is wrong"}), 400                           
         except smtplib.SMTPDataError:
             return jsonify({"status":False,"Message": "Smtp account is not activated"}), 400 
-        except Exception:
-            return jsonify({"status":False,"Message": "Something went wrong with smtp"}), 400                                                         
+        except Exception as e:
+            return jsonify({"status":False,"Message": str(e)}), 400                                                         
     else:
         return jsonify({"status":False,"Message":"Please select a mail"}),400 
 
@@ -240,19 +251,21 @@ def mails():
 #Api for return email template by message key
 @bp.route('/email_template_requirement/<string:message_key>',methods=["GET", "POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def required_message(message_key):
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
         if message_key == "All":
-            ret = mongo.db.mail_template.find({},{"version":0,"version_details":0})
+            ret = mongo.mail_template.find({},{"version":0,"version_details":0})
             if ret is not None:
-                ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+                ret = [template_requirement(serialize_doc(doc),mongo) for doc in ret]
                 return jsonify(ret), 200
             else:
                 return jsonify ({"message": "no template exist"}), 200    
         else:    
-            ret = mongo.db.mail_template.find({"for": message_key},{"version":0,"version_details":0})
+            ret = mongo.mail_template.find({"for": message_key},{"version":0,"version_details":0})
             if ret is not None:
-                ret = [template_requirement(serialize_doc(doc)) for doc in ret]
+                ret = [template_requirement(serialize_doc(doc),mongo) for doc in ret]
                 return jsonify(ret), 200
             else:
                 return jsonify ({"message": "no template exist"}), 200    
@@ -261,14 +274,16 @@ def required_message(message_key):
 #Api for test mailing service is working or not
 @bp.route('/mail_test',methods=["POST"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def mail_test():
+    mongo = initDB(request.account_name, request.account_config)
     email = None
-    if app.config['ENV']=='development':
+    if request.account_name in dev_accounts:
         email = app.config['to']
     else:
         email = request.json.get('email')
     try:
-        send_email(message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
+        send_email(mongo,message="SMTP WORKING!",recipients=[email],subject="SMTP TESTING MAIL!")
         return jsonify({"status":True,"message": "Smtp working"}), 200
     except smtplib.SMTPServerDisconnected:
         return jsonify({"status":False,"message": "Smtp server is disconnected"}), 400                
@@ -285,9 +300,11 @@ def mail_test():
 
 @bp.route('/recruit_variable', methods=["GET", "PUT"])
 @token.SecretKeyAuth
+@check_and_validate_account
 def recruit_var():
+    mongo = initDB(request.account_name, request.account_config)
     if request.method == "GET":
-        ret = mongo.db.mail_variables.find({"recruit_variable":{"$exists":True}})
+        ret = mongo.mail_variables.find({"recruit_variable":{"$exists":True}})
         ret = [serialize_doc(doc) for doc in ret]
         return jsonify(ret)
     if request.method == "PUT":
@@ -295,7 +312,7 @@ def recruit_var():
         value = request.json.get("value", None)
         variable_type = request.json.get("variable_type", None)
         recruit_variable = request.json.get("recruit_variable", None)
-        ret = mongo.db.mail_variables.update({"name": name}, {
+        ret = mongo.mail_variables.update({"name": name}, {
             "$set": {
                 "name": name,
                 "value": value,

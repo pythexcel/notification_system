@@ -1,10 +1,10 @@
-from app import mongo
+#from app import mongo
 from app.util.serializer import serialize_doc
 from bson.objectid import ObjectId
 
 
-def user_data(campaign_details):
-    details = mongo.db.campaign_users.find({"campaign":campaign_details['_id']})
+def user_data(campaign_details,mongo):
+    details = mongo.campaign_users.find({"campaign":campaign_details['_id']})
     details = [serialize_doc(doc) for doc in details]
     
     for data in details:
@@ -12,7 +12,7 @@ def user_data(campaign_details):
         if 'mail_message' in data:
             for element in data['mail_message']:
                 if element['campaign'] == campaign_details['_id']:
-                    hit_details = mongo.db.mail_status.find_one({"digit": element['sended_message_details']},
+                    hit_details = mongo.mail_status.find_one({"digit": element['sended_message_details']},
                     {
                         "hit_rate":1,
                         "message":1,
@@ -32,15 +32,16 @@ def user_data(campaign_details):
         data['hit_details'] = hit_data
         data['mail_message'] = None
     campaign_details['users'] = details
-    varificationstatus = mongo.db.campaigns.find_one({"_id": ObjectId(campaign_details['_id'])})
+
+    varificationstatus = mongo.campaigns.find_one({"_id": ObjectId(campaign_details['_id'])})
     status = "Stop"
     if varificationstatus:
         if "verification" in varificationstatus:
             status = varificationstatus['verification']
         
-    validate = mongo.db.campaign_clicked.find({"campaign_id": campaign_details['_id']})
+    validate = mongo.campaign_clicked.find({"campaign_id": campaign_details['_id']})
     if validate:
-        clicking_details = mongo.db.campaign_clicked.aggregate([
+        clicking_details = mongo.campaign_clicked.aggregate([
             {
             "$project": 
             {   "clicked_time": 1,
@@ -98,9 +99,9 @@ def user_data(campaign_details):
     return campaign_details
 
 
-def campaign_details(user):
+def campaign_details(user,mongo):
     name = user['campaign']
-    ret = mongo.db.campaigns.find_one({"_id": ObjectId(name)})
+    ret = mongo.campaigns.find_one({"_id": ObjectId(name)})
     if ret is not None:
         user['campaign'] = serialize_doc(ret)
     else:

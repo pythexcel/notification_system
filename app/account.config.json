@@ -1,0 +1,38 @@
+{
+    "notify_hr_live" : {
+        "mongodb" : {
+            "host" : null,
+            "db" : null
+        }
+    },
+    "notify_hr_staging" : {
+        "mongodb" : {
+            "host" : null,
+            "db" : null
+        }
+    },
+    "notify_tms" : {
+        "mongodb" : {
+            "host" : null,
+            "db" : null
+        }
+    },
+    "devrecruit" : {
+        "mongodb" : {
+            "host" : null,
+            "db" : null
+        }
+    },
+    "excellencerecruit" : {
+        "mongodb" : {
+            "host" : null,
+            "db" : null
+        }
+    },
+    "rocketrecruit" : {
+        "mongodb" : {
+            "host" : null,
+            "db" : null
+        }
+    }
+}

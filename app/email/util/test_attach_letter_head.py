@@ -1,3 +1,4 @@
+
 from app import create_app as app
 from app.email.util.template_util import attach_letter_head
 

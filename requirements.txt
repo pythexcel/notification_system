@@ -26,7 +26,7 @@ Flask-Slack==0.1.5
 Flask-WeasyPrint==0.6
 future==0.17.1
 googleapis-common-protos==1.5.10
-grpcio==1.22.0
+#grpcio==1.22.0
 gunicorn==19.9.0
 html5lib==1.0.1
 idna==2.8
@@ -48,7 +48,7 @@ numpy==1.16.3
 passlib==1.7.1
 pdfkit==0.6.1
 pdfrw==0.4
-Pillow==6.2.0
+#Pillow==6.2.0
 protobuf==3.7.1
 pycparser==2.19
 pyfcm==1.4.7

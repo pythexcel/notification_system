@@ -14,11 +14,13 @@ oauth_url = 'https://slack.com/api/oauth.v2.access'
 client_id = '124720392913.1351927574339'
 client_secret = '456458283bbb8cdd7e4dc8edeaa77ff5'
 """
-
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 if "pytest" in sys.modules:
     oauth_url = "https://slack.com/api/oauth.v2.access"
     client_id = "xyz"
     client_secret = "xyz"
+    account_name = "devrecruit"
+    secret_key = "gUuWrJauOiLcFSDCL5TM1heITeBVcL"
 else:
     if os.getenv("oauth_url") is not None:
         oauth_url = os.getenv("oauth_url")
@@ -40,7 +42,7 @@ else:
         raise Exception ('missing base url')
     else:
         base_url = os.getenv("base_url")
-        
+dev_accounts = ['notify_hr_staging','devrecruit','rocketrecruit']
 
 smtp_counts = {
     'smtp.gmail.com' : 100,

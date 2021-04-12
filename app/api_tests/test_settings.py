@@ -1,3 +1,4 @@
+
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -6,7 +7,7 @@ import json
 from app.api_tests.test_message_create_apis import app
 from bson import ObjectId
 from app import mongo
-
+from app.config import secret_key,account_name
 
 class AllTestSettingApis(unittest.TestCase):
 
@@ -37,7 +38,7 @@ class AllTestSettingApis(unittest.TestCase):
             })
 
         # act
-        response = self.app.put('/settings',headers={"Content-Type": "application/json","Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"}, data=payload)
+        response = self.app.put('/settings?account-name='+account_name,headers={"Content-Type": "application/json","Secretkey":str(secret_key)}, data=payload)
 
         # assert
         self.assertEqual(response.status_code, 200)
@@ -51,7 +52,7 @@ class AllTestSettingApis(unittest.TestCase):
         self.create_system_settings()
         
         # act
-        response = self.app.get('/settings',headers={"Secretkey":"gUuWrJauOiLcFSDCL5TM1heITeBVcL"})
+        response = self.app.get('/settings?account-name='+account_name,headers={"Secretkey":str(secret_key)})
         jsonResponse = self.json_of_response(response)
 
         # assert

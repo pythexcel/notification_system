@@ -1,17 +1,17 @@
 from app.slack.model.slack_util import slack_id
 from app.slack.util.make_message import MakeMessage
 from app.slack.util.fetch_channels import FetchChannels
-from app import mongo
+#from app import mongo
 
 
 
 
-def slack_notification(user_detail,message,message_detail,message_variables,system_require,system_variable):
+def slack_notification(user_detail,message,message_detail,message_variables,system_require,system_variable,mongo):
     if 'user' in user_detail and user_detail['user'] is not None:
         slack_details = True
         slack = ""
         try:
-            slack = slack_id(user_detail['user']['email']) # Fetching user slack id by email using slack api
+            slack = slack_id(user_detail['user']['email'],mongo) # Fetching user slack id by email using slack api
         except Exception:
             slack_details = False   
         #If there is slack id available then it will put slack it in message else will put username
@@ -36,7 +36,7 @@ def slack_notification(user_detail,message,message_detail,message_variables,syst
 
     #If channels available for send notification it will insert notification info in collection.
     if channels:                                                   
-        mongo.db.messages_cron.insert_one({
+        mongo.messages_cron.insert_one({
             "cron_status":False,
             "type": "slack",
             "message":message_str,

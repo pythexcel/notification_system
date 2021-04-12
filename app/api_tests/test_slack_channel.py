@@ -1,3 +1,4 @@
+'''
 import unittest
 from json import dumps
 from json.decoder import JSONDecodeError
@@ -21,7 +22,6 @@ class AllTestslackchannelApis(unittest.TestCase):
         return json.loads(response.data.decode('utf8'))
         
     #Note: commented these test cases based on slack token can't upload slack token on repo
-    """
     def create_slack_setting(self):
         payload = {"slack_token":}
         mongo.db.slack_settings.insert_one(payload) 
@@ -151,3 +151,4 @@ class AllTestslackchannelApis(unittest.TestCase):
         # assert
         self.assertEqual(response.status_code, 400)
         self.assertIn('Slack Token missing',response.get_data(as_text=True))
+'''
