@@ -16,9 +16,9 @@ services:
             - base_url=http://176.9.137.77:8012/
             - origin=recruit
             - ENVIRONMENT=development 
-            - to=recruit_testing@mailinator.com 
-            - bcc=bcc_testing_recruit@mailinator.com
-            - cc=cc_testing_recruit@mailinator.com
+            - to=recruittesting@mailinator.com 
+            - bcc=bcctestingrecruit@mailinator.com
+            - cc=cctestingrecruit@mailinator.com
             - oauth_url=https://slack.com/api/oauth.v2.access
             - client_id=124720392913.1351927574339
             - client_secret=456458283bbb8cdd7e4dc8edeaa77ff5

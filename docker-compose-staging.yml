@@ -17,8 +17,8 @@ services:
             - origin=recruit
             - ENVIRONMENT=development 
             - to=testingattach0@gmail.com
-            - bcc=bcc_testing_recruit@mailinator.com
-            - cc=cc_testing_recruit@mailinator.com
+            - bcc=bcctestingrecruit@mailinator.com
+            - cc=cctestingrecruit@mailinator.com
             - oauth_url=https://slack.com/api/oauth.v2.access
             - client_id=124720392913.1351927574339
             - client_secret=456458283bbb8cdd7e4dc8edeaa77ff5
