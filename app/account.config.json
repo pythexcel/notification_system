@@ -25,8 +25,8 @@
     },
     "excellencerecruit" : {
         "mongodb" : {
-            "host" : null,
-            "db" : null
+            "host" : "mongodb://root:recruitai567@116.202.234.182:27070/excellence_recruit?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false",
+            "db" : "excellence_notify"
         }
     },
     "rocketrecruit" : {

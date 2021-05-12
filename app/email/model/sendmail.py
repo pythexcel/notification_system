@@ -76,27 +76,30 @@ def send_email(mongo,message,recipients,subject,reply_to=None,sender_name=None,b
     for element in recipients:
         # mail_validate = check(element)
         # if mail_validate:
-        delivered.append(element)
+        if element not in delivered:
+            delivered.append(element)
         # else:
         #     raise Exception ('This email is not valid '+str(element))
     if bcc is not None:
         for data in bcc:
             # mail_validate = check(data)
             # if mail_validate:
-            delivered.append(data)
+            if data not in delivered:
+                delivered.append(data)
             # else:
             #     raise Exception ('This email is not valid '+str(data))
-            delivered.append(data) 
+            #delivered.append(data) 
     else:
         bcc = None
     if cc is not None:
         for data in cc:
             # mail_validate = check(data)
             # if mail_validate:
-            delivered.append(data)
+            if data not in delivered:
+                delivered.append(data)
             # else:
             #     raise Exception ('This email is not valid '+str(data))
-            delivered.append(data)
+            #delivered.append(data)
         cc =  ','.join(cc)
     else:
         cc = None
@@ -165,7 +168,7 @@ def send_email(mongo,message,recipients,subject,reply_to=None,sender_name=None,b
             
     main = MIMEText(message,'html')
     msg.attach(main)
-    print(delivered)
+    #print(delivered)
     if reply_to is not None:
         msg.add_header('reply-to', reply_to)
     mail.sendmail(username,delivered, msg.as_string()) 
