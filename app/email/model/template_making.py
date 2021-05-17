@@ -136,13 +136,14 @@ def fetch_recipients_by_mode(account_name,request=None):
     if request is not None:
         MAIL_SEND_TO = None     
         if account_name in dev_accounts:
+            MAIL_SEND_TO = [] 
             for email in request.get('to'):
                 full_domain = re.search("@[\w.]+", email)
                 domain = full_domain.group().split(".")
                 if domain[0] == "@excellencetechnologies":
-                    MAIL_SEND_TO = [email]
+                    MAIL_SEND_TO.append(email)
                 else:
-                    MAIL_SEND_TO = [app.config['to']]
+                    MAIL_SEND_TO.append(app.config['to'])
         else:
 
             MAIL_SEND_TO = request.get("to",None)
