@@ -20,7 +20,7 @@
     "devrecruit" : {
         "mongodb" : {
             "host" : null, 
-            "db" : null 
+            "db" : null
         }
     },
     "excellencerecruit" : {
