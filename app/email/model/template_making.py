@@ -136,13 +136,17 @@ def fetch_recipients_by_mode(account_name,request=None):
     if request is not None:
         MAIL_SEND_TO = None     
         if account_name in dev_accounts:
+            MAIL_SEND_TO = [] 
             for email in request.get('to'):
-                full_domain = re.search("@[\w.]+", email)
-                domain = full_domain.group().split(".")
-                if domain[0] == "@excellencetechnologies":
-                    MAIL_SEND_TO = [email]
-                else:
-                    MAIL_SEND_TO = [app.config['to']]
+                try:
+                    full_domain = re.search("@[\w.]+", email)
+                    domain = full_domain.group().split(".")
+                    if domain[0] == "@excellencetechnologies":
+                        MAIL_SEND_TO.append(email)
+                    else:
+                        MAIL_SEND_TO.append(app.config['to'])
+                except Exception:
+                    pass
         else:
 
             MAIL_SEND_TO = request.get("to",None)
@@ -158,14 +162,17 @@ def slack_fetch_recipients_by_mode(account_name,request=None):
         MAIL_SEND = []     
         if account_name in dev_accounts:
             for email in request.get('to'):
-                full_domain = re.search("@[\w.]+", email)
-                domain = full_domain.group().split(".")
-                if domain[0] == "@excellencetechnologies":
-                    MAIL_SEND_TO = [email]
-                else:
-                    MAIL_SEND_TO = [app.config['to']]
-                if MAIL_SEND_TO:
-                    MAIL_SEND.append(MAIL_SEND_TO[0])
+                try:
+                    full_domain = re.search("@[\w.]+", email)
+                    domain = full_domain.group().split(".")
+                    if domain[0] == "@excellencetechnologies":
+                        MAIL_SEND_TO = [email]
+                    else:
+                        MAIL_SEND_TO = [app.config['to']]
+                    if MAIL_SEND_TO:
+                        MAIL_SEND.append(MAIL_SEND_TO[0])
+                except Exception:
+                    pass
         else:
             #if app.config['ENV'] == 'production':
             MAIL_SEND = request.get("to")

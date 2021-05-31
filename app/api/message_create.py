@@ -141,10 +141,16 @@ def mail_message(message_origin):
     if request.method == "PUT":
         MSG = request.form["message"]
         MSG_KEY = request.form["message_key"]
-        mobile_message = request.form["mobile_message"]
+        mobile_message = "null"
+        if "mobile_message" in request.form:
+            mobile_message = request.form["mobile_message"]
         working = True
         if "reminder" in request.form:
             reminder = request.form["reminder"]
+            if reminder == "true":
+                reminder = True
+            else:
+                reminder = False
         else:
             reminder =False
         if "working" in request.form:
@@ -160,9 +166,14 @@ def mail_message(message_origin):
         default = False
         if "default" in request.form:
             default = request.form["default"]
+            if default == "true":
+                default = True
+            else:
+                default = False
             
         if not MSG and MSG_KEY and message_origin and MSG_SUBJECT:
             return jsonify({"MSG": "Invalid Request"}), 400
+        JobProfileId = None
         if "JobProfileId" in request.form:
             JobProfileId = request.form["JobProfileId"]
             ver = mongo.mail_template.find_one({"JobProfileId": JobProfileId,"message_key": MSG_KEY})

@@ -89,7 +89,7 @@ def send_or_preview_mail():
             
             #Here calling function for filter message,mobile message,subject and any missing payload value
             message_str,message_subject,mobile_message_str,missing_payload = generate_full_template_from_string_payload(message_detail= message_detail, request= req,system_variable=system_variable)
-            
+
             #here calling function for filter out message and subject using date if available else will return existing message and subject from up
             message_str,message_subject = fetch_msg_and_subject_by_date(request=req,message_str=message_str,message_subject=message_subject)
 
