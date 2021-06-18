@@ -2,7 +2,7 @@
     "notify_hr_live" : {
         "mongodb" : {
             "host" : null,
-            "db" : "hrstagingnotify"
+            "db" : null
         }
     },
     "notify_hr_staging" : {
@@ -19,8 +19,8 @@
     },
     "devrecruit" : {
         "mongodb" : {
-            "host" : null, 
-            "db" : null 
+            "host" : "mongodb://notify_staging:notify_staging@127.0.0.1:27017/notify_staging?authSource=admin", 
+            "db" : "notify_staging" 
         }
     },
     "excellencerecruit" : {

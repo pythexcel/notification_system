@@ -165,7 +165,7 @@ def send_email(mongo,message,recipients,subject,reply_to=None,sender_name=None,b
             message = message + url 
         else:
             message = message + url + unsuscribe_url 
-            
+    print("16888888888888888888",message)
     main = MIMEText(message,'html')
     msg.attach(main)
     #print(delivered)

@@ -120,7 +120,7 @@ def send_or_preview_mail():
                 else:
                     pass
         to,bcc,cc = get_recipients_from_request(req,request.account_name)
-        if message_detail['message_key'] == "interviewee_reject":
+        if req['data'].get('rejection_time') is not None and message_detail['message_key'] == "interviewee_reject":
             status = interview_rejection(mongo,request.account_name,req,message_str,message_subject,smtp_email)
             if status == False:
                 return jsonify({"status": False,"Message": "No rejection mail is sended"}), 400

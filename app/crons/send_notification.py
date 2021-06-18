@@ -86,6 +86,7 @@ def recruit_cron_messages():
                         sender_name = ret['sender_name']
                     else:
                         sender_name = None
+                    print("8999999999999999999",ret['message'])
                     send_email(mongo,message=ret['message'],recipients=ret['recipients'],subject=ret['subject'],sender_name=sender_name)
                 elif ret['type'] == "slack":
                     slack_message(mongo,message=ret['message'],channel=ret['channel'],req_json=ret['req_json'],message_detail=ret['message_detail'])
