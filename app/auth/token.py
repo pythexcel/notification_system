@@ -76,10 +76,10 @@ def SecretKeyAuth(fn):
                 else:
                     return jsonify(msg='Unauthorized!'), 403         
             else:
-                if os.getenv("SecretKey")==str(project_secret_key):
+                if os.getenv("Secretkey")==str(project_secret_key):
                     return fn(*args, **kwargs)
                 else:
                     return jsonify(msg='Unauthorized!'), 403         
         else:
-            return jsonify(msg='SecretKey Header Missing!'), 403                      
+            return jsonify(msg='Secretkey Header Missing!'), 403                      
     return wrapp    
