@@ -81,7 +81,7 @@ virtualenv==16.4.1
 WeasyPrint==49
 twilio==6.39.0 
 webencodings==0.5.1
-Werkzeug==0.15.5
+Werkzeug==3.0.6
 wkhtmltopdf==0.2
 xhtml2pdf==0.2.3
 yapf==0.28.0
