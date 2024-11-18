@@ -17,7 +17,7 @@ dnspython==1.16.0
 Flask==1.0.2
 beautifulsoup4==4.8.2
 soupsieve==1.9.5
-Flask-Cors==3.0.7
+Flask-Cors==4.0.2
 Flask-JWT-Extended==3.18.2
 Flask-Mail==0.9.1
 Flask-PyMongo==2.3.0
